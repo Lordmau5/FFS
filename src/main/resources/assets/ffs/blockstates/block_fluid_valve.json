@@ -1,0 +1,29 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "textures": {
+      "all": "ffs:blocks/fluid/fluid_valve_invalid"
+    },
+    "model": "minecraft:cube_all"
+  },
+
+  "variants": {
+    "tile_master=false,tile_valid=true": {
+      "model": "minecraft:cube_all",
+      "textures": {
+        "all": "ffs:blocks/fluid/fluid_valve_slave_valid"
+      }
+    },
+    "tile_master=false,tile_valid=false": {"model": "minecraft:cube_all"},
+    "tile_master=true,tile_valid=true": {
+      "model": "minecraft:cube_all",
+      "textures": {
+        "all": "ffs:blocks/fluid/fluid_valve_master_valid"
+      }
+    },
+    "tile_master=true,tile_valid=false": {
+      "model": "minecraft:cube_all"
+    },
+    "inventory": [{}]
+  }
+}
