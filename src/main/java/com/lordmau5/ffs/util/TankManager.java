@@ -81,6 +81,8 @@ public class TankManager {
 	}
 
 	public void remove(int dimensionId, BlockPos valve) {
+		dimensionId = getDimensionSafely(dimensionId);
+
 		airBlockToValve.get(dimensionId).values().removeAll(Collections.singleton(valve));
 		valveToAirBlocks.get(dimensionId).remove(valve);
 
