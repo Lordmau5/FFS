@@ -90,7 +90,7 @@ targetCompatibility = 1.8
 minecraft {
     runDir = "runtime/client"
     version = "$minecraft_version-$forge_version"
-    mappings = "snapshot_20161213"
+    mappings = "snapshot_20170101"
 }
 
 processResources {
