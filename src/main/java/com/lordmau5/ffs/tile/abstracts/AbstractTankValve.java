@@ -296,19 +296,22 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 				}
 				checked_blocks.add(offsetPos);
 
+				LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
 				if(getWorld().isAirBlock(offsetPos)) {
-					air_blocks.get(layer).add(new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY()));
-					to_check.add(offsetPos);
-					currentAirBlocks++;
+					if(!air_blocks.get(layer).contains(_pos)) {
+						air_blocks.get(layer).add(_pos);
+						to_check.add(offsetPos);
+						currentAirBlocks++;
+					}
 				}
 				else {
-					frame_blocks.get(layer).add(new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY()));
+					frame_blocks.get(layer).add(_pos);
 					currentFrameBlocks++;
 				}
 			}
 			if(currentAirBlocks > maxAirBlocks) {
 				if(buildPlayer != null) {
-					GenericUtil.sendMessageToClient(buildPlayer, "Found too many air blocks! Limit: " + maxAirBlocks);
+					GenericUtil.sendMessageToClient(buildPlayer, "Too many air blocks! Limit: " + maxAirBlocks);
 				}
 				return false;
 			}
