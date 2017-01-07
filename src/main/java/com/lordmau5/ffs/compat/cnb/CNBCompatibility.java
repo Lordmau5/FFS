@@ -37,6 +37,10 @@ public enum CNBCompatibility {
 
 	@SubscribeEvent
 	public void onBlockBitModified(EventBlockBitPostModification event) {
+		if(event.getWorld() == null) {
+			return;
+		}
+
 		if(event.getWorld().isRemote) {
 			return;
 		}
