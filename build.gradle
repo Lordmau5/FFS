@@ -16,7 +16,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.matthewprenger.cursegradle' version '1.0.5'
+//    id 'com.matthewprenger.cursegradle' version '1.0.5'
 }
 
 apply plugin: 'java'
@@ -39,14 +39,14 @@ idea {
 
 repositories {
     mavenCentral()
-    maven { // HWALY / Tehnut's maven
-        name "tehnut"
-        url "http://tehnut.info/maven"
-    }
-    maven { // OpenComputers
-        name 'opencomputers'
-        url "http://maven.cil.li/"
-    }
+//    maven { // HWALY / Tehnut's maven
+//        name "tehnut"
+//        url "http://tehnut.info/maven"
+//    }
+//    maven { // OpenComputers
+//        name 'opencomputers'
+//        url "http://maven.cil.li/"
+//    }
     maven { // Tesla
         name 'epoxide'
         url "http://maven.epoxide.xyz/"
@@ -59,9 +59,13 @@ repositories {
         name 'player'
         url "http://maven.ic2.player.to/"
     }
-    maven { // RebornCore
-        name = "Modmuss50"
+    maven { // RebornCore / Modmuss maven
+        name = 'Modmuss50'
         url = "http://maven.modmuss50.me/"
+    }
+    maven {
+        name = "CoFH Maven"
+        url = "http://maven.covers1624.net"
     }
     flatDir {
       dirs 'libs'
@@ -69,21 +73,23 @@ repositories {
 }
 
 dependencies {
-    deobfCompile "net.industrial-craft:industrialcraft-2:${ic2_version}:api"
+    deobfCompile  'net.industrial-craft:industrialcraft-2:2.8.7-ex112'
 
-    deobfCompile "team.chisel:Chisel:MC${chisel_version}"
+    //deobfCompile "team.chisel:Chisel:MC${chisel_version}"
 
     //deobfCompile "li.cil.oc:OpenComputers:MC1.10.2-${opencomputers_version}-dev"
 
     //deobfCompile "mcp.mobius.waila:Hwyla:${hwyla_version}"
 
-    deobfCompile "net.darkhax.tesla:Tesla:-${tesla_version}"
+    compile "net.darkhax.tesla:Tesla-1.12:1.0.59:deobf"
 
-    deobfCompile "mcjty.theoneprobe:TheOneProbe:${top_version}"
+    deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.11-5"
 
     deobfCompile ('RebornCore:RebornCore-1.12:+:universal'){
         transitive = false
     }
+
+    compile "cofh:RedstoneFlux:1.12-2.0.0.+:deobf"
 }
 
 if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version-b$System.env.BUILD_NUMBER"
@@ -98,7 +104,7 @@ targetCompatibility = 1.8
 minecraft {
     runDir = "runtime/client"
     version = "$minecraft_version-$forge_version"
-    mappings = "snapshot_20170101"
+    mappings = "snapshot_20170620"
 }
 
 processResources {
@@ -125,14 +131,14 @@ artifacts {
     archives sourceJar, deobfJar
 }
 
-curseforge {
-    apiKey=System.env.CURSE_API_KEY != null ? "$System.env.CURSE_API_KEY" : ''
-    project {
-      id='232683'
-      changelog="https://github.com/Lordmau5/FFS/compare/$System.env.GIT_PREVIOUS_COMMIT...$System.env.GIT_COMMIT"
-      releaseType='alpha'
-      mainArtifact(jar) {
-        displayName="FFS v$project.mod_version"
-      }
-    }
-}
+//curseforge {
+//    apiKey=System.env.CURSE_API_KEY != null ? "$System.env.CURSE_API_KEY" : ''
+//    project {
+//      id='232683'
+//      changelog="https://github.com/Lordmau5/FFS/compare/$System.env.GIT_PREVIOUS_COMMIT...$System.env.GIT_COMMIT"
+//      releaseType='alpha'
+//      mainArtifact(jar) {
+//        displayName="FFS v$project.mod_version"
+//      }
+//    }
+//}
