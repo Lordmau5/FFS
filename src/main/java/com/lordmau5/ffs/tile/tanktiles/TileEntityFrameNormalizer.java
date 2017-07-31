@@ -13,33 +13,40 @@ import net.minecraft.util.ITickable;
 // TODO: Remove legacy support
 
 @Deprecated
-public class TileEntityFrameNormalizer extends TileEntity implements ITickable {
-	private IBlockState camoBlockState;
+public class TileEntityFrameNormalizer extends TileEntity implements ITickable
+{
+    private IBlockState camoBlockState;
 
-	@Override
-	public void update() {
-		if(getWorld() == null || getWorld().isRemote) {
-			return;
-		}
+    @Override
+    public void update()
+    {
+        if (getWorld() == null || getWorld().isRemote)
+        {
+            return;
+        }
 
-		if(camoBlockState != null) {
-			getWorld().setBlockState(getPos(), camoBlockState);
-		}
-		else {
-			getWorld().setBlockToAir(getPos());
-		}
-	}
+        if (camoBlockState != null)
+        {
+            getWorld().setBlockState(getPos(), camoBlockState);
+        } else
+        {
+            getWorld().setBlockToAir(getPos());
+        }
+    }
 
-	public void setBlockState(IBlockState blockState) {
-		this.camoBlockState = blockState;
-	}
+    public void setBlockState(IBlockState blockState)
+    {
+        this.camoBlockState = blockState;
+    }
 
-	@Override
-	public void readFromNBT(NBTTagCompound tag) {
-		super.readFromNBT(tag);
+    @Override
+    public void readFromNBT(NBTTagCompound tag)
+    {
+        super.readFromNBT(tag);
 
-		if(tag.hasKey("blockState")) {
-			setBlockState(Block.getStateById(tag.getInteger("blockState")));
-		}
-	}
+        if (tag.hasKey("blockState"))
+        {
+            setBlockState(Block.getStateById(tag.getInteger("blockState")));
+        }
+    }
 }

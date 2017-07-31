@@ -59,6 +59,10 @@ repositories {
         name 'player'
         url "http://maven.ic2.player.to/"
     }
+    maven { // RebornCore
+        name = "Modmuss50"
+        url = "http://maven.modmuss50.me/"
+    }
     flatDir {
       dirs 'libs'
     }
@@ -69,13 +73,17 @@ dependencies {
 
     deobfCompile "team.chisel:Chisel:MC${chisel_version}"
 
-    deobfCompile "li.cil.oc:OpenComputers:MC1.10.2-${opencomputers_version}-dev"
+    //deobfCompile "li.cil.oc:OpenComputers:MC1.10.2-${opencomputers_version}-dev"
 
-    deobfCompile "mcp.mobius.waila:Hwyla:${hwyla_version}"
+    //deobfCompile "mcp.mobius.waila:Hwyla:${hwyla_version}"
 
-    deobfCompile "net.darkhax.tesla:Tesla:1.10.2-${tesla_version}"
+    deobfCompile "net.darkhax.tesla:Tesla:-${tesla_version}"
 
     deobfCompile "mcjty.theoneprobe:TheOneProbe:${top_version}"
+
+    deobfCompile ('RebornCore:RebornCore-1.12:+:universal'){
+        transitive = false
+    }
 }
 
 if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version-b$System.env.BUILD_NUMBER"

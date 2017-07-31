@@ -6,32 +6,35 @@ import net.minecraftforge.fml.common.ModAPIManager;
 /**
  * Created by Dustin on 02.06.2016.
  */
-public enum Compatibility {
+public enum Compatibility
+{
 
-	INSTANCE;
+    INSTANCE;
 
-	public boolean isCoFHLoaded;
-	public boolean isIC2Loaded;
-	public boolean isTeslaLoaded;
+    public boolean isCoFHLoaded;
+    public boolean isIC2Loaded;
+    public boolean isTeslaLoaded;
 
-	public boolean isWAILALoaded;
-	public boolean isOpenComputersLoaded;
-	public boolean isTOPLoaded;
-	public boolean isCNBLoaded;
+    public boolean isWAILALoaded;
+    public boolean isOpenComputersLoaded;
+    public boolean isTOPLoaded;
+    public boolean isCNBLoaded;
 
-	public void init() {
-		isCoFHLoaded = ModAPIManager.INSTANCE.hasAPI("CoFHAPI|energy");
-		isIC2Loaded = ModAPIManager.INSTANCE.hasAPI("IC2API");
-		isTeslaLoaded = ModAPIManager.INSTANCE.hasAPI("Tesla|API");
+    public void init()
+    {
+        isCoFHLoaded = ModAPIManager.INSTANCE.hasAPI("CoFHAPI|energy");
+        isIC2Loaded = ModAPIManager.INSTANCE.hasAPI("IC2API");
+        isTeslaLoaded = ModAPIManager.INSTANCE.hasAPI("Tesla|API");
 
-		isWAILALoaded = Loader.isModLoaded("Waila");
-		isOpenComputersLoaded = Loader.isModLoaded("OpenComputers");
-		isTOPLoaded = Loader.isModLoaded("theoneprobe");
-		isCNBLoaded = Loader.isModLoaded("chiselsandbits");
-	}
+        isWAILALoaded = Loader.isModLoaded("Waila");
+        isOpenComputersLoaded = Loader.isModLoaded("OpenComputers");
+        isTOPLoaded = Loader.isModLoaded("theoneprobe");
+        isCNBLoaded = Loader.isModLoaded("chiselsandbits");
+    }
 
-	public boolean isEnergyModSupplied() {
-		return isCoFHLoaded || isIC2Loaded || isTeslaLoaded;
-	}
+    public boolean isEnergyModSupplied()
+    {
+        return isCoFHLoaded || isIC2Loaded || isTeslaLoaded;
+    }
 
 }

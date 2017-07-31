@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 /**
  * Created by Lordmau5 on 07.10.2016.
  */
-public interface TOPInfoProvider {
-	void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, EntityPlayer player, World world, IBlockState blockState, IProbeHitData data);
+public interface TOPInfoProvider
+{
+    void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, EntityPlayer player, World world, IBlockState blockState, IProbeHitData data);
 }

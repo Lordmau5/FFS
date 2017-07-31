@@ -9,15 +9,17 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 /**
  * Created by Dustin on 01.06.2016.
  */
-public class Capabilities {
-	public static class Tesla {
-		@CapabilityInject(ITeslaConsumer.class)
-		public static final Capability<ITeslaConsumer> RECEIVER = null;
+public class Capabilities
+{
+    public static class Tesla
+    {
+        @CapabilityInject(ITeslaConsumer.class)
+        public static final Capability<ITeslaConsumer> RECEIVER = null;
 
-		@CapabilityInject(ITeslaProducer.class)
-		public static final Capability<ITeslaProducer> PROVIDER = null;
+        @CapabilityInject(ITeslaProducer.class)
+        public static final Capability<ITeslaProducer> PROVIDER = null;
 
-		@CapabilityInject(ITeslaHolder.class)
-		public static final Capability<ITeslaHolder> HOLDER = null;
-	}
+        @CapabilityInject(ITeslaHolder.class)
+        public static final Capability<ITeslaHolder> HOLDER = null;
+    }
 }

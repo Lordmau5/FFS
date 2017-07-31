@@ -7,17 +7,19 @@ import net.minecraftforge.fluids.Fluid;
 /**
  * Created by Dustin on 19.02.2016.
  */
-public class FluidMetaphasedFlux extends Fluid {
+public class FluidMetaphasedFlux extends Fluid
+{
+    private static final ResourceLocation still = new ResourceLocation("ffs", "blocks/power/fluid/metaphased_flux");
+    private static final ResourceLocation flowing = new ResourceLocation("ffs", "blocks/power/fluid/metaphased_flux_flow");
 
-	private static final ResourceLocation still = new ResourceLocation("ffs", "blocks/power/fluid/metaphased_flux");
-	private static final ResourceLocation flowing = new ResourceLocation("ffs", "blocks/power/fluid/metaphased_flux_flow");
+    public FluidMetaphasedFlux()
+    {
+        super(FancyFluidStorage.MODID + ".metaphased_flux", still, flowing);
+    }
 
-	public FluidMetaphasedFlux() {
-		super(FancyFluidStorage.MODID + ".metaphased_flux", still, flowing);
-	}
-
-	@Override
-	public int getColor() {
-		return 0xCCFFFFFF;
-	}
+    @Override
+    public int getColor()
+    {
+        return 0xCCFFFFFF;
+    }
 }

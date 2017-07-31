@@ -13,38 +13,43 @@ import net.minecraft.world.World;
 /**
  * Created by Dustin on 28.06.2015.
  */
-public class BlockFluidValve extends AbstractBlockValve {
+public class BlockFluidValve extends AbstractBlockValve
+{
 
-	public BlockFluidValve() {
-		super("block_fluid_valve");
-	}
+    public BlockFluidValve()
+    {
+        super("block_fluid_valve");
+    }
 
-	@Override
-	public void setDefaultState() {
-		setDefaultState(blockState.getBaseState()
-								.withProperty(FFSStateProps.TILE_VALID, false)
-								.withProperty(FFSStateProps.TILE_MASTER, false));
-	}
+    @Override
+    public void setDefaultState()
+    {
+        setDefaultState(blockState.getBaseState().withProperty(FFSStateProps.TILE_VALID, false).withProperty(FFSStateProps.TILE_MASTER, false));
+    }
 
-	@Override
-	public BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, FFSStateProps.TILE_VALID, FFSStateProps.TILE_MASTER);
-	}
+    @Override
+    public BlockStateContainer createBlockState()
+    {
+        return new BlockStateContainer(this, FFSStateProps.TILE_VALID, FFSStateProps.TILE_MASTER);
+    }
 
-	@Override
-	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
-		TileEntity tile = world.getTileEntity(pos);
-		if(tile != null && tile instanceof TileEntityFluidValve) {
-			TileEntityFluidValve valve = (TileEntityFluidValve) tile;
+    @Override
+    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos)
+    {
+        TileEntity tile = world.getTileEntity(pos);
+        if (tile != null && tile instanceof TileEntityFluidValve)
+        {
+            TileEntityFluidValve valve = (TileEntityFluidValve) tile;
 
-			state = state.withProperty(FFSStateProps.TILE_VALID, valve.isValid())
-					.withProperty(FFSStateProps.TILE_MASTER, valve.isMaster());
-		}
-		return state;
-	}
+            state = state.withProperty(FFSStateProps.TILE_VALID, valve.isValid())
+                    .withProperty(FFSStateProps.TILE_MASTER, valve.isMaster());
+        }
+        return state;
+    }
 
-	@Override
-	public TileEntity createTileEntity(World world, IBlockState state) {
-		return new TileEntityFluidValve();
-	}
+    @Override
+    public TileEntity createTileEntity(World world, IBlockState state)
+    {
+        return new TileEntityFluidValve();
+    }
 }

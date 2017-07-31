@@ -8,32 +8,38 @@ import net.minecraftforge.common.property.IUnlistedProperty;
  * <p>
  * Created by Dustin on 11.01.2016.
  */
-class PropertyState implements IUnlistedProperty<IBlockState> {
+class PropertyState implements IUnlistedProperty<IBlockState>
+{
 
-	private final String name;
+    private final String name;
 
-	public PropertyState(String name) {
-		this.name = name;
-	}
+    public PropertyState(String name)
+    {
+        this.name = name;
+    }
 
-	@Override
-	public String getName() {
-		return name;
-	}
+    @Override
+    public String getName()
+    {
+        return name;
+    }
 
-	@Override
-	public boolean isValid(IBlockState value) {
-		return true;
-	}
+    @Override
+    public boolean isValid(IBlockState value)
+    {
+        return true;
+    }
 
-	@Override
-	public Class<IBlockState> getType() {
-		return IBlockState.class;
-	}
+    @Override
+    public Class<IBlockState> getType()
+    {
+        return IBlockState.class;
+    }
 
-	@Override
-	public String valueToString(IBlockState value) {
-		return value.toString();
-	}
+    @Override
+    public String valueToString(IBlockState value)
+    {
+        return value.toString();
+    }
 
 }

@@ -14,62 +14,74 @@ import net.minecraftforge.fluids.FluidRegistry;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class FluidHelper {
+public final class FluidHelper
+{
 
-	public static final ResourceLocation BLOCK_TEXTURE = TextureMap.LOCATION_BLOCKS_TEXTURE;
-	private static final Map<FluidType, Map<Fluid, TextureAtlasSprite>> textureMap = Maps.newHashMap();
-	private static TextureAtlasSprite missingIcon = null;
+    public static final ResourceLocation BLOCK_TEXTURE = TextureMap.LOCATION_BLOCKS_TEXTURE;
+    private static final Map<FluidType, Map<Fluid, TextureAtlasSprite>> textureMap = Maps.newHashMap();
+    private static TextureAtlasSprite missingIcon = null;
 
-	public FluidHelper() {
-	}
+    public FluidHelper()
+    {
+    }
 
-	public static void initTextures(TextureMap map) {
-		missingIcon = map.getMissingSprite();
+    public static void initTextures(TextureMap map)
+    {
+        missingIcon = map.getMissingSprite();
 
-		textureMap.clear();
+        textureMap.clear();
 
-		for(FluidType type : FluidType.values()) {
-			textureMap.put(type, new HashMap<>());
-		}
+        for (FluidType type : FluidType.values())
+        {
+            textureMap.put(type, new HashMap<>());
+        }
 
-		for(Fluid fluid : FluidRegistry.getRegisteredFluids().values()) {
-			if(fluid.getFlowing() != null) {
-				String flow = fluid.getFlowing().toString();
-				TextureAtlasSprite sprite;
-				if(map.getTextureExtry(flow) != null) {
-					sprite = map.getTextureExtry(flow);
-				}
-				else {
-					sprite = map.registerSprite(fluid.getFlowing());
-				}
-				textureMap.get(FluidType.FLOWING).put(fluid, sprite);
-			}
+        for (Fluid fluid : FluidRegistry.getRegisteredFluids().values())
+        {
+            if (fluid.getFlowing() != null)
+            {
+                String flow = fluid.getFlowing().toString();
+                TextureAtlasSprite sprite;
+                if (map.getTextureExtry(flow) != null)
+                {
+                    sprite = map.getTextureExtry(flow);
+                } else
+                {
+                    sprite = map.registerSprite(fluid.getFlowing());
+                }
+                textureMap.get(FluidType.FLOWING).put(fluid, sprite);
+            }
 
-			if(fluid.getStill() != null) {
-				String still = fluid.getStill().toString();
-				TextureAtlasSprite sprite;
-				if(map.getTextureExtry(still) != null) {
-					sprite = map.getTextureExtry(still);
-				}
-				else {
-					sprite = map.registerSprite(fluid.getStill());
-				}
-				textureMap.get(FluidType.STILL).put(fluid, sprite);
-			}
-		}
-	}
+            if (fluid.getStill() != null)
+            {
+                String still = fluid.getStill().toString();
+                TextureAtlasSprite sprite;
+                if (map.getTextureExtry(still) != null)
+                {
+                    sprite = map.getTextureExtry(still);
+                } else
+                {
+                    sprite = map.registerSprite(fluid.getStill());
+                }
+                textureMap.get(FluidType.STILL).put(fluid, sprite);
+            }
+        }
+    }
 
-	public static TextureAtlasSprite getFluidTexture(Fluid fluid) {
-		if(fluid == null || FluidType.STILL == null) {
-			return missingIcon;
-		}
-		Map<Fluid, TextureAtlasSprite> map = textureMap.get(FluidType.STILL);
-		return map.containsKey(fluid) ? map.get(fluid) : missingIcon;
-	}
+    public static TextureAtlasSprite getFluidTexture(Fluid fluid)
+    {
+        if (fluid == null || FluidType.STILL == null)
+        {
+            return missingIcon;
+        }
+        Map<Fluid, TextureAtlasSprite> map = textureMap.get(FluidType.STILL);
+        return map.containsKey(fluid) ? map.get(fluid) : missingIcon;
+    }
 
-	public enum FluidType {
-		FLOWING,
-		STILL,
-		FROZEN
-	}
+    public enum FluidType
+    {
+        FLOWING,
+        STILL,
+        FROZEN
+    }
 }

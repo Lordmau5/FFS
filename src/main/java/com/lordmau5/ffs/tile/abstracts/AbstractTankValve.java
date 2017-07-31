@@ -26,63 +26,72 @@ import java.util.stream.Collectors;
 /**
  * Created by Dustin on 21.01.2016.
  */
-public abstract class AbstractTankValve extends AbstractTankTile implements IFacingTile, INameableTile {
+public abstract class AbstractTankValve extends AbstractTankTile implements IFacingTile, INameableTile
+{
 
-	private final List<AbstractTankTile> tankTiles;
-	private int initialWaitTick = 20;
-	public final WeakHashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
-	private TankConfig tankConfig;
-	private boolean isValid;
-	private boolean isMaster;
-	private boolean initiated;
+    private final List<AbstractTankTile> tankTiles;
+    private int initialWaitTick = 20;
+    public final WeakHashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
+    private TankConfig tankConfig;
+    private boolean isValid;
+    private boolean isMaster;
+    private boolean initiated;
 
-	// TANK LOGIC
-	private int lastComparatorOut = 0;
-	// ---------------
-	private EntityPlayer buildPlayer;
+    // TANK LOGIC
+    private int lastComparatorOut = 0;
+    // ---------------
+    private EntityPlayer buildPlayer;
 
-	public AbstractTankValve() {
-		tankTiles = new ArrayList<>();
+    public AbstractTankValve()
+    {
+        tankTiles = new ArrayList<>();
 
-		maps = new WeakHashMap<>();
-		maps.put(0, new TreeMap<>());
-		maps.put(1, new TreeMap<>());
+        maps = new WeakHashMap<>();
+        maps.put(0, new TreeMap<>());
+        maps.put(1, new TreeMap<>());
 
-		setValid(false);
-		setValvePos(null);
-	}
+        setValid(false);
+        setValvePos(null);
+    }
 
-	@Override
-	public void validate() {
-		super.validate();
-		initiated = true;
-		initialWaitTick = 20;
-	}
+    @Override
+    public void validate()
+    {
+        super.validate();
+        initiated = true;
+        initialWaitTick = 20;
+    }
 
-	@Override
-	public void invalidate() {
-		super.invalidate();
+    @Override
+    public void invalidate()
+    {
+        super.invalidate();
 
-		breakTank();
-	}
+        breakTank();
+    }
 
-	@Override
-	public void onChunkUnload() {
-		super.onChunkUnload();
+    @Override
+    public void onChunkUnload()
+    {
+        super.onChunkUnload();
 
-		breakTank();
-	}
+        breakTank();
+    }
 
-	@Override
-	public void update() {
-		super.update();
+    @Override
+    public void update()
+    {
+        super.update();
 
-		if(getWorld().isRemote) {
-			return;
-		}
+        if (getWorld().isRemote)
+        {
+            return;
+        }
 
-		if(initiated) {
-			if(isMaster()) {
+        if (initiated)
+        {
+            if (isMaster())
+            {
 //				if(bottomDiagFrame != null && topDiagFrame != null) { // Potential fix for huge-ass tanks not loading properly on master-valve chunk load.
 //					Chunk chunkBottom = getWorld().getChunkFromBlockCoords(bottomDiagFrame);
 //					Chunk chunkTop = getWorld().getChunkFromBlockCoords(topDiagFrame);
@@ -99,489 +108,583 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 //
 //					updateBlockAndNeighbors();
 //				}
-				if(initialWaitTick-- <= 0) {
-					initiated = false;
-					buildTank(getTileFacing());
-					return;
-				}
-			}
-		}
+                if (initialWaitTick-- <= 0)
+                {
+                    initiated = false;
+                    buildTank(getTileFacing());
+                    return;
+                }
+            }
+        }
 
-		if(!isValid())
-			return;
+        if (!isValid())
+            return;
 
-		if(!isMaster() && getMasterValve() == null) {
-			setValid(false);
-			updateBlockAndNeighbors();
-		}
-	}
+        if (!isMaster() && getMasterValve() == null)
+        {
+            setValid(false);
+            updateBlockAndNeighbors();
+        }
+    }
 
-	public TreeMap<Integer, List<LayerBlockPos>> getFrameBlocks() {
-		return maps.get(0);
-	}
+    public TreeMap<Integer, List<LayerBlockPos>> getFrameBlocks()
+    {
+        return maps.get(0);
+    }
 
-	public TreeMap<Integer, List<LayerBlockPos>> getAirBlocks() {
-		return maps.get(1);
-	}
+    public TreeMap<Integer, List<LayerBlockPos>> getAirBlocks()
+    {
+        return maps.get(1);
+    }
 
-	public TankConfig getTankConfig() {
-		if(!isMaster() && getMasterValve() != null && getMasterValve() != this) {
-			return getMasterValve().getTankConfig();
-		}
+    public TankConfig getTankConfig()
+    {
+        if (!isMaster() && getMasterValve() != null && getMasterValve() != this)
+        {
+            return getMasterValve().getTankConfig();
+        }
 
-		if(this.tankConfig == null) {
-			this.tankConfig = new TankConfig(this);
-		}
+        if (this.tankConfig == null)
+        {
+            this.tankConfig = new TankConfig(this);
+        }
 
-		return this.tankConfig;
-	}
+        return this.tankConfig;
+    }
 
-	private void setTankConfig(TankConfig tankConfig) {
-		this.tankConfig = tankConfig;
-	}
+    private void setTankConfig(TankConfig tankConfig)
+    {
+        this.tankConfig = tankConfig;
+    }
 
-	public void toggleFluidLock(boolean state) {
-		if(!state) {
-			getTankConfig().unlockFluid();
-		}
-		else {
-			if(getTankConfig().getFluidStack() == null) {
-				return;
-			}
+    public void toggleFluidLock(boolean state)
+    {
+        if (!state)
+        {
+            getTankConfig().unlockFluid();
+        } else
+        {
+            if (getTankConfig().getFluidStack() == null)
+            {
+                return;
+            }
 
-			getTankConfig().lockFluid(getTankConfig().getFluidStack());
-		}
-		getMasterValve().setNeedsUpdate();
-	}
+            getTankConfig().lockFluid(getTankConfig().getFluidStack());
+        }
+        getMasterValve().setNeedsUpdate();
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T> List<T> getTankTiles(Class<T> type) {
-		List<T> tiles = tankTiles.stream().filter(p -> type.isAssignableFrom(p.getClass())).map(p -> (T) p).collect(Collectors.toList());
-		if(this.getClass().isAssignableFrom(type)) {
-			tiles.add((T) this);
-		}
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getTankTiles(Class<T> type)
+    {
+        List<T> tiles = tankTiles.stream().filter(p -> type.isAssignableFrom(p.getClass())).map(p -> (T) p).collect(Collectors.toList());
+        if (this.getClass().isAssignableFrom(type))
+        {
+            tiles.add((T) this);
+        }
 
-		return tiles;
-	}
+        return tiles;
+    }
 
-	public List<AbstractTankValve> getAllValves() {
-		if(!isMaster() && getMasterValve() != null && getMasterValve() != this) {
-			return getMasterValve().getAllValves();
-		}
+    public List<AbstractTankValve> getAllValves()
+    {
+        if (!isMaster() && getMasterValve() != null && getMasterValve() != this)
+        {
+            return getMasterValve().getAllValves();
+        }
 
-		List<AbstractTankValve> valves = getTankTiles(AbstractTankValve.class);
-		valves.add(this);
-		return valves;
-	}
+        List<AbstractTankValve> valves = getTankTiles(AbstractTankValve.class);
+        valves.add(this);
+        return valves;
+    }
 
-	/**
-	 * Let a player build a tank!
-	 *
-	 * @param player - The player that tries to build the tank
-	 * @param inside - The direction of the inside of the tank
-	 */
-	public void buildTank_player(EntityPlayer player, EnumFacing inside) {
-		if(getWorld().isRemote) {
-			return;
-		}
+    /**
+     * Let a player build a tank!
+     *
+     * @param player - The player that tries to build the tank
+     * @param inside - The direction of the inside of the tank
+     */
+    public void buildTank_player(EntityPlayer player, EnumFacing inside)
+    {
+        if (getWorld().isRemote)
+        {
+            return;
+        }
 
-		buildPlayer = player;
-		buildTank(inside);
-	}
+        buildPlayer = player;
+        buildTank(inside);
+    }
 
-	/**
-	 * Let's build a tank!
-	 *
-	 * @param inside - The direction of the inside of the tank
-	 */
-	private void buildTank(EnumFacing inside) {
-		/**
-		 * Don't build if it's on the client!
-		 */
-		if(getWorld().isRemote) {
-			return;
-		}
+    /**
+     * Let's build a tank!
+     *
+     * @param inside - The direction of the inside of the tank
+     */
+    private void buildTank(EnumFacing inside)
+    {
+        /**
+         * Don't build if it's on the client!
+         */
+        if (getWorld().isRemote)
+        {
+            return;
+        }
 
-		/**
-		 * Let's first set the tank to be invalid,
-		 * since it should stay like that if the building fails.
-		 * Also, let's reset variables.
-		 */
-		setValid(false);
+        /**
+         * Let's first set the tank to be invalid,
+         * since it should stay like that if the building fails.
+         * Also, let's reset variables.
+         */
+        setValid(false);
 
-		getTankConfig().setFluidCapacity(0);
+        getTankConfig().setFluidCapacity(0);
 
-		tankTiles.clear();
+        tankTiles.clear();
 
-		/**
-		 * Now, set the inside direction according to the variable.
-		 */
-		if(inside != null) {
-			setTileFacing(inside);
-		}
+        /**
+         * Now, set the inside direction according to the variable.
+         */
+        if (inside != null)
+        {
+            setTileFacing(inside);
+        }
 
-		/**
-		 * Actually setup the tank here
-		 */
-		if(!setupTank()) {
-			return;
-		}
+        /**
+         * Actually setup the tank here
+         */
+        if (!setupTank())
+        {
+            return;
+        }
 
-		/**
-		 * Just in case, set *initiated* to false again.
-		 * Also, update our neighbor blocks, e.g. pipes or similar.
-		 */
-		initiated = false;
-		buildPlayer = null;
-		updateBlockAndNeighbors();
-	}
+        /**
+         * Just in case, set *initiated* to false again.
+         * Also, update our neighbor blocks, e.g. pipes or similar.
+         */
+        initiated = false;
+        buildPlayer = null;
+        updateBlockAndNeighbors();
+    }
 
-	private void setTankTileFacing(TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntity tankTile) {
-		List<BlockPos> possibleAirBlocks = new ArrayList<>();
-		for(EnumFacing dr : EnumFacing.VALUES) {
-			if(getWorld().isAirBlock(tankTile.getPos().offset(dr))) {
-				possibleAirBlocks.add(tankTile.getPos().offset(dr));
-			}
-		}
+    private void setTankTileFacing(TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntity tankTile)
+    {
+        List<BlockPos> possibleAirBlocks = new ArrayList<>();
+        for (EnumFacing dr : EnumFacing.VALUES)
+        {
+            if (getWorld().isAirBlock(tankTile.getPos().offset(dr)))
+            {
+                possibleAirBlocks.add(tankTile.getPos().offset(dr));
+            }
+        }
 
-		BlockPos insideAir = null;
-		for(int layer : airBlocks.keySet()) {
-			for(BlockPos pos : possibleAirBlocks) {
-				if(airBlocks.get(layer).contains(pos)) {
-					insideAir = pos;
-					break;
-				}
-			}
-		}
+        BlockPos insideAir = null;
+        for (int layer : airBlocks.keySet())
+        {
+            for (BlockPos pos : possibleAirBlocks)
+            {
+                if (airBlocks.get(layer).contains(pos))
+                {
+                    insideAir = pos;
+                    break;
+                }
+            }
+        }
 
-		if(insideAir == null) {
-			return;
-		}
+        if (insideAir == null)
+        {
+            return;
+        }
 
-		BlockPos dist = insideAir.subtract(tankTile.getPos());
-		for(EnumFacing dr : EnumFacing.VALUES) {
-			if(dist.equals(new BlockPos(dr.getFrontOffsetX(), dr.getFrontOffsetY(), dr.getFrontOffsetZ()))) {
-				((IFacingTile) tankTile).setTileFacing(dr);
-				break;
-			}
-		}
-	}
+        BlockPos dist = insideAir.subtract(tankTile.getPos());
+        for (EnumFacing dr : EnumFacing.VALUES)
+        {
+            if (dist.equals(new BlockPos(dr.getFrontOffsetX(), dr.getFrontOffsetY(), dr.getFrontOffsetZ())))
+            {
+                ((IFacingTile) tankTile).setTileFacing(dr);
+                break;
+            }
+        }
+    }
 
-	private boolean searchAlgorithm() {
-		int currentAirBlocks = 1, currentFrameBlocks = 0;
-		int maxAirBlocks = Config.MAX_AIR_BLOCKS;
-		BlockPos insidePos = getPos().offset(getTileFacing());
+    private boolean searchAlgorithm()
+    {
+        int currentAirBlocks = 1, currentFrameBlocks = 0;
+        int maxAirBlocks = Config.MAX_AIR_BLOCKS;
+        BlockPos insidePos = getPos().offset(getTileFacing());
 
-		Queue<BlockPos> to_check = new LinkedList<>();
-		List<BlockPos> checked_blocks = new ArrayList<>();
-		TreeMap<Integer, List<LayerBlockPos>> air_blocks = new TreeMap<>();
-		TreeMap<Integer, List<LayerBlockPos>> frame_blocks = new TreeMap<>();
+        Queue<BlockPos> to_check = new LinkedList<>();
+        List<BlockPos> checked_blocks = new ArrayList<>();
+        TreeMap<Integer, List<LayerBlockPos>> air_blocks = new TreeMap<>();
+        TreeMap<Integer, List<LayerBlockPos>> frame_blocks = new TreeMap<>();
 
-		LayerBlockPos pos = new LayerBlockPos(insidePos, 0);
-		air_blocks.put(0, Lists.newArrayList(pos));
+        LayerBlockPos pos = new LayerBlockPos(insidePos, 0);
+        air_blocks.put(0, Lists.newArrayList(pos));
 
-		to_check.add(insidePos);
+        to_check.add(insidePos);
 
-		while(!to_check.isEmpty()) {
-			BlockPos nextCheck = to_check.remove();
-			for(EnumFacing facing : EnumFacing.VALUES) {
-				BlockPos offsetPos = nextCheck.offset(facing);
-				int layer = offsetPos.getY() - insidePos.getY();
+        while (!to_check.isEmpty())
+        {
+            BlockPos nextCheck = to_check.remove();
+            for (EnumFacing facing : EnumFacing.VALUES)
+            {
+                BlockPos offsetPos = nextCheck.offset(facing);
+                int layer = offsetPos.getY() - insidePos.getY();
 
-				air_blocks.putIfAbsent(layer, Lists.newArrayList());
-				frame_blocks.putIfAbsent(layer, Lists.newArrayList());
+                air_blocks.putIfAbsent(layer, Lists.newArrayList());
+                frame_blocks.putIfAbsent(layer, Lists.newArrayList());
 
-				if(checked_blocks.contains(offsetPos)) {
-					continue;
-				}
-				checked_blocks.add(offsetPos);
+                if (checked_blocks.contains(offsetPos))
+                {
+                    continue;
+                }
+                checked_blocks.add(offsetPos);
 
-				LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
-				if(getWorld().isAirBlock(offsetPos)) {
-					if(!air_blocks.get(layer).contains(_pos)) {
-						air_blocks.get(layer).add(_pos);
-						to_check.add(offsetPos);
-						currentAirBlocks++;
-					}
-				}
-				else {
-					frame_blocks.get(layer).add(_pos);
-					currentFrameBlocks++;
-				}
-			}
-			if(currentAirBlocks > maxAirBlocks) {
-				if(buildPlayer != null) {
-					GenericUtil.sendMessageToClient(buildPlayer, "Too many air blocks! Limit: " + maxAirBlocks);
-				}
-				return false;
-			}
-		}
+                LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
+                if (getWorld().isAirBlock(offsetPos))
+                {
+                    if (!air_blocks.get(layer).contains(_pos))
+                    {
+                        air_blocks.get(layer).add(_pos);
+                        to_check.add(offsetPos);
+                        currentAirBlocks++;
+                    }
+                } else
+                {
+                    frame_blocks.get(layer).add(_pos);
+                    currentFrameBlocks++;
+                }
+            }
+            if (currentAirBlocks > maxAirBlocks)
+            {
+                if (buildPlayer != null)
+                {
+                    GenericUtil.sendMessageToClient(buildPlayer, "Too many air blocks! Limit: " + maxAirBlocks);
+                }
+                return false;
+            }
+        }
 
-		if(currentAirBlocks == 0) {
-			return false;
-		}
+        if (currentAirBlocks == 0)
+        {
+            return false;
+        }
 
-		maps.put(0, frame_blocks);
-		maps.put(1, air_blocks);
-		return true;
-	}
+        maps.put(0, frame_blocks);
+        maps.put(1, air_blocks);
+        return true;
+    }
 
-	private boolean setupTank() {
-		if(!searchAlgorithm()) {
-			return false;
-		}
+    private boolean setupTank()
+    {
+        if (!searchAlgorithm())
+        {
+            return false;
+        }
 
-		int size = 0;
-		for(int layer : maps.get(1).keySet()) {
-			size += maps.get(1).get(layer).size();
-		}
-		getTankConfig().setFluidCapacity(size * Config.MB_PER_TANK_BLOCK);
+        int size = 0;
+        for (int layer : maps.get(1).keySet())
+        {
+            size += maps.get(1).get(layer).size();
+        }
+        getTankConfig().setFluidCapacity(size * Config.MB_PER_TANK_BLOCK);
 
-		for(int layer : maps.get(1).keySet()) {
-			for(BlockPos pos : maps.get(1).get(layer)) {
-				if(!getWorld().isAirBlock(pos)) {
-					return false;
-				}
-			}
-		}
+        for (int layer : maps.get(1).keySet())
+        {
+            for (BlockPos pos : maps.get(1).get(layer))
+            {
+                if (!getWorld().isAirBlock(pos))
+                {
+                    return false;
+                }
+            }
+        }
 
-		FluidStack tempNewFluidStack = getTankConfig().getFluidStack();
+        FluidStack tempNewFluidStack = getTankConfig().getFluidStack();
 
-		List<TileEntity> facingTiles = new ArrayList<>();
-		for(int layer : maps.get(0).keySet()) {
-			for(BlockPos pos : maps.get(0).get(layer)) {
-				IBlockState check = getWorld().getBlockState(pos);
-				if(FancyFluidStorage.tankManager.isPartOfTank(getWorld(), pos)) {
-					AbstractTankValve valve = FancyFluidStorage.tankManager.getValveForBlock(getWorld(), pos);
-					if(valve != null && valve != this) {
-						GenericUtil.sendMessageToClient(buildPlayer, "One or more blocks already belong to another tank!");
-						return false;
-					}
-					continue;
-				}
+        List<TileEntity> facingTiles = new ArrayList<>();
+        for (int layer : maps.get(0).keySet())
+        {
+            for (BlockPos pos : maps.get(0).get(layer))
+            {
+                IBlockState check = getWorld().getBlockState(pos);
+                if (FancyFluidStorage.tankManager.isPartOfTank(getWorld(), pos))
+                {
+                    AbstractTankValve valve = FancyFluidStorage.tankManager.getValveForBlock(getWorld(), pos);
+                    if (valve != null && valve != this)
+                    {
+                        GenericUtil.sendMessageToClient(buildPlayer, "One or more blocks already belong to another tank!");
+                        return false;
+                    }
+                    continue;
+                }
 
-				TileEntity tile = getWorld().getTileEntity(pos);
-				if(tile != null) {
-					if(tile instanceof IFacingTile) {
-						facingTiles.add(tile);
-					}
+                TileEntity tile = getWorld().getTileEntity(pos);
+                if (tile != null)
+                {
+                    if (tile instanceof IFacingTile)
+                    {
+                        facingTiles.add(tile);
+                    }
 
-					if(tile instanceof AbstractTankValve) {
-						AbstractTankValve valve = (AbstractTankValve) tile;
-						if(valve == this) {
-							continue;
-						}
+                    if (tile instanceof AbstractTankValve)
+                    {
+                        AbstractTankValve valve = (AbstractTankValve) tile;
+                        if (valve == this)
+                        {
+                            continue;
+                        }
 
-						if(valve.getTankConfig().getFluidStack() != null) {
-							if(getTankConfig() != null && getTankConfig().getFluidStack() != null) {
-								FluidStack myFS = getTankConfig().getFluidStack();
-								FluidStack otherFS = valve.getTankConfig().getFluidStack();
+                        if (valve.getTankConfig().getFluidStack() != null)
+                        {
+                            if (getTankConfig() != null && getTankConfig().getFluidStack() != null)
+                            {
+                                FluidStack myFS = getTankConfig().getFluidStack();
+                                FluidStack otherFS = valve.getTankConfig().getFluidStack();
 
-								if(!myFS.isFluidEqual(otherFS)) {
-									GenericUtil.sendMessageToClient(buildPlayer, "One or more valves contain different fluids! Could not build the tank!");
-									return false;
-								}
-								else {
-									tempNewFluidStack.amount += otherFS.amount;
-								}
-							}
-							else {
-								tempNewFluidStack = valve.getTankConfig().getFluidStack();
-							}
-						}
-					}
-				}
+                                if (!myFS.isFluidEqual(otherFS))
+                                {
+                                    GenericUtil.sendMessageToClient(buildPlayer, "One or more valves contain different fluids! Could not build the tank!");
+                                    return false;
+                                } else
+                                {
+                                    tempNewFluidStack.amount += otherFS.amount;
+                                }
+                            } else
+                            {
+                                tempNewFluidStack = valve.getTankConfig().getFluidStack();
+                            }
+                        }
+                    }
+                }
 
-				if(!GenericUtil.areTankBlocksValid(check, getWorld(), pos, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos)) && !GenericUtil.isBlockGlass(check)) {
-					return false;
-				}
-			}
-		}
+                if (!GenericUtil.areTankBlocksValid(check, getWorld(), pos, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos)) && !GenericUtil.isBlockGlass(check))
+                {
+                    return false;
+                }
+            }
+        }
 
-		getTankConfig().setFluidStack(tempNewFluidStack);
-		// Make sure we don't overfill a tank. If the new tank is smaller than the old one, excess liquid disappear.
-		if(getTankConfig().getFluidStack() != null) {
-			getTankConfig().getFluidStack().amount = Math.min(getTankConfig().getFluidStack().amount, getTankConfig().getFluidCapacity());
-		}
+        getTankConfig().setFluidStack(tempNewFluidStack);
+        // Make sure we don't overfill a tank. If the new tank is smaller than the old one, excess liquid disappear.
+        if (getTankConfig().getFluidStack() != null)
+        {
+            getTankConfig().getFluidStack().amount = Math.min(getTankConfig().getFluidStack().amount, getTankConfig().getFluidCapacity());
+        }
 
-		for(TileEntity facingTile : facingTiles) {
-			setTankTileFacing(maps.get(1), facingTile);
-		}
-		isMaster = true;
+        for (TileEntity facingTile : facingTiles)
+        {
+            setTankTileFacing(maps.get(1), facingTile);
+        }
+        isMaster = true;
 
-		for(int layer : maps.get(0).keySet()) {
-			for(BlockPos pos : maps.get(0).get(layer)) {
-				TileEntity tile = getWorld().getTileEntity(pos);
-				if(tile == this) {
-					continue;
-				}
+        for (int layer : maps.get(0).keySet())
+        {
+            for (BlockPos pos : maps.get(0).get(layer))
+            {
+                TileEntity tile = getWorld().getTileEntity(pos);
+                if (tile == this)
+                {
+                    continue;
+                }
 
-				if(tile != null) {
-					if(tile instanceof AbstractTankValve) {
-						AbstractTankValve valve = (AbstractTankValve) tile;
+                if (tile != null)
+                {
+                    if (tile instanceof AbstractTankValve)
+                    {
+                        AbstractTankValve valve = (AbstractTankValve) tile;
 
-						pos = valve.getPos();
+                        pos = valve.getPos();
 //						valve.valveHeightPosition = Math.abs(bottomDiagFrame.subtract(pos).getY());
 
-						valve.isMaster = false;
-						valve.setValvePos(getPos());
-						valve.setTankConfig(getTankConfig());
-						tankTiles.add(valve);
-					}
-					else if(tile instanceof AbstractTankTile) {
-						AbstractTankTile tankTile = (AbstractTankTile) tile;
-						tankTile.setValvePos(getPos());
-						tankTiles.add((AbstractTankTile) tile);
-					}
-				}
-			}
-		}
+                        valve.isMaster = false;
+                        valve.setValvePos(getPos());
+                        valve.setTankConfig(getTankConfig());
+                        tankTiles.add(valve);
+                    } else if (tile instanceof AbstractTankTile)
+                    {
+                        AbstractTankTile tankTile = (AbstractTankTile) tile;
+                        tankTile.setValvePos(getPos());
+                        tankTiles.add((AbstractTankTile) tile);
+                    }
+                }
+            }
+        }
 
-		setValid(true);
+        setValid(true);
 
-		FancyFluidStorage.tankManager.add(getWorld(), getPos(), getAirBlocks(), getFrameBlocks());
+        FancyFluidStorage.tankManager.add(getWorld(), getPos(), getAirBlocks(), getFrameBlocks());
 //		NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBuild(this));
 
-		return true;
-	}
+        return true;
+    }
 
-	public void breakTank() {
-		if(getWorld().isRemote) {
-			return;
-		}
+    public void breakTank()
+    {
+        if (getWorld().isRemote)
+        {
+            return;
+        }
 
-		if(!isMaster() && getMasterValve() != null && getMasterValve() != this) {
-			getMasterValve().breakTank();
-			return;
-		}
+        if (!isMaster() && getMasterValve() != null && getMasterValve() != this)
+        {
+            getMasterValve().breakTank();
+            return;
+        }
 
-		FancyFluidStorage.tankManager.remove(getWorld().provider.getDimension(), getPos());
-		NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBreak(this));
+        FancyFluidStorage.tankManager.remove(getWorld().provider.getDimension(), getPos());
+        NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBreak(this));
 
-		for(AbstractTankValve valve : getAllValves()) {
-			if(valve == this) {
-				continue;
-			}
+        for (AbstractTankValve valve : getAllValves())
+        {
+            if (valve == this)
+            {
+                continue;
+            }
 
-			valve.setTankConfig(null);
-			valve.setValvePos(null);
-			valve.setValid(false);
-			valve.updateBlockAndNeighbors(true);
-		}
-		setValid(false);
+            valve.setTankConfig(null);
+            valve.setValvePos(null);
+            valve.setValid(false);
+            valve.updateBlockAndNeighbors(true);
+        }
+        setValid(false);
 
-		tankTiles.removeAll(getTankTiles(AbstractTankValve.class));
-		for(AbstractTankTile tankTile : tankTiles) {
-			tankTile.setValvePos(null);
-		}
+        tankTiles.removeAll(getTankTiles(AbstractTankValve.class));
+        for (AbstractTankTile tankTile : tankTiles)
+        {
+            tankTile.setValvePos(null);
+        }
 
-		tankTiles.clear();
+        tankTiles.clear();
 
-		updateBlockAndNeighbors(true);
-	}
+        updateBlockAndNeighbors(true);
+    }
 
-	@Override
-	public boolean isValid() {
-		if(getMasterValve() == null || getMasterValve() == this)
-			return this.isValid;
+    @Override
+    public boolean isValid()
+    {
+        if (getMasterValve() == null || getMasterValve() == this)
+            return this.isValid;
 
-		return getMasterValve().isValid;
-	}
+        return getMasterValve().isValid;
+    }
 
-	private void setValid(boolean isValid) {
-		this.isValid = isValid;
-	}
+    private void setValid(boolean isValid)
+    {
+        this.isValid = isValid;
+    }
 
-	private void updateBlockAndNeighbors() {
-		updateBlockAndNeighbors(false);
-	}
+    private void updateBlockAndNeighbors()
+    {
+        updateBlockAndNeighbors(false);
+    }
 
-	private void updateBlockAndNeighbors(boolean onlyThis) {
-		if(getWorld().isRemote)
-			return;
+    private void updateBlockAndNeighbors(boolean onlyThis)
+    {
+        if (getWorld().isRemote)
+            return;
 
-		markForUpdateNow();
+        markForUpdateNow();
 
-		if(!tankTiles.isEmpty() && !onlyThis) {
-			for(AbstractTankTile tile : tankTiles) {
-				if(tile == this) {
-					continue;
-				}
+        if (!tankTiles.isEmpty() && !onlyThis)
+        {
+            for (AbstractTankTile tile : tankTiles)
+            {
+                if (tile == this)
+                {
+                    continue;
+                }
 
-				tile.markForUpdateNow(2);
-			}
-		}
-	}
+                tile.markForUpdateNow(2);
+            }
+        }
+    }
 
-	private void updateComparatorOutput() {
-		if(this.lastComparatorOut != getComparatorOutput()) {
-			this.lastComparatorOut = getComparatorOutput();
-			if(isMaster()) {
-				for(AbstractTankValve otherValve : getTankTiles(AbstractTankValve.class)) {
-					getWorld().updateComparatorOutputLevel(otherValve.getPos(), otherValve.getBlockType());
-				}
-			}
-			getWorld().updateComparatorOutputLevel(getPos(), getBlockType());
-		}
-	}
+    private void updateComparatorOutput()
+    {
+        if (this.lastComparatorOut != getComparatorOutput())
+        {
+            this.lastComparatorOut = getComparatorOutput();
+            if (isMaster())
+            {
+                for (AbstractTankValve otherValve : getTankTiles(AbstractTankValve.class))
+                {
+                    getWorld().updateComparatorOutputLevel(otherValve.getPos(), otherValve.getBlockType());
+                }
+            }
+            getWorld().updateComparatorOutputLevel(getPos(), getBlockType());
+        }
+    }
 
-	@Override
-	public void markForUpdate() {
-		updateComparatorOutput();
+    @Override
+    public void markForUpdate()
+    {
+        updateComparatorOutput();
 
-		super.markForUpdate();
-	}
+        super.markForUpdate();
+    }
 
-	public boolean isMaster() {
-		return isMaster;
-	}
+    public boolean isMaster()
+    {
+        return isMaster;
+    }
 
-	@Override
-	public AbstractTankValve getMasterValve() {
-		return isMaster() ? this : super.getMasterValve();
-	}
+    @Override
+    public AbstractTankValve getMasterValve()
+    {
+        return isMaster() ? this : super.getMasterValve();
+    }
 
-	@Override
-	public String getTileName() {
-		if(this.tile_name.isEmpty()) {
-			setTileName(GenericUtil.getUniquePositionName(this));
-		}
+    @Override
+    public String getTileName()
+    {
+        if (this.tile_name.isEmpty())
+        {
+            setTileName(GenericUtil.getUniquePositionName(this));
+        }
 
-		return this.tile_name;
-	}
+        return this.tile_name;
+    }
 
-	@Override
-	public void setTileName(String name) {
-		this.tile_name = name;
-	}
+    @Override
+    public void setTileName(String name)
+    {
+        this.tile_name = name;
+    }
 
-	@Override
-	public EnumFacing getTileFacing() {
-		return this.tile_facing;
-	}
+    @Override
+    public EnumFacing getTileFacing()
+    {
+        return this.tile_facing;
+    }
 
-	@Override
-	public void setTileFacing(EnumFacing facing) {
-		this.tile_facing = facing;
-	}
+    @Override
+    public void setTileFacing(EnumFacing facing)
+    {
+        this.tile_facing = facing;
+    }
 
-	@Override
-	public void readFromNBT(NBTTagCompound tag) {
-		super.readFromNBT(tag);
+    @Override
+    public void readFromNBT(NBTTagCompound tag)
+    {
+        super.readFromNBT(tag);
 
-		isMaster = tag.getBoolean("master");
-		if(isMaster()) {
-			isValid = tag.getBoolean("isValid");
-			getTankConfig().readFromNBT(tag);
+        isMaster = tag.getBoolean("master");
+        if (isMaster())
+        {
+            isValid = tag.getBoolean("isValid");
+            getTankConfig().readFromNBT(tag);
 
-			if(getWorld() != null && getWorld().isRemote) {
-				if(isValid()) {
-					if(!FancyFluidStorage.tankManager.isValveInLists(getWorld(), this)) {
-						NetworkHandler.sendPacketToServer(new FFSPacket.Server.OnTankRequest(this));
-					}
-				}
-			}
-		}
+            if (getWorld() != null && getWorld().isRemote)
+            {
+                if (isValid())
+                {
+                    if (!FancyFluidStorage.tankManager.isValveInLists(getWorld(), this))
+                    {
+                        NetworkHandler.sendPacketToServer(new FFSPacket.Server.OnTankRequest(this));
+                    }
+                }
+            }
+        }
 
 //		if(tag.hasKey("bottomDiagF") && tag.hasKey("topDiagF")) {
 //			int[] bottomDiagF = tag.getIntArray("bottomDiagF");
@@ -590,63 +693,73 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 //			topDiagFrame = new BlockPos(topDiagF[0], topDiagF[1], topDiagF[2]);
 //		}
 
-		readTileNameFromNBT(tag);
-		readTileFacingFromNBT(tag);
-	}
+        readTileNameFromNBT(tag);
+        readTileFacingFromNBT(tag);
+    }
 
-	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-		tag.setBoolean("master", isMaster());
-		if(isMaster()) {
-			tag.setBoolean("isValid", isValid());
-			getTankConfig().writeToNBT(tag);
-		}
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound tag)
+    {
+        tag.setBoolean("master", isMaster());
+        if (isMaster())
+        {
+            tag.setBoolean("isValid", isValid());
+            getTankConfig().writeToNBT(tag);
+        }
 
 //		if(bottomDiagFrame != null && topDiagFrame != null) {
 //			tag.setIntArray("bottomDiagF", new int[]{bottomDiagFrame.getX(), bottomDiagFrame.getY(), bottomDiagFrame.getZ()});
 //			tag.setIntArray("topDiagF", new int[]{topDiagFrame.getX(), topDiagFrame.getY(), topDiagFrame.getZ()});
 //		}
 
-		saveTileNameToNBT(tag);
-		saveTileFacingToNBT(tag);
+        saveTileNameToNBT(tag);
+        saveTileFacingToNBT(tag);
 
-		super.writeToNBT(tag);
-		return tag;
-	}
+        super.writeToNBT(tag);
+        return tag;
+    }
 
 
-	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
-		return INFINITE_EXTENT_AABB;
-	}
+    @Override
+    public AxisAlignedBB getRenderBoundingBox()
+    {
+        return INFINITE_EXTENT_AABB;
+    }
 
-	public int fillFromContainer(FluidStack resource, boolean doFill) {
-		if(!canFillIncludingContainers(resource)) {
-			return 0;
-		}
+    public int fillFromContainer(FluidStack resource, boolean doFill)
+    {
+        if (!canFillIncludingContainers(resource))
+        {
+            return 0;
+        }
 
-		return getTankConfig().getFluidTank().fill(resource, doFill);
-	}
+        return getTankConfig().getFluidTank().fill(resource, doFill);
+    }
 
-	private boolean canFillIncludingContainers(FluidStack fluid) {
-		if(getTankConfig().getFluidStack() != null && !getTankConfig().getFluidStack().isFluidEqual(fluid)) {
-			return false;
-		}
+    private boolean canFillIncludingContainers(FluidStack fluid)
+    {
+        if (getTankConfig().getFluidStack() != null && !getTankConfig().getFluidStack().isFluidEqual(fluid))
+        {
+            return false;
+        }
 
-		return !(getTankConfig().isFluidLocked() && !getTankConfig().getLockedFluid().isFluidEqual(fluid));
-	}
+        return !(getTankConfig().isFluidLocked() && !getTankConfig().getLockedFluid().isFluidEqual(fluid));
+    }
 
-	public int getComparatorOutput() {
-		if(!isValid()) {
-			return 0;
-		}
+    public int getComparatorOutput()
+    {
+        if (!isValid())
+        {
+            return 0;
+        }
 
-		return MathHelper.floor(((float) this.getTankConfig().getFluidAmount() / this.getTankConfig().getFluidCapacity()) * 14.0F);
-	}
+        return MathHelper.floor(((float) this.getTankConfig().getFluidAmount() / this.getTankConfig().getFluidCapacity()) * 14.0F);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof AbstractTankValve && ((AbstractTankValve) obj).getPos().equals(getPos());
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj instanceof AbstractTankValve && ((AbstractTankValve) obj).getPos().equals(getPos());
 
-	}
+    }
 }
