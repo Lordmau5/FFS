@@ -18,9 +18,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.opengl.GL11;
+import reborncore.common.util.LogHelper;
 
 import java.util.List;
 
@@ -67,52 +69,59 @@ public class OverlayRenderHandler
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event)
     {
-        if (!Config.TANK_OVERLAY_RENDER)
+        try
         {
-            return;
-        }
-
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        if (lastPos == null)
-        {
-            return;
-        }
-
-        World world = player.getEntityWorld();
-        if (world == null)
-        {
-            return;
-        }
-
-        AbstractTankValve valve = null;
-
-        TileEntity tile = world.getTileEntity(lastPos);
-        if (tile != null && tile instanceof AbstractTankTile)
-        {
-            valve = ((AbstractTankTile) tile).getMasterValve();
-        } else
-        {
-            if (FancyFluidStorage.tankManager.isPartOfTank(world, lastPos))
+            if (!Config.TANK_OVERLAY_RENDER)
             {
-                valve = FancyFluidStorage.tankManager.getValveForBlock(world, lastPos);
+                return;
             }
-        }
 
-        if (valve == null || !valve.isValid())
+            EntityPlayer player = Minecraft.getMinecraft().player;
+            if (lastPos == null)
+            {
+                return;
+            }
+
+            World world = player.getEntityWorld();
+            if (world == null)
+            {
+                return;
+            }
+
+            AbstractTankValve valve = null;
+
+            TileEntity tile = world.getTileEntity(lastPos);
+            if (tile != null && tile instanceof AbstractTankTile)
+            {
+                valve = ((AbstractTankTile) tile).getMasterValve();
+            } else
+            {
+                if (FancyFluidStorage.tankManager.isPartOfTank(world, lastPos))
+                {
+                    valve = FancyFluidStorage.tankManager.getValveForBlock(world, lastPos);
+                }
+            }
+
+            if (valve == null || !valve.isValid())
+            {
+                return;
+            }
+
+            playerX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) event.getPartialTicks();
+            playerY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) event.getPartialTicks();
+            playerZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) event.getPartialTicks();
+
+            if (renderLayers == null)
+            {
+                renderLayers = BlockRenderLayer.values();
+            }
+
+            drawAll(player.getPosition(), valve, world);
+        }
+        catch (Exception e)
         {
-            return;
+            System.out.print(e.toString());
         }
-
-        playerX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) event.getPartialTicks();
-        playerY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) event.getPartialTicks();
-        playerZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) event.getPartialTicks();
-
-        if (renderLayers == null)
-        {
-            renderLayers = BlockRenderLayer.values();
-        }
-
-        drawAll(player.getPosition(), valve, world);
     }
 
     private void drawAll(BlockPos playerPos, AbstractTankValve valve, World world)
