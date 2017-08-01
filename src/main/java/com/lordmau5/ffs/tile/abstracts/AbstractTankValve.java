@@ -447,7 +447,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                                     return false;
                                 } else
                                 {
-                                    tempNewFluidStack.amount += otherFS.amount;
+//                                    tempNewFluidStack.amount += otherFS.amount;
+//                                    break;
                                 }
                             } else
                             {
@@ -493,9 +494,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     {
                         AbstractTankValve valve = (AbstractTankValve) tile;
 
-                        pos = valve.getPos();
-//						valve.valveHeightPosition = Math.abs(bottomDiagFrame.subtract(pos).getY());
-
                         valve.isMaster = false;
                         valve.setValvePos(getPos());
                         valve.setTankConfig(getTankConfig());
@@ -513,7 +511,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         setValid(true);
 
         FancyFluidStorage.tankManager.add(getWorld(), getPos(), getAirBlocks(), getFrameBlocks());
-//		NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBuild(this));
 
         return true;
     }
