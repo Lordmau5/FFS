@@ -21,7 +21,8 @@ public class GuiButtonLockFluid extends GuiButton
         this.state = state;
     }
 
-    public void drawButton(Minecraft mc, int mouseX, int mouseY)
+    @Override
+    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks)
     {
         if (this.visible)
         {

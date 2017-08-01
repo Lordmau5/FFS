@@ -24,7 +24,8 @@ public class GuiToggle extends GuiButton
         this.textColor = textColor;
     }
 
-    public void drawButton(Minecraft mc, int mouseX, int mouseY)
+    @Override
+    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks)
     {
         if (this.visible)
         {
