@@ -10,7 +10,6 @@ import net.minecraftforge.common.property.IUnlistedProperty;
  */
 class PropertyModel implements IUnlistedProperty<IBakedModel>
 {
-
     private final String name;
 
     public PropertyModel(String name)

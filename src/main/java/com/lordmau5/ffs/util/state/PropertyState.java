@@ -10,7 +10,6 @@ import net.minecraftforge.common.property.IUnlistedProperty;
  */
 class PropertyState implements IUnlistedProperty<IBlockState>
 {
-
     private final String name;
 
     public PropertyState(String name)

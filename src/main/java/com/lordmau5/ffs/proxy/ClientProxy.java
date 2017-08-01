@@ -18,7 +18,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
  */
 public class ClientProxy extends CommonProxy
 {
-
     public void preInit()
     {
         ClientRegistry.bindTileEntitySpecialRenderer(AbstractTankValve.class, new ValveRenderer());
@@ -27,7 +26,6 @@ public class ClientProxy extends CommonProxy
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(FancyFluidStorage.blockTankComputer), 0, new ModelResourceLocation("ffs:block_tank_computer", "inventory"));
 
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(FancyFluidStorage.blockMetaphaser), 0, new ModelResourceLocation("ffs:block_metaphaser", "inventory"));
-
 
         ModelLoader.setCustomModelResourceLocation(FancyFluidStorage.itemTit, 0, new ModelResourceLocation(FancyFluidStorage.itemTit.getRegistryName().toString()));
         ModelLoader.setCustomModelResourceLocation(FancyFluidStorage.itemTitEgg, 0, new ModelResourceLocation(FancyFluidStorage.itemTitEgg.getRegistryName().toString()));

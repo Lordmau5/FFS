@@ -232,6 +232,10 @@ public class GuiValve extends GuiScreen
     @Override
     public void drawScreen(int x, int y, float partialTicks)
     {
+        this.drawDefaultBackground();
+
+        super.drawScreen(mouseX, mouseY, partialTicks);
+
         this.mouseX = x;
         this.mouseY = y;
 

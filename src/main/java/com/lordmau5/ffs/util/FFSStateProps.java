@@ -7,8 +7,6 @@ import net.minecraft.block.properties.PropertyBool;
  */
 public class FFSStateProps
 {
-
     public static final PropertyBool TILE_VALID = PropertyBool.create("tile_valid");
     public static final PropertyBool TILE_MASTER = PropertyBool.create("tile_master");
-
 }

@@ -12,13 +12,12 @@ import org.lwjgl.opengl.GL11;
  */
 class GuiButtonLockFluid extends GuiButton
 {
-
     private static final ResourceLocation toggleTexture = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
     private boolean state = false;
 
     GuiButtonLockFluid(int x, int y, boolean state)
     {
-        super(0, x, y, 7, 8, "LockButton");
+        super(0, x, y, 8, 8, "");
         this.state = state;
     }
 

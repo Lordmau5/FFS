@@ -10,7 +10,7 @@ import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.proxy.GuiHandler;
 import com.lordmau5.ffs.proxy.IProxy;
 import com.lordmau5.ffs.util.GenericUtil;
-import com.lordmau5.ffs.util.ModBlocksAndItems;
+import com.lordmau5.ffs.init.ModBlocksAndItems;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -69,7 +69,7 @@ public class FancyFluidStorage
         NetworkRegistry.INSTANCE.registerGuiHandler(FancyFluidStorage.INSTANCE, new GuiHandler());
         NetworkHandler.registerChannels(event.getSide());
 
-//        TOPCompatibility.register();
+        TOPCompatibility.register();
 
         PROXY.preInit();
     }

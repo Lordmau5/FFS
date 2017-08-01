@@ -32,7 +32,6 @@ import java.util.*;
  */
 public class GenericUtil
 {
-
     private static List<Block> blacklistedBlocks;
 
     private static Map<World, ForgeChunkManager.Ticket> chunkloadTicketMap;

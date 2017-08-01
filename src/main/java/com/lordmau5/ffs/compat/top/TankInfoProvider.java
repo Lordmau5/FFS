@@ -24,7 +24,7 @@ public class TankInfoProvider implements IProbeInfoProvider
     @Override
     public String getID()
     {
-        return "ffstank";
+        return FancyFluidStorage.MODID;
     }
 
     @Override
@@ -34,7 +34,8 @@ public class TankInfoProvider implements IProbeInfoProvider
         if (iBlockState.getBlock() instanceof BlockMetaphaser)
         {
             valve = (AbstractTankValve) world.getTileEntity(iProbeHitData.getPos());
-        } else if (FancyFluidStorage.tankManager.isPartOfTank(world, iProbeHitData.getPos()))
+        }
+        else if (FancyFluidStorage.tankManager.isPartOfTank(world, iProbeHitData.getPos()))
         {
             valve = FancyFluidStorage.tankManager.getValveForBlock(world, iProbeHitData.getPos());
         }
