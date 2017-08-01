@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.block.valves;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.client.CreativeTabFFS;
 import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.FFSStateProps;
 import net.minecraft.block.state.BlockStateContainer;
@@ -19,6 +20,7 @@ public class BlockFluidValve extends AbstractBlockValve
     public BlockFluidValve()
     {
         super("block_fluid_valve");
+        setCreativeTab(CreativeTabFFS.INSTANCE);
     }
 
     @Override

@@ -30,7 +30,6 @@ import java.util.List;
  */
 public class GuiValve extends GuiScreen
 {
-
     private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_valve.png");
     private static final ResourceLocation tex_no_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
     private GuiButtonLockFluid lockFluidButton;

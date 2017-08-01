@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.block.valves;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.client.CreativeTabFFS;
 import com.lordmau5.ffs.tile.valves.TileEntityMetaphaser;
 import com.lordmau5.ffs.util.FFSStateProps;
 import net.minecraft.block.state.BlockStateContainer;
@@ -15,10 +16,10 @@ import net.minecraft.world.World;
  */
 public class BlockMetaphaser extends AbstractBlockValve
 {
-
     public BlockMetaphaser()
     {
         super("block_metaphaser");
+        setCreativeTab(CreativeTabFFS.INSTANCE);
     }
 
     @Override

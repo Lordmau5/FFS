@@ -135,9 +135,7 @@ public abstract class FFSPacket
             private int dimensionId;
             private BlockPos valvePos;
 
-            public OnTankBreak()
-            {
-            }
+            public OnTankBreak(){}
 
             public OnTankBreak(AbstractTankValve valve)
             {
@@ -178,9 +176,7 @@ public abstract class FFSPacket
             private BlockPos pos;
             private String name;
 
-            public UpdateTileName()
-            {
-            }
+            public UpdateTileName(){}
 
             public UpdateTileName(AbstractTankTile tankTile, String name)
             {
@@ -257,9 +253,7 @@ public abstract class FFSPacket
         {
             private BlockPos pos;
 
-            public OnTankRequest()
-            {
-            }
+            public OnTankRequest(){}
 
             public OnTankRequest(AbstractTankValve valve)
             {

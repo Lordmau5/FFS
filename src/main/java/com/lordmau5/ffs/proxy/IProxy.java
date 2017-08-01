@@ -7,7 +7,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
  */
 public interface IProxy
 {
-
     void preInit();
 
     void init(FMLInitializationEvent event);

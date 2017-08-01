@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.block.tanktiles;
 
 import com.lordmau5.ffs.FancyFluidStorage;
+import com.lordmau5.ffs.client.CreativeTabFFS;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.tanktiles.TileEntityTankComputer;
@@ -26,18 +27,15 @@ import net.minecraft.world.World;
  */
 public class BlockTankComputer extends Block
 {
-
     public BlockTankComputer()
     {
         super(Material.IRON);
         setUnlocalizedName(FancyFluidStorage.MODID + ".block_tank_computer");
         setRegistryName("block_tank_computer");
-        setCreativeTab(CreativeTabs.REDSTONE);
-        setHardness(5.0F); // Same hardness as an iron block
-        setResistance(10.0F); // Same as hardness
-
-        setDefaultState(blockState.getBaseState()
-                .withProperty(FFSStateProps.TILE_VALID, false));
+        setCreativeTab(CreativeTabFFS.INSTANCE);
+        setHardness(5.0F);
+        setResistance(10.0F);
+        setDefaultState(blockState.getBaseState().withProperty(FFSStateProps.TILE_VALID, false));
     }
 
     @Override

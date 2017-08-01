@@ -11,8 +11,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 
-//import com.lordmau5.ffs.compat.waila.WailaPluginTank;
-
 /**
  * Created by Dustin on 29.06.2015.
  */
@@ -34,10 +32,6 @@ public class ClientProxy extends CommonProxy
     public void init(FMLInitializationEvent event)
     {
         MinecraftForge.EVENT_BUS.register(new OverlayRenderHandler());
-
-//		if(Compatibility.INSTANCE.isWAILALoaded) {
-//			WailaPluginTank.init();
-//		}
 
         super.init(event);
     }

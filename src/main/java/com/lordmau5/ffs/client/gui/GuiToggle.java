@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL11;
 /**
  * Created by Max on 7/6/2015.
  */
-class GuiToggle extends GuiButton
+public class GuiToggle extends GuiButton
 {
     private static final ResourceLocation toggleTexture = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
     private boolean state = false;

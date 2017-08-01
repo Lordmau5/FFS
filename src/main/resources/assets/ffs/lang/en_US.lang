@@ -1,3 +1,5 @@
+itemGroup.ffs=Fancy Fluid Storage
+
 tile.ffs.block_fluid_valve.name=Tank Valve
 tile.ffs.block_metaphaser.name=Metaphaser
 tile.ffs.block_tank_computer.name=Tank Computer

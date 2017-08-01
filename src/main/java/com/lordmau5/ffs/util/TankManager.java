@@ -21,7 +21,6 @@ import java.util.*;
  */
 public class TankManager
 {
-
     private final WeakHashMap<Integer, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
     private final WeakHashMap<Integer, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
     private final WeakHashMap<Integer, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
@@ -29,10 +28,7 @@ public class TankManager
 
     private final WeakHashMap<Integer, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
 
-    public TankManager()
-    {
-
-    }
+    public TankManager() {}
 
     private int getDimensionSafely(World world)
     {
