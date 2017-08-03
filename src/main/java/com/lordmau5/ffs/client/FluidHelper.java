@@ -3,7 +3,6 @@ package com.lordmau5.ffs.client;
 /**
  * Created by Dustin on 10.07.2015.
  */
-
 import com.google.common.collect.Maps;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -14,9 +13,9 @@ import net.minecraftforge.fluids.FluidRegistry;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public final class FluidHelper
 {
-
     public static final ResourceLocation BLOCK_TEXTURE = TextureMap.LOCATION_BLOCKS_TEXTURE;
     private static final Map<FluidType, Map<Fluid, TextureAtlasSprite>> textureMap = Maps.newHashMap();
     private static TextureAtlasSprite missingIcon = null;

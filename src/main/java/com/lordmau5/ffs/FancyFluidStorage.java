@@ -1,7 +1,5 @@
 package com.lordmau5.ffs;
 
-import com.lordmau5.ffs.client.FluidHelper;
-import com.lordmau5.ffs.client.OverlayRenderHandler;
 import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.compat.top.TOPCompatibility;
 import com.lordmau5.ffs.config.Config;
@@ -14,8 +12,6 @@ import com.lordmau5.ffs.init.ModBlocksAndItems;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.world.WorldEvent;
@@ -28,8 +24,6 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Created by Dustin on 28.06.2015.
@@ -91,15 +85,6 @@ public class FancyFluidStorage
             if (tickets != null && tickets.size() > 0)
                 GenericUtil.initChunkLoadTicket(world, tickets.get(0));
         });
-    }
-
-    @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    public void loadTextures(TextureStitchEvent.Pre event)
-    {
-        FluidHelper.initTextures(event.getMap());
-
-        OverlayRenderHandler.overlayTexture = event.getMap().registerSprite(new ResourceLocation("ffs", "blocks/overlay/tank_overlay_anim"));
     }
 
     @SubscribeEvent

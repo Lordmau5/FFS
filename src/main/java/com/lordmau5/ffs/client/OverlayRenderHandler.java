@@ -6,6 +6,7 @@ import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -29,6 +30,8 @@ import java.util.List;
 /**
  * Created by Dustin on 14.02.2016.
  */
+//TODO rewrite all of this
+@Deprecated
 public class OverlayRenderHandler
 {
 
@@ -69,59 +72,52 @@ public class OverlayRenderHandler
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event)
     {
-        try
+        if (!Config.TANK_OVERLAY_RENDER)
         {
-            if (!Config.TANK_OVERLAY_RENDER)
-            {
-                return;
-            }
-
-            EntityPlayer player = Minecraft.getMinecraft().player;
-            if (lastPos == null)
-            {
-                return;
-            }
-
-            World world = player.getEntityWorld();
-            if (world == null)
-            {
-                return;
-            }
-
-            AbstractTankValve valve = null;
-
-            TileEntity tile = world.getTileEntity(lastPos);
-            if (tile != null && tile instanceof AbstractTankTile)
-            {
-                valve = ((AbstractTankTile) tile).getMasterValve();
-            } else
-            {
-                if (FancyFluidStorage.tankManager.isPartOfTank(world, lastPos))
-                {
-                    valve = FancyFluidStorage.tankManager.getValveForBlock(world, lastPos);
-                }
-            }
-
-            if (valve == null || !valve.isValid())
-            {
-                return;
-            }
-
-            playerX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) event.getPartialTicks();
-            playerY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) event.getPartialTicks();
-            playerZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) event.getPartialTicks();
-
-            if (renderLayers == null)
-            {
-                renderLayers = BlockRenderLayer.values();
-            }
-
-            drawAll(player.getPosition(), valve, world);
+            return;
         }
-        catch (Exception e)
+
+        EntityPlayer player = Minecraft.getMinecraft().player;
+        if (lastPos == null)
         {
-            System.out.print(e.toString());
+            return;
         }
+
+        World world = player.getEntityWorld();
+        if (world == null)
+        {
+            return;
+        }
+
+        AbstractTankValve valve = null;
+
+        TileEntity tile = world.getTileEntity(lastPos);
+        if (tile != null && tile instanceof AbstractTankTile)
+        {
+            valve = ((AbstractTankTile) tile).getMasterValve();
+        } else
+        {
+            if (FancyFluidStorage.tankManager.isPartOfTank(world, lastPos))
+            {
+                valve = FancyFluidStorage.tankManager.getValveForBlock(world, lastPos);
+            }
+        }
+
+        if (valve == null || !valve.isValid())
+        {
+            return;
+        }
+
+        playerX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) event.getPartialTicks();
+        playerY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) event.getPartialTicks();
+        playerZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) event.getPartialTicks();
+
+        if (renderLayers == null)
+        {
+            renderLayers = BlockRenderLayer.values();
+        }
+
+        drawAll(player.getPosition(), valve, world);
     }
 
     private void drawAll(BlockPos playerPos, AbstractTankValve valve, World world)
@@ -139,7 +135,7 @@ public class OverlayRenderHandler
 
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder vb = tess.getBuffer();
-        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        vb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         vb.setTranslation(-playerX, -playerY, -playerZ);
 
         for (BlockPos pos : tankBlocks)
@@ -153,7 +149,10 @@ public class OverlayRenderHandler
                 if (state.getBlock().canRenderInLayer(state, layer))
                 {
                     ForgeHooksClient.setRenderLayer(layer);
-                    mc.getBlockRendererDispatcher().renderBlockDamage(state, pos, overlayTexture, world);
+
+                    final BlockRendererDispatcher blockRendererDispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
+                    //TODO try to fix this
+//                    blockRendererDispatcher.renderBlockDamage(state, pos, overlayTexture, world);
                 }
             }
         }
