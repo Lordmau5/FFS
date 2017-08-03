@@ -1,24 +1,19 @@
 package com.lordmau5.ffs.client.gui;
 
 import com.lordmau5.ffs.FancyFluidStorage;
-import com.lordmau5.ffs.client.FluidHelper;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
-import com.lordmau5.ffs.util.GenericUtil;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
+import reborncore.client.guibuilder.GuiBuilder;
 
 import java.awt.*;
 import java.io.IOException;
@@ -28,6 +23,7 @@ import java.util.List;
 /**
  * Created by Dustin on 05.07.2015.
  */
+//TODO GuiBuilder all of this
 public class GuiValve extends GuiScreen
 {
     private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_valve.png");
@@ -44,6 +40,7 @@ public class GuiValve extends GuiScreen
     private final int ySize_NoValve = 128;
     private int left = 0, top = 0;
     private int mouseX, mouseY;
+    GuiBuilder builder = new GuiBuilder(GuiBuilder.defaultTextureSheet);
 
     public GuiValve(AbstractTankTile tile, boolean isNonValve)
     {
@@ -149,7 +146,8 @@ public class GuiValve extends GuiScreen
 
     private void drawGUIValve(int x, int y, float partialTicks)
     {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GL11.glPushMatrix();
+
         this.mc.renderEngine.bindTexture(tex_valve);
         this.drawTexturedModalRect(this.left, this.top, 0, 0, this.xSize_Valve, this.ySize_Valve);
 
@@ -161,13 +159,7 @@ public class GuiValve extends GuiScreen
 
         this.drawCenteredString(this.fontRenderer, fluid, this.left + (this.xSize_Valve / 2), this.top + 6, 16777215);
 
-        if (this.valve.getTankConfig().getFluidStack() != null)
-        {
-            this.drawFluid(this.left + 12, this.top + 38);
-
-            this.mc.renderEngine.bindTexture(tex_no_valve);
-            drawTexturedModalRect(this.left + 20, this.top + 27, 97, 0, 4, 87);
-        }
+        builder.drawTank(this, this.valve.getTankConfig().getFluidTank(), this.left + 20, this.top + 27, 0, 49, 89, mouseX, mouseY);
 
         // call to super to draw buttons and other such fancy things
         super.drawScreen(x, y, partialTicks);
@@ -177,22 +169,18 @@ public class GuiValve extends GuiScreen
             drawTileName(this.left, this.top);
         }
 
-        if (this.mouseX >= this.left + 62 && this.mouseX < this.left + 62 + 8 &&
-                this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8)
+        if (this.mouseX >= this.left + 62 && this.mouseX < this.left + 62 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8)
         {
             lockedFluidHoveringText();
-        } else
-        {
-            if (this.valve.getTankConfig().getFluidStack() != null)
-            {
-                fluidHoveringText(fluid, 20, 27, 89);
-            }
         }
+
+        GL11.glPopMatrix();
     }
 
     private void drawGUINoValve(int x, int y, float partialTicks)
     {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GL11.glPushMatrix();
+
         this.mc.renderEngine.bindTexture(tex_no_valve);
         this.drawTexturedModalRect(this.left, this.top, 0, 0, this.xSize_NoValve, this.ySize_NoValve);
 
@@ -204,28 +192,17 @@ public class GuiValve extends GuiScreen
 
         this.drawCenteredString(this.fontRenderer, fluid, this.left + (this.xSize_NoValve / 2), this.top + 6, 16777215);
 
-        if (this.valve.getTankConfig().getFluidStack() != null)
-        {
-            this.drawFluid(this.left + 16, this.top + 38);
-
-            this.mc.renderEngine.bindTexture(tex_no_valve);
-            drawTexturedModalRect(this.left + 24, this.top + 27, 97, 0, 4, 87);
-        }
+        builder.drawTank(this, this.valve.getTankConfig().getFluidTank(), this.left + 23, this.top + 27, 0, 49, 89, mouseX, mouseY);
 
         // call to super to draw buttons and other such fancy things
         super.drawScreen(x, y, partialTicks);
 
-        if (this.mouseX >= this.left + 66 && this.mouseX < this.left + 66 + 8 &&
-                this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8)
+        if (this.mouseX >= this.left + 66 && this.mouseX < this.left + 66 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8)
         {
             lockedFluidHoveringText();
-        } else
-        {
-            if (this.valve.getTankConfig().getFluidStack() != null)
-            {
-                fluidHoveringText(fluid, 24, 27, 89);
-            }
         }
+
+        GL11.glPopMatrix();
     }
 
     @Override
@@ -241,7 +218,8 @@ public class GuiValve extends GuiScreen
         if (isNonValve)
         {
             drawGUINoValve(x, y, partialTicks);
-        } else
+        }
+        else
         {
             drawGUIValve(x, y, partialTicks);
         }
@@ -269,21 +247,6 @@ public class GuiValve extends GuiScreen
         GlStateManager.popMatrix();
     }
 
-    private void fluidHoveringText(String fluid, int tank_x, int tank_y, int height)
-    {
-        if (this.mouseX >= this.left + tank_x && this.mouseX < this.left + tank_x + 48 &&
-                this.mouseY >= this.top + tank_y && this.mouseY < this.top + tank_y + height)
-        {
-            List<String> texts = new ArrayList<>();
-            texts.add(fluid);
-            texts.add(ChatFormatting.GRAY + (GenericUtil.intToFancyNumber(this.valve.getTankConfig().getFluidAmount()) + " / " + GenericUtil.intToFancyNumber(this.valve.getTankConfig().getFluidCapacity())) + " mB");
-
-            GlStateManager.pushMatrix();
-            drawHoveringText(texts, this.mouseX, this.mouseY, this.fontRenderer);
-            GlStateManager.popMatrix();
-        }
-    }
-
     public void actionPerformed(GuiButton btn)
     {
         if (btn == this.lockFluidButton)
@@ -294,47 +257,5 @@ public class GuiValve extends GuiScreen
             toggle.setState(this.masterValve.getTankConfig().isFluidLocked());
             NetworkHandler.sendPacketToServer(new FFSPacket.Server.UpdateFluidLock(this.masterValve));
         }
-    }
-
-    private void drawFluid(int x, int y)
-    {
-        TextureAtlasSprite fluidIcon = FluidHelper.getFluidTexture(this.valve.getTankConfig().getFluidStack().getFluid());
-        if (fluidIcon == null)
-        {
-            return;
-        }
-
-        this.mc.getTextureManager().bindTexture(FluidHelper.BLOCK_TEXTURE);
-
-        int height = Math.min(89, (int) Math.ceil((float) this.valve.getTankConfig().getFluidAmount() / (float) this.valve.getTankConfig().getFluidCapacity() * 89));
-
-        int loopHeight = (int) Math.floor(height / 16);
-        for (int iX = 0; iX < 3; iX++)
-        {
-            for (int iY = 3; iY > 3 - loopHeight; iY--)
-            {
-                drawTexturedModalRect(x + 8 + (iX * 16), y + 30 + ((iY - 1) * 16), fluidIcon, 16, 16);
-            }
-        }
-
-        // Render the one furthest at the top
-        for (int iX = 0; iX < 3; iX++)
-        {
-            drawFluid(x + 8 + (iX * 16), y - 82 + ((9 - loopHeight) * 16) + (16 - height % 16), fluidIcon, 16, 16, height % 16);
-        }
-    }
-
-    private void drawFluid(int xCoord, int yCoord, TextureAtlasSprite textureSprite, int widthIn, int heightIn, int heightAdjustment)
-    {
-        double heightAdjust = (textureSprite.getMaxV() - textureSprite.getMinV()) / heightIn * heightAdjustment;
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.getBuffer();
-        vertexBuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
-        vertexBuffer.pos((double) (xCoord), (double) (yCoord + heightAdjustment), (double) this.zLevel).tex((double) textureSprite.getMinU(), (double) textureSprite.getMaxV()).endVertex();
-        vertexBuffer.pos((double) (xCoord + widthIn), (double) (yCoord + heightAdjustment), (double) this.zLevel).tex((double) textureSprite.getMaxU(), (double) textureSprite.getMaxV()).endVertex();
-        vertexBuffer.pos((double) (xCoord + widthIn), (double) (yCoord), (double) this.zLevel).tex((double) textureSprite.getMaxU(), (double) textureSprite.getMaxV() - heightAdjust).endVertex();
-        vertexBuffer.pos((double) (xCoord), (double) (yCoord), (double) this.zLevel).tex((double) textureSprite.getMinU(), (double) textureSprite.getMaxV() - heightAdjust).endVertex();
-        tessellator.draw();
     }
 }
