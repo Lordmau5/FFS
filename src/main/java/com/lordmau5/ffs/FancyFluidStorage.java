@@ -37,7 +37,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 /**
  * Created by Dustin on 28.06.2015.
  */
-@Mod(modid = FancyFluidStorage.MODID, name = "Fancy Fluid Storage", dependencies = "after:waila;after:OpenComputers;after:ComputerCraft;after:chisel", guiFactory = "com.lordmau5.ffs.config.GuiFactoryFFS")
+@Mod(modid = FancyFluidStorage.MODID, name = "Fancy Fluid Storage", dependencies = "after:waila;after:opencomputers;after:computercraft;after:chisel", guiFactory = "com.lordmau5.ffs.config.GuiFactoryFFS")
 public class FancyFluidStorage {
 
 	public static final String MODID = "ffs";
