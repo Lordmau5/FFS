@@ -12,28 +12,22 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 /**
  * Created by Lordmau5 on 08.10.2016.
  */
-public enum CNBCompatibility
-{
+public enum CNBCompatibility {
 
     INSTANCE;
 
-    public boolean isValid(World world, BlockPos pos, EnumFacing facing)
-    {
+    public boolean isValid(World world, BlockPos pos, EnumFacing facing) {
         IChiselAndBitsAPI cbAPI = CNBAPIAccess.apiInstance;
-        if (cbAPI.isBlockChiseled(world, pos))
-        {
-            try
-            {
+        if ( cbAPI.isBlockChiseled(world, pos) ) {
+            try {
                 Walls p = Walls.valueOf(facing.toString().toUpperCase());
 
                 IBitAccess bitAccess = cbAPI.getBitAccess(world, pos);
                 BitQueryResults results = bitAccess.queryBitRange(p.posA, p.posB);
-                if (results.solid == 256)
-                {
+                if ( results.solid == 256 ) {
                     return true;
                 }
-            } catch (APIExceptions.CannotBeChiseled cannotBeChiseled)
-            {
+            } catch (APIExceptions.CannotBeChiseled cannotBeChiseled) {
                 cannotBeChiseled.printStackTrace();
             }
         }
@@ -41,38 +35,31 @@ public enum CNBCompatibility
     }
 
     @SubscribeEvent
-    public void onBlockBitModified(EventBlockBitPostModification event)
-    {
-        if (event.getWorld() == null)
-        {
+    public void onBlockBitModified(EventBlockBitPostModification event) {
+        if ( event.getWorld() == null ) {
             return;
         }
 
-        if (event.getWorld().isRemote)
-        {
+        if ( event.getWorld().isRemote ) {
             return;
         }
 
-        if (!FancyFluidStorage.tankManager.isPartOfTank(event.getWorld(), event.getPos()))
-        {
+        if ( !FancyFluidStorage.tankManager.isPartOfTank(event.getWorld(), event.getPos()) ) {
             return;
         }
 
         AbstractTankValve valve = FancyFluidStorage.tankManager.getValveForBlock(event.getWorld(), event.getPos());
-        if (valve == null || !valve.isValid())
-        {
+        if ( valve == null || !valve.isValid() ) {
             return;
         }
 
         EnumFacing inside = GenericUtil.getInsideForTankFrame(valve.getAirBlocks(), event.getPos());
-        if (!isValid(event.getWorld(), event.getPos(), inside))
-        {
+        if ( !isValid(event.getWorld(), event.getPos(), inside) ) {
             valve.breakTank();
         }
     }
 
-    private enum Walls
-    {
+    private enum Walls {
         DOWN(new BlockPos(0, 0, 0), new BlockPos(15, 0, 15)),
         UP(new BlockPos(0, 15, 0), new BlockPos(15, 15, 15)),
         NORTH(new BlockPos(0, 0, 0), new BlockPos(15, 15, 0)),
@@ -83,8 +70,7 @@ public enum CNBCompatibility
         private final BlockPos posA;
         private final BlockPos posB;
 
-        Walls(BlockPos a, BlockPos b)
-        {
+        Walls(BlockPos a, BlockPos b) {
             this.posA = a;
             this.posB = b;
         }

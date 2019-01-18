@@ -1,0 +1,13 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"group": "ffs",
+	"ingredients": [
+		{
+			"item": "ffs:block_fluid_valve"
+		}
+	],
+	"result": {
+		"item": "ffs:item_tit_egg",
+		"count": 1
+	}
+}

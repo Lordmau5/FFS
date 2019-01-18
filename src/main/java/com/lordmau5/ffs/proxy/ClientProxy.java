@@ -14,23 +14,18 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 /**
  * Created by Dustin on 29.06.2015.
  */
-public class ClientProxy extends CommonProxy
-{
-    public void preInit()
-    {
+public class ClientProxy extends CommonProxy {
+    public void preInit() {
         ClientRegistry.bindTileEntitySpecialRenderer(AbstractTankValve.class, new ValveRenderer());
 
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(FancyFluidStorage.blockFluidValve), 0, new ModelResourceLocation("ffs:block_fluid_valve", "inventory"));
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(FancyFluidStorage.blockTankComputer), 0, new ModelResourceLocation("ffs:block_tank_computer", "inventory"));
 
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(FancyFluidStorage.blockMetaphaser), 0, new ModelResourceLocation("ffs:block_metaphaser", "inventory"));
-
         ModelLoader.setCustomModelResourceLocation(FancyFluidStorage.itemTit, 0, new ModelResourceLocation(FancyFluidStorage.itemTit.getRegistryName().toString()));
         ModelLoader.setCustomModelResourceLocation(FancyFluidStorage.itemTitEgg, 0, new ModelResourceLocation(FancyFluidStorage.itemTitEgg.getRegistryName().toString()));
     }
 
-    public void init(FMLInitializationEvent event)
-    {
+    public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(new OverlayRenderHandler());
 
         super.init(event);

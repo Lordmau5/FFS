@@ -8,12 +8,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 /**
  * Created by Lordmau5 on 12.11.2016.
  */
-public class OnTankBreak extends SimpleChannelInboundHandler<FFSPacket.Client.OnTankBreak>
-{
+public class OnTankBreak extends SimpleChannelInboundHandler<FFSPacket.Client.OnTankBreak> {
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FFSPacket.Client.OnTankBreak msg) throws Exception
-    {
+    protected void channelRead0(ChannelHandlerContext ctx, FFSPacket.Client.OnTankBreak msg) throws Exception {
         FancyFluidStorage.tankManager.remove(msg.getDimension(), msg.getValvePos());
     }
 }

@@ -8,36 +8,30 @@ import net.minecraftforge.common.property.IUnlistedProperty;
  * <p>
  * Created by Dustin on 11.01.2016.
  */
-class PropertyModel implements IUnlistedProperty<IBakedModel>
-{
+class PropertyModel implements IUnlistedProperty<IBakedModel> {
     private final String name;
 
-    public PropertyModel(String name)
-    {
+    public PropertyModel(String name) {
         this.name = name;
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public boolean isValid(IBakedModel value)
-    {
+    public boolean isValid(IBakedModel value) {
         return true;
     }
 
     @Override
-    public Class<IBakedModel> getType()
-    {
+    public Class<IBakedModel> getType() {
         return IBakedModel.class;
     }
 
     @Override
-    public String valueToString(IBakedModel value)
-    {
+    public String valueToString(IBakedModel value) {
         return value.toString();
     }
 

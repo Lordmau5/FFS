@@ -6,8 +6,7 @@ import net.minecraftforge.fml.common.ModAPIManager;
 /**
  * Created by Dustin on 02.06.2016.
  */
-public enum Compatibility
-{
+public enum Compatibility {
 
     INSTANCE;
 
@@ -19,8 +18,7 @@ public enum Compatibility
     public boolean isTOPLoaded;
     public boolean isCNBLoaded;
 
-    public void init()
-    {
+    public void init() {
         isCoFHLoaded = ModAPIManager.INSTANCE.hasAPI("CoFHAPI|energy");
         isIC2Loaded = ModAPIManager.INSTANCE.hasAPI("IC2API");
 
@@ -28,11 +26,6 @@ public enum Compatibility
         isOpenComputersLoaded = Loader.isModLoaded("OpenComputers");
         isTOPLoaded = Loader.isModLoaded("theoneprobe");
         isCNBLoaded = Loader.isModLoaded("chiselsandbits");
-    }
-
-    public boolean isEnergyModSupplied()
-    {
-        return isCoFHLoaded || isIC2Loaded;
     }
 
 }

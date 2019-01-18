@@ -1,0 +1,24 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"group": "ffs",
+	"pattern": [
+		"IGI",
+		"GBG",
+		"IGI"
+	],
+	"key": {
+		"I": {
+			"item": "#IRON_INGOT"
+		},
+		"G": {
+			"item": "#IRON_BARS"
+		},
+		"B": {
+			"item": "#REDSTONE_BLOCK"
+		}
+	},
+	"result": {
+		"item": "ffs:block_tank_computer",
+		"count": 1
+	}
+}

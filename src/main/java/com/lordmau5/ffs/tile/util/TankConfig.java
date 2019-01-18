@@ -9,83 +9,68 @@ import net.minecraftforge.fluids.FluidTank;
 /**
  * Created by Dustin on 20.01.2016.
  */
-public class TankConfig
-{
+public class TankConfig {
 
     private final InternalFluidTank fluidTank;
 
     private FluidStack lockedFluid;
 
-    public TankConfig(AbstractTankValve valve)
-    {
+    public TankConfig(AbstractTankValve valve) {
         AbstractTankValve valve1 = valve;
         this.fluidTank = new InternalFluidTank(valve);
     }
 
-    private void resetVariables()
-    {
+    private void resetVariables() {
         lockedFluid = null;
 
         fluidTank.setFluid(null);
         fluidTank.setCapacity(0);
     }
 
-    public void lockFluid(FluidStack lockedFluid)
-    {
+    public void lockFluid(FluidStack lockedFluid) {
         this.lockedFluid = lockedFluid;
     }
 
-    public void unlockFluid()
-    {
+    public void unlockFluid() {
         this.lockedFluid = null;
     }
 
-    public boolean isFluidLocked()
-    {
+    public boolean isFluidLocked() {
         return this.lockedFluid != null;
     }
 
-    public FluidStack getLockedFluid()
-    {
+    public FluidStack getLockedFluid() {
         return this.lockedFluid;
     }
 
-    public FluidTank getFluidTank()
-    {
+    public FluidTank getFluidTank() {
         return this.fluidTank;
     }
 
-    public FluidStack getFluidStack()
-    {
+    public FluidStack getFluidStack() {
         return this.fluidTank.getFluid();
     }
 
-    public void setFluidStack(FluidStack fluidStack)
-    {
+    public void setFluidStack(FluidStack fluidStack) {
         this.fluidTank.setFluid(fluidStack);
     }
 
-    public int getFluidCapacity()
-    {
+    public int getFluidCapacity() {
         return this.fluidTank.getCapacity();
     }
 
-    public void setFluidCapacity(int fluidCapacity)
-    {
+    public void setFluidCapacity(int fluidCapacity) {
         this.fluidTank.setCapacity(fluidCapacity);
     }
 
-    public int getFluidAmount()
-    {
+    public int getFluidAmount() {
         return this.fluidTank.getFluidAmount();
     }
 
-    public void readFromNBT(NBTTagCompound mainTag)
-    {
+    public void readFromNBT(NBTTagCompound mainTag) {
         resetVariables();
 
-        if (!mainTag.hasKey("tankConfig"))
-        {
+        if ( !mainTag.hasKey("tankConfig") ) {
             return;
         }
 
@@ -93,11 +78,9 @@ public class TankConfig
 
         NBTTagCompound tag = mainTag.getCompoundTag("tankConfig");
 
-        if (tag.hasKey("lockedFluid"))
-        {
+        if ( tag.hasKey("lockedFluid") ) {
             NBTBase base = tag.getTag("lockedFluid");
-            if (base instanceof NBTTagCompound)
-            {
+            if ( base instanceof NBTTagCompound ) {
                 lockFluid(FluidStack.loadFluidStackFromNBT((NBTTagCompound) base));
             }
         }
@@ -105,12 +88,10 @@ public class TankConfig
 
     }
 
-    public void writeToNBT(NBTTagCompound mainTag)
-    {
+    public void writeToNBT(NBTTagCompound mainTag) {
         NBTTagCompound tag = new NBTTagCompound();
 
-        if (getLockedFluid() != null)
-        {
+        if ( getLockedFluid() != null ) {
             NBTTagCompound fluidTag = new NBTTagCompound();
             getLockedFluid().writeToNBT(fluidTag);
 

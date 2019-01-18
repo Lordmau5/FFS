@@ -13,16 +13,13 @@ import java.util.List;
 /**
  * Created by Lordmau5 on 10.11.2016.
  */
-class GuiConfigFFS extends GuiConfig
-{
-    public GuiConfigFFS(GuiScreen parentScreen)
-    {
+class GuiConfigFFS extends GuiConfig {
+    public GuiConfigFFS(GuiScreen parentScreen) {
         super(parentScreen, getElements(), FancyFluidStorage.MODID, false, false, TextFormatting.WHITE + "FFS");
         titleLine2 = TextFormatting.GOLD + "" + TextFormatting.ITALIC + "The configuration screen ...";
     }
 
-    private static List<IConfigElement> getElements()
-    {
+    private static List<IConfigElement> getElements() {
         return new ConfigElement(Config.config.getCategory(Configuration.CATEGORY_CLIENT)).getChildElements();
     }
 

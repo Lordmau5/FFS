@@ -25,11 +25,9 @@ import java.util.Random;
 /**
  * Created by Dustin on 08.02.2016.
  */
-public abstract class AbstractBlockValve extends Block
-{
+public abstract class AbstractBlockValve extends Block {
 
-    protected AbstractBlockValve(String name)
-    {
+    protected AbstractBlockValve(String name) {
         super(Material.IRON);
 
         setUnlocalizedName(FancyFluidStorage.MODID + "." + name);
@@ -48,17 +46,14 @@ public abstract class AbstractBlockValve extends Block
     public abstract IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos);
 
     @Override
-    public boolean hasTileEntity(IBlockState state)
-    {
+    public boolean hasTileEntity(IBlockState state) {
         return true;
     }
 
     @Override
-    public void onBlockExploded(World world, BlockPos pos, Explosion explosion)
-    {
+    public void onBlockExploded(World world, BlockPos pos, Explosion explosion) {
         TileEntity tile = world.getTileEntity(pos);
-        if (tile != null && tile instanceof AbstractTankValve)
-        {
+        if ( tile != null && tile instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
             valve.breakTank();
         }
@@ -66,13 +61,10 @@ public abstract class AbstractBlockValve extends Block
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state)
-    {
-        if (!world.isRemote)
-        {
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        if ( !world.isRemote ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            if (valve.isValid())
-            {
+            if ( valve.isValid() ) {
                 valve.breakTank();
             }
         }
@@ -81,22 +73,17 @@ public abstract class AbstractBlockValve extends Block
     }
 
     @Override
-    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest)
-    {
-        if (!world.isRemote)
-        {
+    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
+        if ( !world.isRemote ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            if (valve.getTankConfig().getFluidAmount() > 0)
-            {
+            if ( valve.getTankConfig().getFluidAmount() > 0 ) {
                 ItemStack offHand = player.getHeldItemOffhand();
-                if (offHand.getItem() != FancyFluidStorage.itemTit)
-                {
+                if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
                     GenericUtil.sendMessageToClient(player, "This valve still contains fluids! If you want to break it, please hold the T.I.T. in the off-hand and break it again!");
                     return false;
                 }
             }
-            if (valve.isValid())
-            {
+            if ( valve.isValid() ) {
                 valve.breakTank();
             }
         }
@@ -105,59 +92,49 @@ public abstract class AbstractBlockValve extends Block
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
-    {
-        if (player.isSneaking()) return false;
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if ( player.isSneaking() ) return false;
 
         AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
 
-        if (valve.isValid())
-        {
-            if (GenericUtil.isFluidContainer(player.getHeldItemMainhand()))
-            {
+        if ( valve.isValid() ) {
+            if ( GenericUtil.isFluidContainer(player.getHeldItemMainhand()) ) {
                 return GenericUtil.fluidContainerHandler(world, valve, player);
             }
 
             player.openGui(FancyFluidStorage.INSTANCE, 0, world, pos.getX(), pos.getY(), pos.getZ());
             return true;
-        } else
-        {
+        } else {
             valve.buildTank_player(player, facing.getOpposite());
         }
         return true;
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune)
-    {
+    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
         return Item.getItemFromBlock(this);
     }
 
     @Override
-    public int getMetaFromState(IBlockState state)
-    {
+    public int getMetaFromState(IBlockState state) {
         return 0;
     }
 
     @Override
-    public boolean shouldSideBeRendered(IBlockState state, IBlockAccess worldIn, BlockPos pos, EnumFacing side)
-    {
+    public boolean shouldSideBeRendered(IBlockState state, IBlockAccess worldIn, BlockPos pos, EnumFacing side) {
         IBlockState otherState = worldIn.getBlockState(pos.offset(side));
         return otherState != getBlockState();
     }
 
     @Override
-    public boolean hasComparatorInputOverride(IBlockState state)
-    {
+    public boolean hasComparatorInputOverride(IBlockState state) {
         return true;
     }
 
     @Override
-    public int getComparatorInputOverride(IBlockState state, World world, BlockPos pos)
-    {
+    public int getComparatorInputOverride(IBlockState state, World world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
-        if (te instanceof AbstractTankValve)
-        {
+        if ( te instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) te;
             return valve.getComparatorOutput();
         }
@@ -165,8 +142,7 @@ public abstract class AbstractBlockValve extends Block
     }
 
     @Override
-    public boolean canCreatureSpawn(IBlockState state, IBlockAccess world, BlockPos pos, EntityLiving.SpawnPlacementType type)
-    {
+    public boolean canCreatureSpawn(IBlockState state, IBlockAccess world, BlockPos pos, EntityLiving.SpawnPlacementType type) {
         return false;
     }
 

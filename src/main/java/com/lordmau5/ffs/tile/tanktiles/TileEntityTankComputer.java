@@ -7,7 +7,6 @@ package com.lordmau5.ffs.tile.tanktiles;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.interfaces.IFacingTile;
 import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
-import com.lordmau5.ffs.tile.valves.TileEntityMetaphaser;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.common.Optional;
@@ -17,61 +16,30 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Optional.Interface(iface = "dan200.computercraft.api.peripheral.IPeripheral", modid = "ComputerCraft")
-public class TileEntityTankComputer extends AbstractTankTile implements IFacingTile
-{ //}, IPeripheral {
+public class TileEntityTankComputer extends AbstractTankTile implements IFacingTile { //}, IPeripheral {
 
-    public List<TileEntityFluidValve> getValves()
-    {
+    public List<TileEntityFluidValve> getValves() {
         return getMasterValve().getAllValves().stream().filter(p -> p instanceof TileEntityFluidValve).map(p -> (TileEntityFluidValve) p).collect(Collectors.toList());
     }
 
-    private List<TileEntityMetaphaser> getMetaphasers()
-    {
-        return getMasterValve().getTankTiles(TileEntityMetaphaser.class);
-    }
-
     // Used by CC and OC
-    public List<TileEntityFluidValve> getValvesByName(String name)
-    {
+    public List<TileEntityFluidValve> getValvesByName(String name) {
         List<TileEntityFluidValve> valves = new ArrayList<>();
-        if (getValves().isEmpty())
-        {
+        if ( getValves().isEmpty() ) {
             return valves;
         }
 
-        for (TileEntityFluidValve valve : getValves())
-        {
-            if (valve.getTileName().toLowerCase().equals(name.toLowerCase()))
-            {
+        for (TileEntityFluidValve valve : getValves()) {
+            if ( valve.getTileName().toLowerCase().equals(name.toLowerCase()) ) {
                 valves.add(valve);
             }
         }
         return valves;
     }
 
-    public List<TileEntityMetaphaser> getMetaphasersByName(String name)
-    {
-        List<TileEntityMetaphaser> metaphasers = new ArrayList<>();
-        if (getMetaphasers().isEmpty())
-        {
-            return metaphasers;
-        }
-
-        for (TileEntityMetaphaser valve : getMetaphasers())
-        {
-            if (valve.getTileName().toLowerCase().equals(name.toLowerCase()))
-            {
-                metaphasers.add(valve);
-            }
-        }
-        return metaphasers;
-    }
-
     @Override
-    public EnumFacing getTileFacing()
-    {
-        if (getMasterValve() == null || !getMasterValve().isValid())
-        {
+    public EnumFacing getTileFacing() {
+        if ( getMasterValve() == null || !getMasterValve().isValid() ) {
             return null;
         }
 
@@ -79,29 +47,25 @@ public class TileEntityTankComputer extends AbstractTankTile implements IFacingT
     }
 
     @Override
-    public void setTileFacing(EnumFacing facing)
-    {
+    public void setTileFacing(EnumFacing facing) {
         this.tile_facing = facing;
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound tag)
-    {
+    public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         readTileFacingFromNBT(tag);
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound tag)
-    {
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         saveTileFacingToNBT(tag);
         return tag;
     }
 
     // ComputerCraft
-    public String[] methodNames()
-    {
+    public String[] methodNames() {
         return new String[]{"getFluidName", "getFluidAmount", "getFluidCapacity", "setAutoOutput", "doesAutoOutput", "isFluidLocked", "getLockedFluid", "toggleFluidLock"};
     }
 

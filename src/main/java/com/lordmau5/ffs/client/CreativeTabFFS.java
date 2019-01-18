@@ -7,18 +7,15 @@ import net.minecraft.item.ItemStack;
 /**
  * Created by Gigabit101 on 01/08/2017.
  */
-public class CreativeTabFFS extends CreativeTabs
-{
+public class CreativeTabFFS extends CreativeTabs {
     public static CreativeTabFFS INSTANCE = new CreativeTabFFS();
 
-    public CreativeTabFFS()
-    {
+    public CreativeTabFFS() {
         super(FancyFluidStorage.MODID);
     }
 
     @Override
-    public ItemStack getTabIconItem()
-    {
+    public ItemStack getTabIconItem() {
         return new ItemStack(FancyFluidStorage.blockFluidValve);
     }
 }

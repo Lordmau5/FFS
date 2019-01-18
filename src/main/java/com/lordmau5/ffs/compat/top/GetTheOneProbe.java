@@ -9,12 +9,10 @@ import javax.annotation.Nullable;
 /**
  * Created by Gigabit101 on 31/07/2017.
  */
-public class GetTheOneProbe implements Function<ITheOneProbe, Void>
-{
+public class GetTheOneProbe implements Function<ITheOneProbe, Void> {
     @Nullable
     @Override
-    public Void apply(ITheOneProbe iTheOneProbe)
-    {
+    public Void apply(ITheOneProbe iTheOneProbe) {
         iTheOneProbe.registerProvider(new TankInfoProvider());
         return null;
     }

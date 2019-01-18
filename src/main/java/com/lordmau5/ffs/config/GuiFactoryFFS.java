@@ -9,30 +9,25 @@ import java.util.Set;
 /**
  * Created by Lordmau5 on 10.11.2016.
  */
-class GuiFactoryFFS implements IModGuiFactory
-{
+class GuiFactoryFFS implements IModGuiFactory {
 
     @Override
-    public void initialize(Minecraft minecraftInstance)
-    {
+    public void initialize(Minecraft minecraftInstance) {
 
     }
 
     @Override
-    public boolean hasConfigGui()
-    {
+    public boolean hasConfigGui() {
         return false;
     }
 
     @Override
-    public GuiScreen createConfigGui(GuiScreen parentScreen)
-    {
+    public GuiScreen createConfigGui(GuiScreen parentScreen) {
         return new GuiConfigFFS(parentScreen);
     }
 
     @Override
-    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories()
-    {
+    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
         return null;
     }
 

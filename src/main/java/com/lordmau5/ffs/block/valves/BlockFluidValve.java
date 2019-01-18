@@ -14,33 +14,27 @@ import net.minecraft.world.World;
 /**
  * Created by Dustin on 28.06.2015.
  */
-public class BlockFluidValve extends AbstractBlockValve
-{
+public class BlockFluidValve extends AbstractBlockValve {
 
-    public BlockFluidValve()
-    {
+    public BlockFluidValve() {
         super("block_fluid_valve");
         setCreativeTab(CreativeTabFFS.INSTANCE);
     }
 
     @Override
-    public void setDefaultState()
-    {
+    public void setDefaultState() {
         setDefaultState(blockState.getBaseState().withProperty(FFSStateProps.TILE_VALID, false).withProperty(FFSStateProps.TILE_MASTER, false));
     }
 
     @Override
-    public BlockStateContainer createBlockState()
-    {
+    public BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, FFSStateProps.TILE_VALID, FFSStateProps.TILE_MASTER);
     }
 
     @Override
-    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos)
-    {
+    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
         TileEntity tile = world.getTileEntity(pos);
-        if (tile != null && tile instanceof TileEntityFluidValve)
-        {
+        if ( tile != null && tile instanceof TileEntityFluidValve ) {
             TileEntityFluidValve valve = (TileEntityFluidValve) tile;
 
             state = state.withProperty(FFSStateProps.TILE_VALID, valve.isValid())
@@ -50,8 +44,7 @@ public class BlockFluidValve extends AbstractBlockValve
     }
 
     @Override
-    public TileEntity createTileEntity(World world, IBlockState state)
-    {
+    public TileEntity createTileEntity(World world, IBlockState state) {
         return new TileEntityFluidValve();
     }
 }

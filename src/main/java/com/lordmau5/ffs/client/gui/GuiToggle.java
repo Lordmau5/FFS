@@ -11,24 +11,20 @@ import org.lwjgl.opengl.GL11;
 /**
  * Created by Max on 7/6/2015.
  */
-public class GuiToggle extends GuiButton
-{
+public class GuiToggle extends GuiButton {
     private static final ResourceLocation toggleTexture = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
     private boolean state = false;
     private int textColor = 16777215;
 
-    GuiToggle(int x, int y, String title, boolean state, int textColor)
-    {
+    GuiToggle(int x, int y, String title, boolean state, int textColor) {
         super(0, x, y, 16, 8, title);
         this.state = state;
         this.textColor = textColor;
     }
 
     @Override
-    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks)
-    {
-        if (this.visible)
-        {
+    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+        if ( this.visible ) {
             FontRenderer fontrenderer = mc.fontRenderer;
             mc.getTextureManager().bindTexture(toggleTexture);
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -42,23 +38,19 @@ public class GuiToggle extends GuiButton
         }
     }
 
-    public boolean mousePressed(Minecraft mc, int mouseX, int mouseY)
-    {
+    public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
         boolean onMe = super.mousePressed(mc, mouseX, mouseY);
-        if (onMe)
-        {
+        if ( onMe ) {
             this.state = !this.state;
         }
         return onMe;
     }
 
-    public boolean getState()
-    {
+    public boolean getState() {
         return this.state;
     }
 
-    public void setState(boolean state)
-    {
+    public void setState(boolean state) {
         this.state = state;
     }
 

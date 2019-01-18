@@ -1,8 +1,11 @@
 package com.lordmau5.ffs.util;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -11,10 +14,33 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  */
 
 @SideOnly(Side.CLIENT)
-public class ClientRenderHelper
-{
-    public static void putTexturedQuad(BufferBuilder renderer, TextureAtlasSprite sprite, double x, double y, double z, double w, double h, double d, EnumFacing face, int color, int brightness, boolean flowing)
-    {
+public class ClientRenderHelper {
+    public static final ResourceLocation MC_BLOCK_SHEET = new ResourceLocation("textures/atlas/blocks.png");
+
+    public static void setBlockTextureSheet() {
+
+        Minecraft.getMinecraft().renderEngine.bindTexture(MC_BLOCK_SHEET);
+    }
+
+    public static void setGLColorFromInt(int color) {
+
+        float red = (float) (color >> 16 & 255) / 255.0F;
+        float green = (float) (color >> 8 & 255) / 255.0F;
+        float blue = (float) (color & 255) / 255.0F;
+        GlStateManager.color(red, green, blue, 1.0F);
+    }
+
+    public static TextureAtlasSprite getTexture(String location) {
+
+        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location);
+    }
+
+    public static TextureAtlasSprite getTexture(ResourceLocation location) {
+
+        return getTexture(location.toString());
+    }
+
+    public static void putTexturedQuad(BufferBuilder renderer, TextureAtlasSprite sprite, double x, double y, double z, double w, double h, double d, EnumFacing face, int color, int brightness, boolean flowing) {
         int l1 = brightness >> 0x10 & 0xFFFF;
         int l2 = brightness & 0xFFFF;
         int a = color >> 24 & 0xFF;
@@ -24,10 +50,8 @@ public class ClientRenderHelper
         putTexturedQuad(renderer, sprite, x, y, z, w, h, d, face, r, g, b, a, l1, l2, flowing);
     }
 
-    private static void putTexturedQuad(BufferBuilder renderer, TextureAtlasSprite sprite, double x, double y, double z, double w, double h, double d, EnumFacing face, int r, int g, int b, int a, int light1, int light2, boolean flowing)
-    {
-        if (sprite == null)
-        {
+    private static void putTexturedQuad(BufferBuilder renderer, TextureAtlasSprite sprite, double x, double y, double z, double w, double h, double d, EnumFacing face, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
+        if ( sprite == null ) {
             return;
         }
         double minU;
@@ -35,8 +59,7 @@ public class ClientRenderHelper
         double minV;
         double maxV;
         double size = 16f;
-        if (flowing)
-        {
+        if ( flowing ) {
             size = 8f;
         }
         double x2 = x + w;
@@ -44,23 +67,21 @@ public class ClientRenderHelper
         double z2 = z + d;
         double xt1 = x % 1d;
         double xt2 = xt1 + w;
-        while (xt2 > 1f) xt2 -= 1f;
+        while ( xt2 > 1f ) xt2 -= 1f;
         double yt1 = y % 1d;
         double yt2 = yt1 + h;
-        while (yt2 > 1f) yt2 -= 1f;
+        while ( yt2 > 1f ) yt2 -= 1f;
         double zt1 = z % 1d;
         double zt2 = zt1 + d;
-        while (zt2 > 1f) zt2 -= 1f;
+        while ( zt2 > 1f ) zt2 -= 1f;
 
-        if (flowing)
-        {
+        if ( flowing ) {
             double tmp = 1d - yt1;
             yt1 = 1d - yt2;
             yt2 = tmp;
         }
 
-        switch (face)
-        {
+        switch (face) {
             case DOWN:
             case UP:
                 minU = sprite.getInterpolatedU(xt1 * size);
@@ -89,8 +110,7 @@ public class ClientRenderHelper
                 maxV = sprite.getMaxV();
         }
 
-        switch (face)
-        {
+        switch (face) {
             case DOWN:
                 renderer.pos(x, y, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
                 renderer.pos(x2, y, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
@@ -130,8 +150,7 @@ public class ClientRenderHelper
         }
     }
 
-    public static int changeAlpha(int origColor, int userInputAlpha)
-    {
+    public static int changeAlpha(int origColor, int userInputAlpha) {
         origColor = origColor & 0x00ffffff; //drop the previous alpha value
         return (userInputAlpha << 24) | origColor; //add the one the user inputted
     }
