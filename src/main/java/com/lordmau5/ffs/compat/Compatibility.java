@@ -13,7 +13,6 @@ public enum Compatibility
 
     public boolean isCoFHLoaded;
     public boolean isIC2Loaded;
-    public boolean isTeslaLoaded;
 
     public boolean isWAILALoaded;
     public boolean isOpenComputersLoaded;
@@ -24,7 +23,6 @@ public enum Compatibility
     {
         isCoFHLoaded = ModAPIManager.INSTANCE.hasAPI("CoFHAPI|energy");
         isIC2Loaded = ModAPIManager.INSTANCE.hasAPI("IC2API");
-        isTeslaLoaded = ModAPIManager.INSTANCE.hasAPI("Tesla|API");
 
         isWAILALoaded = Loader.isModLoaded("Waila");
         isOpenComputersLoaded = Loader.isModLoaded("OpenComputers");
@@ -34,7 +32,7 @@ public enum Compatibility
 
     public boolean isEnergyModSupplied()
     {
-        return isCoFHLoaded || isIC2Loaded || isTeslaLoaded;
+        return isCoFHLoaded || isIC2Loaded;
     }
 
 }

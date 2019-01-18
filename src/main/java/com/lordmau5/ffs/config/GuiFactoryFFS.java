@@ -27,13 +27,7 @@ class GuiFactoryFFS implements IModGuiFactory
     @Override
     public GuiScreen createConfigGui(GuiScreen parentScreen)
     {
-        return null;
-    }
-
-    @Override
-    public Class<? extends GuiScreen> mainConfigGuiClass()
-    {
-        return GuiConfigFFS.class;
+        return new GuiConfigFFS(parentScreen);
     }
 
     @Override
@@ -42,9 +36,4 @@ class GuiFactoryFFS implements IModGuiFactory
         return null;
     }
 
-    @Override
-    public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element)
-    {
-        return null;
-    }
 }

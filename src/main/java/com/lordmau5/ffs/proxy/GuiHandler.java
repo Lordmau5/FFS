@@ -1,5 +1,6 @@
 package com.lordmau5.ffs.proxy;
 
+import com.lordmau5.ffs.client.gui.ContainerValue;
 import com.lordmau5.ffs.client.gui.GuiValve;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,7 +17,12 @@ public class GuiHandler implements IGuiHandler
     @Override
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z)
     {
-        return null;
+	    TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
+	    if (tile == null || !(tile instanceof AbstractTankTile))
+	    {
+		    return null;
+	    }
+        return new ContainerValue(tile);
     }
 
     @Override
@@ -28,6 +34,6 @@ public class GuiHandler implements IGuiHandler
             return null;
         }
 
-        return new GuiValve((AbstractTankTile) tile, ID == 1);
+        return new GuiValve(player, (AbstractTankTile) tile, ID == 1);
     }
 }
