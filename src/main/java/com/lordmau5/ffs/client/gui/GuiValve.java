@@ -8,12 +8,11 @@ import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
-import reborncore.client.guibuilder.GuiBuilder;
+import reborncore.client.gui.builder.GuiBase;
 
 import java.awt.*;
 import java.io.IOException;
@@ -24,7 +23,7 @@ import java.util.List;
  * Created by Dustin on 05.07.2015.
  */
 //TODO GuiBuilder all of this
-public class GuiValve extends GuiScreen
+public class GuiValve extends GuiBase
 {
     private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_valve.png");
     private static final ResourceLocation tex_no_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
@@ -40,11 +39,10 @@ public class GuiValve extends GuiScreen
     private final int ySize_NoValve = 128;
     private int left = 0, top = 0;
     private int mouseX, mouseY;
-    GuiBuilder builder = new GuiBuilder(GuiBuilder.defaultTextureSheet);
 
-    public GuiValve(AbstractTankTile tile, boolean isNonValve)
+    public GuiValve(EntityPlayer player, AbstractTankTile tile, boolean isNonValve)
     {
-        super();
+        super(player, tile, new ContainerValue(tile));
 
         this.isNonValve = isNonValve;
 
@@ -146,7 +144,7 @@ public class GuiValve extends GuiScreen
 
     private void drawGUIValve(int x, int y, float partialTicks)
     {
-        GL11.glPushMatrix();
+        GlStateManager.pushMatrix();
 
         this.mc.renderEngine.bindTexture(tex_valve);
         this.drawTexturedModalRect(this.left, this.top, 0, 0, this.xSize_Valve, this.ySize_Valve);
@@ -159,27 +157,28 @@ public class GuiValve extends GuiScreen
 
         this.drawCenteredString(this.fontRenderer, fluid, this.left + (this.xSize_Valve / 2), this.top + 6, 16777215);
 
-        builder.drawTank(this, this.valve.getTankConfig().getFluidTank(), this.left + 20, this.top + 27, 0, 49, 89, mouseX, mouseY);
+	    builder.drawFluid(this, this.valve.getTankConfig().getFluidTank().getFluid(), this.left + 20, this.top + 27, 48, 89, this.valve.getTankConfig().getFluidCapacity());
+        //builder.drawTank(this, this.left + 20, this.top + 27, mouseX, mouseY, this.valve.getTankConfig().getFluidTank().getFluid(), 89, this.valve.getTankConfig().getFluidTank().getFluid() == null, Layer.BACKGROUND);
 
         // call to super to draw buttons and other such fancy things
-        super.drawScreen(x, y, partialTicks);
+        super.basicDrawScreen(x, y, partialTicks);
 
         if (this.tile instanceof INameableTile)
         {
             drawTileName(this.left, this.top);
         }
 
-        if (this.mouseX >= this.left + 62 && this.mouseX < this.left + 62 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8)
-        {
-            lockedFluidHoveringText();
-        }
+	    if(isPointInRegion(10, 45, 50, 89, x, y))
+	    {
+		    lockedFluidHoveringText();
+	    }
 
-        GL11.glPopMatrix();
+	    GlStateManager.popMatrix();
     }
 
     private void drawGUINoValve(int x, int y, float partialTicks)
     {
-        GL11.glPushMatrix();
+	    GlStateManager.pushMatrix();
 
         this.mc.renderEngine.bindTexture(tex_no_valve);
         this.drawTexturedModalRect(this.left, this.top, 0, 0, this.xSize_NoValve, this.ySize_NoValve);
@@ -192,26 +191,21 @@ public class GuiValve extends GuiScreen
 
         this.drawCenteredString(this.fontRenderer, fluid, this.left + (this.xSize_NoValve / 2), this.top + 6, 16777215);
 
-        builder.drawTank(this, this.valve.getTankConfig().getFluidTank(), this.left + 23, this.top + 27, 0, 49, 89, mouseX, mouseY);
+	    builder.drawFluid(this, this.valve.getTankConfig().getFluidTank().getFluid(), this.left + 24, this.top + 27, 48, 89, this.valve.getTankConfig().getFluidCapacity());
 
         // call to super to draw buttons and other such fancy things
-        super.drawScreen(x, y, partialTicks);
+        super.basicDrawScreen(x, y, partialTicks);
 
-        if (this.mouseX >= this.left + 66 && this.mouseX < this.left + 66 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8)
-        {
-            lockedFluidHoveringText();
-        }
-
-        GL11.glPopMatrix();
+	    if(isPointInRegion(62, 45, 50, 89, x, y))
+	    {
+		    lockedFluidHoveringText();
+	    }
+	    GlStateManager.popMatrix();
     }
 
     @Override
     public void drawScreen(int x, int y, float partialTicks)
     {
-        this.drawDefaultBackground();
-
-        super.drawScreen(mouseX, mouseY, partialTicks);
-
         this.mouseX = x;
         this.mouseY = y;
 
@@ -223,9 +217,23 @@ public class GuiValve extends GuiScreen
         {
             drawGUIValve(x, y, partialTicks);
         }
+
+	    this.renderHoveredToolTip(x, y);
     }
 
-    private void drawTileName(int x, int y)
+	@Override
+	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
+	{
+
+	}
+
+	@Override
+	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY)
+	{
+
+	}
+
+	private void drawTileName(int x, int y)
     {
         int length = this.fontRenderer.getStringWidth("Tile Name");
         this.fontRenderer.drawString(ChatFormatting.BLACK + "Tile Name", x + 86 + (length / 2), y + 90, Color.white.getRGB());

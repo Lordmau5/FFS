@@ -11,7 +11,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 
@@ -73,7 +73,7 @@ repositories {
 }
 
 dependencies {
-    deobfCompile  'net.industrial-craft:industrialcraft-2:2.8.7-ex112'
+    deobfCompile  'net.industrial-craft:industrialcraft-2:2.8.108-ex112'
 
     //deobfCompile "team.chisel:Chisel:MC${chisel_version}"
 
@@ -81,15 +81,11 @@ dependencies {
 
     //deobfCompile "mcp.mobius.waila:Hwyla:${hwyla_version}"
 
-    compile "net.darkhax.tesla:Tesla-1.12:1.0.59:deobf"
-
     deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.11-5"
 
-    deobfCompile ('RebornCore:RebornCore-1.12:+:universal'){
+    deobfCompile ('RebornCore:RebornCore-1.12.2:+:universal'){
         transitive = false
     }
-
-    compile "cofh:RedstoneFlux:1.12-2.0.0.+:deobf"
 }
 
 if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version"

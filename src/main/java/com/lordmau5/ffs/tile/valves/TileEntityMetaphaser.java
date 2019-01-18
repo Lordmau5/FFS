@@ -7,12 +7,10 @@ package com.lordmau5.ffs.tile.valves;
 import cofh.redstoneflux.api.IEnergyProvider;
 import cofh.redstoneflux.api.IEnergyReceiver;
 import com.lordmau5.ffs.FancyFluidStorage;
-import com.lordmau5.ffs.compat.Capabilities;
 import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.compat.energy.eu.MetaphaserEU;
 import com.lordmau5.ffs.compat.energy.forgeEnergy.MetaphaserForgeEnergy;
 import com.lordmau5.ffs.compat.energy.rf.MetaphaserRF;
-import com.lordmau5.ffs.compat.energy.tesla.MetaphaserTesla;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import ic2.api.energy.tile.IEnergyAcceptor;
 import ic2.api.energy.tile.IEnergyEmitter;
@@ -45,17 +43,11 @@ public class TileEntityMetaphaser extends AbstractTankValve implements
 
     public double ic2Overflow = 0.0d;
     public boolean addedToEnet = false;
-    private MetaphaserTesla teslaContainer;
     private final MetaphaserForgeEnergy forgeEnergyContainer;
 
     public TileEntityMetaphaser()
     {
         super();
-
-        if (Compatibility.INSTANCE.isTeslaLoaded)
-        {
-            teslaContainer = new MetaphaserTesla(this);
-        }
 
         forgeEnergyContainer = new MetaphaserForgeEnergy(this);
     }
@@ -79,10 +71,6 @@ public class TileEntityMetaphaser extends AbstractTankValve implements
         if (Compatibility.INSTANCE.isIC2Loaded && !addedToEnet)
             MetaphaserEU.INSTANCE.load(this);
 
-        if (Compatibility.INSTANCE.isTeslaLoaded)
-        {
-            teslaContainer.outputToTile();
-        }
         if (Compatibility.INSTANCE.isCoFHLoaded)
         {
             MetaphaserRF.INSTANCE.outputToTile(this);
@@ -92,7 +80,7 @@ public class TileEntityMetaphaser extends AbstractTankValve implements
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing)
     {
-        return capability == CapabilityEnergy.ENERGY || capability == Capabilities.Tesla.RECEIVER || capability == Capabilities.Tesla.PROVIDER || capability == Capabilities.Tesla.HOLDER || super.hasCapability(capability, facing);
+        return capability == CapabilityEnergy.ENERGY || super.hasCapability(capability, facing);
 
     }
 
@@ -103,11 +91,6 @@ public class TileEntityMetaphaser extends AbstractTankValve implements
         if (capability == CapabilityEnergy.ENERGY)
         {
             return (T) forgeEnergyContainer;
-        }
-
-        if (capability == Capabilities.Tesla.RECEIVER || capability == Capabilities.Tesla.PROVIDER || capability == Capabilities.Tesla.HOLDER)
-        {
-            return (T) teslaContainer;
         }
 
         return super.getCapability(capability, facing);
