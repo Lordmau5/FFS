@@ -20,6 +20,7 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
 import java.util.Random;
 
 /**
@@ -46,6 +47,36 @@ public abstract class AbstractBlockValve extends Block {
     public abstract IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos);
 
     @Override
+    public float getBlockHardness(IBlockState blockState, World worldIn, BlockPos pos) {
+        TileEntity tile = worldIn.getTileEntity(pos);
+        if (tile instanceof AbstractTankValve) {
+            AbstractTankValve valve = (AbstractTankValve) tile;
+            if (valve.isValid() && valve.getTankConfig().getFluidStack() != null) {
+                return 20.0F;
+            }
+        }
+        return 5.0F;
+    }
+
+    @Override
+    public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
+        if (worldIn.isRemote) {
+            TileEntity tile = worldIn.getTileEntity(pos);
+            if (tile instanceof AbstractTankValve) {
+                AbstractTankValve valve = (AbstractTankValve) tile;
+                if ( valve.isValid() && valve.getTankConfig().getFluidStack() != null ) {
+                    ItemStack offHand = playerIn.getHeldItemOffhand();
+                    if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
+                        GenericUtil.sendMessageToClient(playerIn, "This valve still contains fluids! If you want to break it, please hold the T.I.T. in the off-hand and break it again!");
+                    }
+                }
+            }
+        }
+
+        super.onBlockClicked(worldIn, pos, playerIn);
+    }
+
+    @Override
     public boolean hasTileEntity(IBlockState state) {
         return true;
     }
@@ -55,7 +86,9 @@ public abstract class AbstractBlockValve extends Block {
         TileEntity tile = world.getTileEntity(pos);
         if ( tile instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            valve.breakTank();
+            if (valve != null && valve.isValid()) {
+                valve.breakTank();
+            }
         }
         super.onBlockDestroyedByExplosion(world, pos, explosion);
     }
@@ -74,19 +107,16 @@ public abstract class AbstractBlockValve extends Block {
 
     @Override
     public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
-        if ( !world.isRemote ) {
-            AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            if (valve != null) {
-                if ( valve.getTankConfig().getFluidAmount() > 0 ) {
-                    ItemStack offHand = player.getHeldItemOffhand();
-                    if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
-                        GenericUtil.sendMessageToClient(player, "This valve still contains fluids! If you want to break it, please hold the T.I.T. in the off-hand and break it again!");
-                        return false;
-                    }
+        AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
+        if (valve != null) {
+            if ( valve.getTankConfig().getFluidStack() != null ) {
+                ItemStack offHand = player.getHeldItemOffhand();
+                if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
+                    return false;
                 }
-                if ( valve.isValid() ) {
-                    valve.breakTank();
-                }
+            }
+            if ( !world.isRemote && valve.isValid() ) {
+                valve.breakTank();
             }
         }
 
@@ -104,7 +134,10 @@ public abstract class AbstractBlockValve extends Block {
 
         if ( valve.isValid() ) {
             if ( GenericUtil.isFluidContainer(player.getHeldItemMainhand()) ) {
-                return GenericUtil.fluidContainerHandler(world, valve, player);
+                if (GenericUtil.fluidContainerHandler(world, valve, player)) {
+                    valve.markForUpdateNow();
+                    return true;
+                }
             }
 
             player.openGui(FancyFluidStorage.INSTANCE, 0, world, pos.getX(), pos.getY(), pos.getZ());
@@ -123,12 +156,6 @@ public abstract class AbstractBlockValve extends Block {
     @Override
     public int getMetaFromState(IBlockState state) {
         return 0;
-    }
-
-    @Override
-    public boolean shouldSideBeRendered(IBlockState state, IBlockAccess worldIn, BlockPos pos, EnumFacing side) {
-        IBlockState otherState = worldIn.getBlockState(pos.offset(side));
-        return otherState != getBlockState();
     }
 
     @Override

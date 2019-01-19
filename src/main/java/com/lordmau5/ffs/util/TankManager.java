@@ -3,11 +3,14 @@ package com.lordmau5.ffs.util;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -148,6 +151,21 @@ public class TankManager {
         int dimensionId = getDimensionSafely(world);
 
         return frameBlockToValve.get(dimensionId).containsKey(pos) || airBlockToValve.get(dimensionId).containsKey(pos);
+    }
+
+    @SubscribeEvent
+    public void entityJoinWorld(EntityJoinWorldEvent event) {
+        if (event.getWorld() == null || event.getEntity() == null) {
+            return;
+        }
+
+        if ( !(event.getEntity() instanceof EntityCreature) ) {
+            return;
+        }
+
+        if (isPartOfTank(event.getWorld(), event.getEntity().getPosition())) {
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent
