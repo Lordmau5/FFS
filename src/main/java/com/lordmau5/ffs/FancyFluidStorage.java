@@ -2,7 +2,6 @@ package com.lordmau5.ffs;
 
 import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.compat.top.TOPCompatibility;
-import com.lordmau5.ffs.config.Config;
 import com.lordmau5.ffs.init.ModBlocksAndItems;
 import com.lordmau5.ffs.init.ModRecipes;
 import com.lordmau5.ffs.network.NetworkHandler;
@@ -15,7 +14,6 @@ import net.minecraft.item.Item;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -27,7 +25,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 /**
  * Created by Dustin on 28.06.2015.
  */
-@Mod(modid = FancyFluidStorage.MODID, name = "Fancy Fluid Storage", dependencies = "after:waila;after:OpenComputers;after:ComputerCraft;after:chisel", guiFactory = "com.lordmau5.ffs.config.GuiFactoryFFS")
+@Mod(modid = FancyFluidStorage.MODID, name = "Fancy Fluid Storage", dependencies = "after:waila")
 public class FancyFluidStorage {
     public static final String MODID = "ffs";
 
@@ -49,8 +47,6 @@ public class FancyFluidStorage {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         Compatibility.INSTANCE.init();
-
-        new Config(new Configuration(event.getSuggestedConfigurationFile()));
 
         ModBlocksAndItems.preInit(event);
 
@@ -77,14 +73,6 @@ public class FancyFluidStorage {
             if ( tickets != null && tickets.size() > 0 )
                 GenericUtil.initChunkLoadTicket(world, tickets.get(0));
         });
-    }
-
-    @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if ( !event.getModID().equals(MODID) )
-            return;
-
-        Config.syncConfig();
     }
 
     @SubscribeEvent

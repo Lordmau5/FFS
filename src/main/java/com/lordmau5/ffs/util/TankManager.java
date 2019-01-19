@@ -274,9 +274,10 @@ public class TankManager {
         if ( tile != null && tile.getMasterValve() != null ) {
             AbstractTankValve valve = tile.getMasterValve();
             if ( valve.isValid() ) {
-                event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
                 if ( GenericUtil.isFluidContainer(event.getItemStack()) ) {
-                    GenericUtil.fluidContainerHandler(event.getWorld(), valve, event.getEntityPlayer());
+                    if (GenericUtil.fluidContainerHandler(event.getWorld(), valve, event.getEntityPlayer())) {
+                        valve.markForUpdateNow();
+                    }
                 } else {
                     event.getEntityPlayer().openGui(FancyFluidStorage.INSTANCE, 1, tile.getWorld(), tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
                 }

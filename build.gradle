@@ -39,35 +39,33 @@ idea {
 
 repositories {
     mavenCentral()
-//    maven { // HWALY / Tehnut's maven
-//        name "tehnut"
-//        url "http://tehnut.info/maven"
-//    }
-//    maven { // OpenComputers
-//        name 'opencomputers'
-//        url "http://maven.cil.li/"
-//    }
+    maven { // HWYLA / Tehnut's maven
+        name "tehnut"
+        url "http://tehnut.info/maven"
+    }
     maven { // Chisel / tterrag's maven
-        name 'tterrag'
+        name "tterrag"
         url "http://maven.tterrag.com/"
     }
     maven {
-        name = "CoFH Maven"
-        url = "http://maven.covers1624.net"
+        name 'CoFH Maven'
+        url "http://maven.covers1624.net"
     }
     maven { // IC2 / Player's maven
-        name 'player'
+        name "player"
         url "http://maven.ic2.player.to/"
     }
     flatDir {
-      dirs 'libs'
+      dirs "libs"
     }
 }
 
 dependencies {
-    deobfCompile  'net.industrial-craft:industrialcraft-2:2.8.108-ex112'
+    deobfCompile "net.industrial-craft:industrialcraft-2:2.8.108-ex112"
 
-    deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.11-5"
+    deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.23-16"
+
+    deobfCompile "mcp.mobius.waila:Hwyla:1.8.26-B41_1.12.2"
 }
 
 if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version"

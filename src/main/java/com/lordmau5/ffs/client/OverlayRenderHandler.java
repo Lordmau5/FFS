@@ -1,7 +1,6 @@
 package com.lordmau5.ffs.client;
 
 import com.lordmau5.ffs.FancyFluidStorage;
-import com.lordmau5.ffs.config.Config;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import net.minecraft.block.state.IBlockState;
@@ -63,7 +62,7 @@ public class OverlayRenderHandler {
 
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
-        if ( !Config.TANK_OVERLAY_RENDER ) {
+        if ( true ) {
             return;
         }
 

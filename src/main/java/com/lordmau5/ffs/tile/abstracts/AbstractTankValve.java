@@ -2,7 +2,7 @@ package com.lordmau5.ffs.tile.abstracts;
 
 import com.google.common.collect.Lists;
 import com.lordmau5.ffs.FancyFluidStorage;
-import com.lordmau5.ffs.config.Config;
+import com.lordmau5.ffs.config.ModConfig;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.tile.interfaces.IFacingTile;
@@ -267,8 +267,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     private boolean searchAlgorithm() {
-        int currentAirBlocks = 1, currentFrameBlocks = 0;
-        int maxAirBlocks = Config.MAX_AIR_BLOCKS;
+        int currentAirBlocks = 1;
+        int maxAirBlocks = ModConfig.general.maxAirBlocks;
         BlockPos insidePos = getPos().offset(getTileFacing());
 
         Queue<BlockPos> to_check = new LinkedList<>();
@@ -304,7 +304,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     }
                 } else {
                     frame_blocks.get(layer).add(_pos);
-                    currentFrameBlocks++;
                 }
             }
             if ( currentAirBlocks > maxAirBlocks ) {
@@ -333,7 +332,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         for (int layer : maps.get(1).keySet()) {
             size += maps.get(1).get(layer).size();
         }
-        getTankConfig().setFluidCapacity(size * Config.MB_PER_TANK_BLOCK);
+        getTankConfig().setFluidCapacity(size * ModConfig.general.mbPerTankBlock);
 
         for (int layer : maps.get(1).keySet()) {
             for (BlockPos pos : maps.get(1).get(layer)) {

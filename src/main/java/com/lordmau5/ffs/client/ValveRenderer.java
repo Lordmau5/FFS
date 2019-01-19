@@ -1,7 +1,7 @@
 package com.lordmau5.ffs.client;
 
 import com.lordmau5.ffs.FancyFluidStorage;
-import com.lordmau5.ffs.config.Config;
+import com.lordmau5.ffs.config.ModConfig;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.util.ClientRenderHelper;
 import com.lordmau5.ffs.util.LayerBlockPos;
@@ -102,7 +102,7 @@ public class ValveRenderer extends FastTESR<AbstractTankValve> {
                 continue;
             }
 
-            double layerCapacity = (double) Config.MB_PER_TANK_BLOCK * (double) layerBlockSize;
+            double layerCapacity = (double) ModConfig.general.mbPerTankBlock * (double) layerBlockSize;
             fillLevels.add(Math.min(1, fluidLeft / layerCapacity));
             fluidLeft -= layerCapacity;
         }

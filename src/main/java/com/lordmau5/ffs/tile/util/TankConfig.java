@@ -16,7 +16,6 @@ public class TankConfig {
     private FluidStack lockedFluid;
 
     public TankConfig(AbstractTankValve valve) {
-        AbstractTankValve valve1 = valve;
         this.fluidTank = new InternalFluidTank(valve);
     }
 

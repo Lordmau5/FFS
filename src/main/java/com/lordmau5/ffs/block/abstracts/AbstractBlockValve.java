@@ -53,7 +53,7 @@ public abstract class AbstractBlockValve extends Block {
     @Override
     public void onBlockExploded(World world, BlockPos pos, Explosion explosion) {
         TileEntity tile = world.getTileEntity(pos);
-        if ( tile != null && tile instanceof AbstractTankValve ) {
+        if ( tile instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
             valve.breakTank();
         }
@@ -64,7 +64,7 @@ public abstract class AbstractBlockValve extends Block {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         if ( !world.isRemote ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            if ( valve.isValid() ) {
+            if (valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
@@ -76,15 +76,17 @@ public abstract class AbstractBlockValve extends Block {
     public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
         if ( !world.isRemote ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            if ( valve.getTankConfig().getFluidAmount() > 0 ) {
-                ItemStack offHand = player.getHeldItemOffhand();
-                if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
-                    GenericUtil.sendMessageToClient(player, "This valve still contains fluids! If you want to break it, please hold the T.I.T. in the off-hand and break it again!");
-                    return false;
+            if (valve != null) {
+                if ( valve.getTankConfig().getFluidAmount() > 0 ) {
+                    ItemStack offHand = player.getHeldItemOffhand();
+                    if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
+                        GenericUtil.sendMessageToClient(player, "This valve still contains fluids! If you want to break it, please hold the T.I.T. in the off-hand and break it again!");
+                        return false;
+                    }
                 }
-            }
-            if ( valve.isValid() ) {
-                valve.breakTank();
+                if ( valve.isValid() ) {
+                    valve.breakTank();
+                }
             }
         }
 
@@ -96,6 +98,9 @@ public abstract class AbstractBlockValve extends Block {
         if ( player.isSneaking() ) return false;
 
         AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
+        if (valve == null) {
+            return true;
+        }
 
         if ( valve.isValid() ) {
             if ( GenericUtil.isFluidContainer(player.getHeldItemMainhand()) ) {
