@@ -29,20 +29,19 @@ import java.util.List;
 /**
  * Created by Dustin on 05.07.2015.
  */
-//TODO GuiBuilder all of this
 public class GuiValve extends GuiScreen {
     private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_valve.png");
     private static final ResourceLocation tex_no_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
-    private GuiButtonLockFluid lockFluidButton;
-    private boolean isNonValve = false;
-    private AbstractTankTile tile;
     private final AbstractTankValve valve;
     private final AbstractTankValve masterValve;
-    private GuiTextField tileName;
     private final int xSize_Valve = 196;
     private final int ySize_Valve = 128;
     private final int xSize_NoValve = 96;
     private final int ySize_NoValve = 128;
+    private GuiButtonLockFluid lockFluidButton;
+    private boolean isNonValve = false;
+    private AbstractTankTile tile;
+    private GuiTextField tileName;
     private int left = 0, top = 0;
     private int mouseX, mouseY;
 

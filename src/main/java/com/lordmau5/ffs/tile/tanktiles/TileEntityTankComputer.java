@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class TileEntityTankComputer extends AbstractTankTile implements IFacingTile { //}, IPeripheral {
 
     public List<TileEntityFluidValve> getValves() {
-        return getMasterValve().getAllValves().stream().filter(p -> p instanceof TileEntityFluidValve).map(p -> (TileEntityFluidValve) p).collect(Collectors.toList());
+        return getMasterValve().getAllValves(true).stream().filter(p -> p instanceof TileEntityFluidValve).map(p -> (TileEntityFluidValve) p).collect(Collectors.toList());
     }
 
     // Used by CC and OC

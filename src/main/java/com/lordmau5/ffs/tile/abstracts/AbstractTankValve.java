@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractTankValve extends AbstractTankTile implements IFacingTile, INameableTile {
 
+    public final WeakHashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
     private final List<AbstractTankTile> tankTiles;
     private int initialWaitTick = 20;
-    public final WeakHashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
     private TankConfig tankConfig;
     private boolean isValid;
     private boolean isMaster;
@@ -163,13 +163,13 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return tiles;
     }
 
-    public List<AbstractTankValve> getAllValves() {
+    public List<AbstractTankValve> getAllValves(boolean include) {
         if ( !isMaster() && getMasterValve() != null && getMasterValve() != this ) {
-            return getMasterValve().getAllValves();
+            return getMasterValve().getAllValves(include);
         }
 
         List<AbstractTankValve> valves = getTankTiles(AbstractTankValve.class);
-        valves.add(this);
+        if ( include ) valves.add(this);
         return valves;
     }
 
@@ -308,7 +308,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
             }
             if ( currentAirBlocks > maxAirBlocks ) {
                 if ( buildPlayer != null ) {
-                    GenericUtil.sendMessageToClient(buildPlayer, "Too many air blocks! Limit: " + maxAirBlocks);
+                    GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
                 }
                 return false;
             }
@@ -351,7 +351,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                 if ( FancyFluidStorage.tankManager.isPartOfTank(getWorld(), pos) ) {
                     AbstractTankValve valve = FancyFluidStorage.tankManager.getValveForBlock(getWorld(), pos);
                     if ( valve != null && valve != this ) {
-                        GenericUtil.sendMessageToClient(buildPlayer, "One or more blocks already belong to another tank!");
+                        GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_other_tank", false);
                         return false;
                     }
                     continue;
@@ -375,11 +375,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                                 FluidStack otherFS = valve.getTankConfig().getFluidStack();
 
                                 if ( !myFS.isFluidEqual(otherFS) ) {
-                                    GenericUtil.sendMessageToClient(buildPlayer, "One or more valves contain different fluids! Could not build the tank!");
+                                    GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_different_fluids", false);
                                     return false;
-                                } else {
-//                                    tempNewFluidStack.amount += otherFS.amount;
-//                                    break;
                                 }
                             } else {
                                 tempNewFluidStack = valve.getTankConfig().getFluidStack();
@@ -449,7 +446,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         FancyFluidStorage.tankManager.remove(getWorld().provider.getDimension(), getPos());
         NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBreak(this));
 
-        for (AbstractTankValve valve : getAllValves()) {
+        for (AbstractTankValve valve : getAllValves(false)) {
             if ( valve == this ) {
                 continue;
             }

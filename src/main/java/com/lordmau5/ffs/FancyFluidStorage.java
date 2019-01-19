@@ -12,7 +12,6 @@ import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -28,15 +27,11 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 @Mod(modid = FancyFluidStorage.MODID, name = "Fancy Fluid Storage", dependencies = "after:waila")
 public class FancyFluidStorage {
     public static final String MODID = "ffs";
-
+    public static final TankManager tankManager = new TankManager();
     public static Block blockFluidValve;
     public static Block blockTankComputer;
-
     public static Item itemTitEgg;
     public static Item itemTit;
-
-    public static final TankManager tankManager = new TankManager();
-
     @Mod.Instance(MODID)
     public static FancyFluidStorage INSTANCE;
 
@@ -78,7 +73,6 @@ public class FancyFluidStorage {
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
         if ( event.getWorld().isRemote ) {
-            System.out.println("Unloading dimension " + event.getWorld().provider.getDimension());
             FancyFluidStorage.tankManager.removeAllForDimension(event.getWorld().provider.getDimension());
         }
     }

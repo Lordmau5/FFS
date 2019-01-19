@@ -28,95 +28,93 @@ import java.util.List;
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")
 public class WailaPluginTank implements IWailaDataProvider {
 
-	public static void init() {
-		FMLInterModComms.sendMessage("waila", "register", WailaPluginTank.class.getName() + ".registerPlugin");
-	}
+    public static void init() {
+        FMLInterModComms.sendMessage("waila", "register", WailaPluginTank.class.getName() + ".registerPlugin");
+    }
 
-	@Optional.Method(modid = "waila")
-	public static void registerPlugin(IWailaRegistrar registrar) {
-		WailaPluginTank instance = new WailaPluginTank();
+    @Optional.Method(modid = "waila")
+    public static void registerPlugin(IWailaRegistrar registrar) {
+        WailaPluginTank instance = new WailaPluginTank();
 
-		registrar.registerBodyProvider(instance, Block.class);
-	}
+        registrar.registerBodyProvider(instance, Block.class);
+    }
 
-	@Optional.Method(modid = "waila")
-	@Override
-	public ItemStack getWailaStack(IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
-		// Unused, implemented because of the interface
-		return null;
-	}
+    @Optional.Method(modid = "waila")
+    @Override
+    public ItemStack getWailaStack(IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
+        // Unused, implemented because of the interface
+        return null;
+    }
 
-	@Optional.Method(modid = "waila")
-	@Override
-	public List<String> getWailaBody(ItemStack itemStack, List<String> list, IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
-		TileEntity te = iWailaDataAccessor.getTileEntity();
-		AbstractTankValve valve = null;
-		if(te instanceof AbstractTankValve) { // Continue with Valve stuff
-			valve = (AbstractTankValve) te;
-		}
-		else if(te instanceof AbstractTankTile) {
-			valve = ((AbstractTankTile) te).getMasterValve();
-			if(valve != null && valve.isValid())
-				list.add("Part of a tank");
-		}
+    @Optional.Method(modid = "waila")
+    @Override
+    public List<String> getWailaBody(ItemStack itemStack, List<String> list, IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
+        TileEntity te = iWailaDataAccessor.getTileEntity();
+        AbstractTankValve valve = null;
+        if ( te instanceof AbstractTankValve ) { // Continue with Valve stuff
+            valve = (AbstractTankValve) te;
+        } else if ( te instanceof AbstractTankTile ) {
+            valve = ((AbstractTankTile) te).getMasterValve();
+            if ( valve != null && valve.isValid() )
+                list.add("Part of a tank");
+        }
 
-		if(valve == null && FancyFluidStorage.tankManager.isPartOfTank(iWailaDataAccessor.getWorld(), iWailaDataAccessor.getPosition())) {
-			valve = FancyFluidStorage.tankManager.getValveForBlock(iWailaDataAccessor.getWorld(), iWailaDataAccessor.getPosition());
-			if(valve != null && valve.isValid()) {
-				list.add("Part of a tank");
-			}
-		}
+        if ( valve == null && FancyFluidStorage.tankManager.isPartOfTank(iWailaDataAccessor.getWorld(), iWailaDataAccessor.getPosition()) ) {
+            valve = FancyFluidStorage.tankManager.getValveForBlock(iWailaDataAccessor.getWorld(), iWailaDataAccessor.getPosition());
+            if ( valve != null && valve.isValid() ) {
+                list.add("Part of a tank");
+            }
+        }
 
-		if(valve == null) {
-			return list;
-		}
+        if ( valve == null ) {
+            return list;
+        }
 
-		int fluidAmount = valve.getTankConfig().getFluidAmount();
-		int capacity = valve.getTankConfig().getFluidCapacity();
+        int fluidAmount = valve.getTankConfig().getFluidAmount();
+        int capacity = valve.getTankConfig().getFluidCapacity();
 
-		if(!valve.isValid()) {
-			list.add("Invalid tank");
-			return list;
-		}
+        if ( !valve.isValid() ) {
+            list.add("Invalid tank");
+            return list;
+        }
 
-		if(te instanceof INameableTile) {
-			list.add("Name: " + TextFormatting.ITALIC + ((INameableTile) te).getTileName() + TextFormatting.RESET);
-		}
+        if ( te instanceof INameableTile ) {
+            list.add("Name: " + TextFormatting.ITALIC + ((INameableTile) te).getTileName() + TextFormatting.RESET);
+        }
 
-		if(fluidAmount == 0) {
-			list.add("Fluid: None");
-			list.add("Amount: 0/" + GenericUtil.intToFancyNumber(capacity) + " mB");
-		}
-		else {
-			String fluid = valve.getTankConfig().getFluidStack().getLocalizedName();
-			list.add("Fluid: " + fluid);
-			list.add("Amount: " + GenericUtil.intToFancyNumber(fluidAmount) + "/" + GenericUtil.intToFancyNumber(capacity) + " mB");
-		}
+        if ( fluidAmount == 0 ) {
+            list.add("Fluid: None");
+            list.add("Amount: 0/" + GenericUtil.intToFancyNumber(capacity) + " mB");
+        } else {
+            String fluid = valve.getTankConfig().getFluidStack().getLocalizedName();
+            list.add("Fluid: " + fluid);
+            list.add("Amount: " + GenericUtil.intToFancyNumber(fluidAmount) + "/" + GenericUtil.intToFancyNumber(capacity) + " mB");
+        }
 
-		if(valve.getTankConfig().isFluidLocked()) {
-			list.add("Fluid locked to: " + valve.getTankConfig().getLockedFluid().getLocalizedName());
-		}
-		return list;
-	}
+        if ( valve.getTankConfig().isFluidLocked() ) {
+            list.add("Fluid locked to: " + valve.getTankConfig().getLockedFluid().getLocalizedName());
+        }
+        return list;
+    }
 
-	@Optional.Method(modid = "waila")
-	@Override
-	public List<String> getWailaHead(ItemStack itemStack, List<String> list, IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
-		// Unused, implemented because of the interface
-		return list;
-	}
+    @Optional.Method(modid = "waila")
+    @Override
+    public List<String> getWailaHead(ItemStack itemStack, List<String> list, IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
+        // Unused, implemented because of the interface
+        return list;
+    }
 
-	@Optional.Method(modid = "waila")
-	@Override
-	public List<String> getWailaTail(ItemStack itemStack, List<String> list, IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
-		// Unused, implemented because of the interface
-		return list;
-	}
+    @Optional.Method(modid = "waila")
+    @Override
+    public List<String> getWailaTail(ItemStack itemStack, List<String> list, IWailaDataAccessor iWailaDataAccessor, IWailaConfigHandler iWailaConfigHandler) {
+        // Unused, implemented because of the interface
+        return list;
+    }
 
-	@Optional.Method(modid = "waila")
-	@Override
-	public NBTTagCompound getNBTData(EntityPlayerMP entityPlayerMP, TileEntity tileEntity, NBTTagCompound nbtTagCompound, World world, BlockPos pos) {
-		// Unused, implemented because of the interface
-		return nbtTagCompound;
-	}
+    @Optional.Method(modid = "waila")
+    @Override
+    public NBTTagCompound getNBTData(EntityPlayerMP entityPlayerMP, TileEntity tileEntity, NBTTagCompound nbtTagCompound, World world, BlockPos pos) {
+        // Unused, implemented because of the interface
+        return nbtTagCompound;
+    }
 }

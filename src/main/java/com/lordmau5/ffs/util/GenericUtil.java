@@ -16,10 +16,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.FluidUtil;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -122,12 +122,20 @@ public class GenericUtil {
         return NumberFormat.getIntegerInstance(Locale.ENGLISH).format(number);
     }
 
-    public static void sendMessageToClient(EntityPlayer player, String message) {
+    public static void sendMessageToClient(EntityPlayer player, String key, boolean actionBar) {
         if ( player == null ) {
             return;
         }
 
-        player.sendMessage(new TextComponentString(message));
+        player.sendStatusMessage(new TextComponentTranslation(key), actionBar);
+    }
+
+    public static void sendMessageToClient(EntityPlayer player, String key, boolean actionBar, Object... args) {
+        if ( player == null ) {
+            return;
+        }
+
+        player.sendStatusMessage(new TextComponentTranslation(key, args), actionBar);
     }
 
     public static void initChunkLoadTicket(World world, ForgeChunkManager.Ticket ticket) {

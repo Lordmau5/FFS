@@ -11,7 +11,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -20,7 +19,6 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
 import java.util.Random;
 
 /**
@@ -49,31 +47,13 @@ public abstract class AbstractBlockValve extends Block {
     @Override
     public float getBlockHardness(IBlockState blockState, World worldIn, BlockPos pos) {
         TileEntity tile = worldIn.getTileEntity(pos);
-        if (tile instanceof AbstractTankValve) {
+        if ( tile instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) tile;
-            if (valve.isValid() && valve.getTankConfig().getFluidStack() != null) {
+            if ( valve.isValid() && valve.getTankConfig().getFluidStack() != null ) {
                 return 20.0F;
             }
         }
         return 5.0F;
-    }
-
-    @Override
-    public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
-        if (worldIn.isRemote) {
-            TileEntity tile = worldIn.getTileEntity(pos);
-            if (tile instanceof AbstractTankValve) {
-                AbstractTankValve valve = (AbstractTankValve) tile;
-                if ( valve.isValid() && valve.getTankConfig().getFluidStack() != null ) {
-                    ItemStack offHand = playerIn.getHeldItemOffhand();
-                    if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
-                        GenericUtil.sendMessageToClient(playerIn, "This valve still contains fluids! If you want to break it, please hold the T.I.T. in the off-hand and break it again!");
-                    }
-                }
-            }
-        }
-
-        super.onBlockClicked(worldIn, pos, playerIn);
     }
 
     @Override
@@ -86,7 +66,7 @@ public abstract class AbstractBlockValve extends Block {
         TileEntity tile = world.getTileEntity(pos);
         if ( tile instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            if (valve != null && valve.isValid()) {
+            if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
@@ -97,7 +77,7 @@ public abstract class AbstractBlockValve extends Block {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         if ( !world.isRemote ) {
             AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-            if (valve != null && valve.isValid() ) {
+            if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
@@ -107,15 +87,9 @@ public abstract class AbstractBlockValve extends Block {
 
     @Override
     public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
-        AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-        if (valve != null) {
-            if ( valve.getTankConfig().getFluidStack() != null ) {
-                ItemStack offHand = player.getHeldItemOffhand();
-                if ( offHand.getItem() != FancyFluidStorage.itemTit ) {
-                    return false;
-                }
-            }
-            if ( !world.isRemote && valve.isValid() ) {
+        if ( !world.isRemote ) {
+            AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
+            if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
@@ -128,13 +102,13 @@ public abstract class AbstractBlockValve extends Block {
         if ( player.isSneaking() ) return false;
 
         AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
-        if (valve == null) {
+        if ( valve == null ) {
             return true;
         }
 
         if ( valve.isValid() ) {
             if ( GenericUtil.isFluidContainer(player.getHeldItemMainhand()) ) {
-                if (GenericUtil.fluidContainerHandler(world, valve, player)) {
+                if ( GenericUtil.fluidContainerHandler(world, valve, player) ) {
                     valve.markForUpdateNow();
                     return true;
                 }

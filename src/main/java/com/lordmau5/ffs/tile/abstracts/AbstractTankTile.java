@@ -109,7 +109,7 @@ public abstract class AbstractTankTile extends TileEntity implements ITickable {
             return;
         }
 
-        if ( this.needsUpdate-- == 0 ) {
+        if ( --this.needsUpdate == 0 ) {
             IBlockState state = getWorld().getBlockState(getPos());
             getWorld().notifyBlockUpdate(getPos(), state, state, 3);
             markDirty();

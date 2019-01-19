@@ -4,7 +4,7 @@ import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
@@ -155,7 +155,7 @@ public class TankManager {
 
     @SubscribeEvent
     public void entityJoinWorld(EntityJoinWorldEvent event) {
-        if (event.getWorld() == null || event.getEntity() == null) {
+        if ( event.getWorld() == null || event.getEntity() == null ) {
             return;
         }
 
@@ -163,7 +163,7 @@ public class TankManager {
             return;
         }
 
-        if (isPartOfTank(event.getWorld(), event.getEntity().getPosition())) {
+        if ( isPartOfTank(event.getWorld(), event.getEntity().getPosition()) ) {
             event.setCanceled(true);
         }
     }
@@ -199,7 +199,7 @@ public class TankManager {
     }
 
     private void addBlockForCheck(World world, BlockPos pos) {
-        int dimensionId = world.provider.getDimension();
+        int dimensionId = getDimensionSafely(world);
         List<BlockPos> blocks = blocksToCheck.get(dimensionId);
         if ( blocks == null ) {
             blocks = new ArrayList<>();
@@ -211,43 +211,47 @@ public class TankManager {
 
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event) {
-        if ( event.getWorld().isRemote ) {
-            return;
-        }
-
+        World world = event.getWorld();
         BlockPos pos = event.getPos();
 
-        if ( !isPartOfTank(event.getWorld(), pos) ) {
+        if ( world.isRemote ) {
             return;
         }
 
-        addBlockForCheck(event.getWorld(), pos);
+        if ( !isPartOfTank(world, pos) ) {
+            return;
+        }
+
+        addBlockForCheck(world, pos);
     }
 
     @SubscribeEvent
     public void onBlockPlace(BlockEvent.PlaceEvent event) {
-        if ( event.getWorld().isRemote ) {
-            return;
-        }
-
+        World world = event.getWorld();
         BlockPos pos = event.getPos();
 
-        if ( !isPartOfTank(event.getWorld(), pos) ) {
+        if ( world.isRemote ) {
             return;
         }
 
-        addBlockForCheck(event.getWorld(), pos);
+        if ( !isPartOfTank(world, pos) ) {
+            return;
+        }
+
+        addBlockForCheck(world, pos);
     }
 
     @SubscribeEvent
     public void onRightClick(PlayerInteractEvent.RightClickBlock event) {
         BlockPos pos = event.getPos();
+        World world = event.getWorld();
+        EntityPlayer player = event.getEntityPlayer();
 
-        if ( event.getEntityPlayer() == null ) {
+        if ( player == null ) {
             return;
         }
 
-        if ( !isPartOfTank(event.getWorld(), pos) ) {
+        if ( !isPartOfTank(world, pos) ) {
             return;
         }
 
@@ -256,48 +260,43 @@ public class TankManager {
             return;
         }
 
-        if ( event.getWorld().isRemote ) {
-            event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
-        }
-
-        if ( event.getEntityPlayer().getHeldItemOffhand() != ItemStack.EMPTY ) {
-            if ( event.getEntityPlayer().getHeldItemOffhand().getItem() == FancyFluidStorage.itemTit ) {
-                TileEntity tile = event.getWorld().getTileEntity(event.getPos());
-                if ( tile != null ) {
-                    addBlockForCheck(event.getWorld(), pos);
-                    return;
-                }
+        if ( player.getHeldItemOffhand() != ItemStack.EMPTY ) {
+            if ( player.getHeldItemOffhand().getItem() == FancyFluidStorage.itemTit ) {
+                return;
             }
         }
 
-        if ( event.getWorld().getBlockState(event.getPos()).getBlock() instanceof AbstractBlockValve ) {
+        if ( world.isRemote ) {
+            player.swingArm(EnumHand.MAIN_HAND);
+        }
+
+        if ( world.getBlockState(pos).getBlock() instanceof AbstractBlockValve ) {
             return;
         }
 
         event.setCanceled(true);
 
-        if ( event.getEntityPlayer().isSneaking() ) {
-            ItemStack mainHand = event.getEntityPlayer().getHeldItemMainhand();
+        if ( player.isSneaking() ) {
+            ItemStack mainHand = player.getHeldItemMainhand();
             if ( mainHand != ItemStack.EMPTY ) {
-                if ( event.getEntityPlayer().isCreative() ) {
+                if ( player.isCreative() ) {
                     mainHand = mainHand.copy();
                 }
-                mainHand.onItemUse(event.getEntityPlayer(), event.getWorld(), event.getPos(), EnumHand.MAIN_HAND, event.getFace(), (float) event.getHitVec().x, (float) event.getHitVec().y, (float) event.getHitVec().z);
-                event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
+                mainHand.onItemUse(player, world, pos, EnumHand.MAIN_HAND, event.getFace(), (float) event.getHitVec().x, (float) event.getHitVec().y, (float) event.getHitVec().z);
             }
             return;
         }
 
-        AbstractTankValve tile = getValveForBlock(event.getWorld(), pos);
+        AbstractTankValve tile = getValveForBlock(world, pos);
         if ( tile != null && tile.getMasterValve() != null ) {
             AbstractTankValve valve = tile.getMasterValve();
             if ( valve.isValid() ) {
                 if ( GenericUtil.isFluidContainer(event.getItemStack()) ) {
-                    if (GenericUtil.fluidContainerHandler(event.getWorld(), valve, event.getEntityPlayer())) {
+                    if ( GenericUtil.fluidContainerHandler(world, valve, player) ) {
                         valve.markForUpdateNow();
                     }
                 } else {
-                    event.getEntityPlayer().openGui(FancyFluidStorage.INSTANCE, 1, tile.getWorld(), tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
+                    player.openGui(FancyFluidStorage.INSTANCE, 1, tile.getWorld(), tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
                 }
             }
         }

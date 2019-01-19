@@ -60,8 +60,6 @@ public abstract class FFSPacket {
                         buffer.writeInt(pos.getLayer());
                     }
                 }
-
-                System.out.println(buffer.capacity());
             }
 
             @Override

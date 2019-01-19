@@ -57,7 +57,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
 
     @Override
     public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
-        if ( getTileFacing() == null || !isValid()) {
+        if ( getTileFacing() == null || !isValid() ) {
             return null;
         }
 
