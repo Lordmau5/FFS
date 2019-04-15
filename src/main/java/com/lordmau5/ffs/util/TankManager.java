@@ -3,6 +3,7 @@ package com.lordmau5.ffs.util;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;

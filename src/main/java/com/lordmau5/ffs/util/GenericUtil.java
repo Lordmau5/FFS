@@ -57,7 +57,7 @@ public class GenericUtil {
         }
 
         ItemStack is = new ItemStack(blockState.getBlock(), 1);
-        return blockState.getMaterial() == Material.GLASS && !is.getUnlocalizedName().contains("pane");
+        return blockState.getMaterial() == Material.GLASS && !is.getTranslationKey().contains("pane");
     }
 
     public static EnumFacing getInsideForTankFrame(TreeMap<Integer, List<LayerBlockPos>> airBlocks, BlockPos frame) {

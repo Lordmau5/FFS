@@ -27,7 +27,7 @@ import net.minecraft.world.World;
 public class BlockTankComputer extends Block {
     public BlockTankComputer() {
         super(Material.IRON);
-        setUnlocalizedName(FancyFluidStorage.MODID + ".block_tank_computer");
+        setTranslationKey(FancyFluidStorage.MODID + ".block_tank_computer");
         setRegistryName("block_tank_computer");
         setCreativeTab(CreativeTabFFS.INSTANCE);
         setHardness(5.0F);
@@ -51,7 +51,7 @@ public class BlockTankComputer extends Block {
         if ( tile != null && tile instanceof AbstractTankTile && ((AbstractTankTile) tile).getMasterValve() != null ) {
             ((AbstractTankTile) tile).getMasterValve().breakTank();
         }
-        super.onBlockDestroyedByExplosion(world, pos, explosion);
+        super.onExplosionDestroy(world, pos, explosion);
     }
 
     @Override

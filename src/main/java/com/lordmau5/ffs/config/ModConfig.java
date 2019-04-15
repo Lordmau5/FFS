@@ -30,6 +30,19 @@ public class ModConfig {
         })
         @Config.RangeInt(min = 3, max = 2197)
         public int maxAirBlocks = 2197;
+
+        @Config.Name("Block Whitelist")
+        @Config.Comment({
+                "Define a whitelist of blocks that can be used as a frame in a tank.",
+                "Registry names need to be used, example: minecraft:stone"
+        })
+        public String[] blockWhitelist = {};
+
+        @Config.Name("Block Whitelist Invert")
+        @Config.Comment({
+                "When enabled, this will turn the whitelist into a blacklist."
+        })
+        public boolean blockWhitelistInvert = true;
     }
 
     @Mod.EventBusSubscriber(modid = FancyFluidStorage.MODID)

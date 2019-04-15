@@ -29,7 +29,7 @@ public abstract class AbstractBlockValve extends Block {
     protected AbstractBlockValve(String name) {
         super(Material.IRON);
 
-        setUnlocalizedName(FancyFluidStorage.MODID + "." + name);
+        setTranslationKey(FancyFluidStorage.MODID + "." + name);
         setRegistryName(name);
         setCreativeTab(CreativeTabs.REDSTONE);
         setHardness(5.0F);
@@ -70,7 +70,7 @@ public abstract class AbstractBlockValve extends Block {
                 valve.breakTank();
             }
         }
-        super.onBlockDestroyedByExplosion(world, pos, explosion);
+        super.onExplosionDestroy(world, pos, explosion);
     }
 
     @Override

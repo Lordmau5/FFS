@@ -5,6 +5,7 @@ import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.GenericUtil;
+import mcp.mobius.waila.api.ITaggedList;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
@@ -52,7 +53,8 @@ public class WailaPluginTank implements IWailaDataProvider {
         TileEntity te = iWailaDataAccessor.getTileEntity();
         AbstractTankValve valve = null;
         if ( te instanceof AbstractTankValve ) { // Continue with Valve stuff
-            valve = (AbstractTankValve) te;
+//            valve = (AbstractTankValve) te;
+            return list;
         } else if ( te instanceof AbstractTankTile ) {
             valve = ((AbstractTankTile) te).getMasterValve();
             if ( valve != null && valve.isValid() )
@@ -83,12 +85,10 @@ public class WailaPluginTank implements IWailaDataProvider {
         }
 
         if ( fluidAmount == 0 ) {
-            list.add("Fluid: None");
-            list.add("Amount: 0/" + GenericUtil.intToFancyNumber(capacity) + " mB");
+            list.add(String.format("None: 0 / %d mB", capacity));
         } else {
             String fluid = valve.getTankConfig().getFluidStack().getLocalizedName();
-            list.add("Fluid: " + fluid);
-            list.add("Amount: " + GenericUtil.intToFancyNumber(fluidAmount) + "/" + GenericUtil.intToFancyNumber(capacity) + " mB");
+            list.add(String.format("%s: %d / %d mB", fluid, fluidAmount, capacity));
         }
 
         if ( valve.getTankConfig().isFluidLocked() ) {

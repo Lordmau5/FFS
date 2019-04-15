@@ -15,7 +15,7 @@ public class CreativeTabFFS extends CreativeTabs {
     }
 
     @Override
-    public ItemStack getTabIconItem() {
+    public ItemStack createIcon() {
         return new ItemStack(FancyFluidStorage.blockFluidValve);
     }
 }

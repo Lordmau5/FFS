@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 public class ItemTit extends Item {
     public ItemTit() {
         setRegistryName("item_tit");
-        setUnlocalizedName(FancyFluidStorage.MODID + ".item_tit");
+        setTranslationKey(FancyFluidStorage.MODID + ".item_tit");
         setCreativeTab(CreativeTabFFS.INSTANCE);
     }
 }

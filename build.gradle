@@ -80,7 +80,7 @@ targetCompatibility = 1.8
 minecraft {
     runDir = "runtime/client"
     version = "$minecraft_version-$forge_version"
-    mappings = "snapshot_20170620"
+    mappings = "stable_39"
 }
 
 processResources {
@@ -96,13 +96,4 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
-}
-
-task deobfJar(type: Jar, dependsOn: 'jar') {
-    from sourceSets.main.output
-    classifier = 'deobf'
-}
-
-artifacts {
-    archives sourceJar, deobfJar
 }

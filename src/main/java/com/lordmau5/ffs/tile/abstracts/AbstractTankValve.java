@@ -10,6 +10,7 @@ import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.tile.util.TankConfig;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.lordmau5.ffs.util.LayerBlockPos;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -259,7 +260,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         BlockPos dist = insideAir.subtract(tankTile.getPos());
         for (EnumFacing dr : EnumFacing.VALUES) {
-            if ( dist.equals(new BlockPos(dr.getFrontOffsetX(), dr.getFrontOffsetY(), dr.getFrontOffsetZ())) ) {
+            if ( dist.equals(new BlockPos(dr.getXOffset(), dr.getYOffset(), dr.getZOffset())) ) {
                 ((IFacingTile) tankTile).setTileFacing(dr);
                 break;
             }
@@ -303,6 +304,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                         currentAirBlocks++;
                     }
                 } else {
+                    if (!isBlockWhitelisted(_pos)) {
+                        return false;
+                    }
                     frame_blocks.get(layer).add(_pos);
                 }
             }
@@ -321,6 +325,18 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         maps.put(0, frame_blocks);
         maps.put(1, air_blocks);
         return true;
+    }
+
+    private boolean isBlockWhitelisted(BlockPos pos) {
+        if (world.getTileEntity(pos) instanceof AbstractTankTile) return true;
+
+        String registryName = world.getBlockState(pos).getBlock().getRegistryName().toString();
+        for (String key : ModConfig.general.blockWhitelist) {
+            if (key.equalsIgnoreCase(registryName)) {
+                return !ModConfig.general.blockWhitelistInvert;
+            }
+        }
+        return ModConfig.general.blockWhitelistInvert;
     }
 
     private boolean setupTank() {

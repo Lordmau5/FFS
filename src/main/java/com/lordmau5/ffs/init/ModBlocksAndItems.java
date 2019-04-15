@@ -30,7 +30,7 @@ public class ModBlocksAndItems {
     private static void registerBlockWithItemAndTile(Block block, Class<? extends TileEntity> tileClass) {
         ForgeRegistries.BLOCKS.register(block);
         ForgeRegistries.ITEMS.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
-        GameRegistry.registerTileEntity(tileClass, block.getUnlocalizedName());
+        GameRegistry.registerTileEntity(tileClass, block.getTranslationKey());
     }
 
 }
