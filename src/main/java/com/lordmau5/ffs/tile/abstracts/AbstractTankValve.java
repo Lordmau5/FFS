@@ -304,7 +304,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                         currentAirBlocks++;
                     }
                 } else {
-                    if (!isBlockWhitelisted(_pos)) {
+                    if (isBlockBlacklisted(_pos)) {
                         return false;
                     }
                     frame_blocks.get(layer).add(_pos);
@@ -327,16 +327,21 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return true;
     }
 
-    private boolean isBlockWhitelisted(BlockPos pos) {
-        if (world.getTileEntity(pos) instanceof AbstractTankTile) return true;
+    private boolean isBlockBlacklisted(BlockPos pos) {
+        if (world.getTileEntity(pos) instanceof AbstractTankTile) return false;
 
-        String registryName = world.getBlockState(pos).getBlock().getRegistryName().toString();
-        for (String key : ModConfig.general.blockWhitelist) {
-            if (key.equalsIgnoreCase(registryName)) {
-                return !ModConfig.general.blockWhitelistInvert;
+        IBlockState state = world.getBlockState(pos);
+        int metadata = state.getBlock().getMetaFromState(state);
+
+        String registryName = state.getBlock().getRegistryName().toString();
+        String registryName_WithMetadata = registryName + "@" + metadata;
+
+        for (String key : ModConfig.general.blockBlacklist) {
+            if (key.equalsIgnoreCase(registryName) || key.equalsIgnoreCase(registryName_WithMetadata)) {
+                return !ModConfig.general.blockBlacklistInvert;
             }
         }
-        return ModConfig.general.blockWhitelistInvert;
+        return ModConfig.general.blockBlacklistInvert;
     }
 
     private boolean setupTank() {
