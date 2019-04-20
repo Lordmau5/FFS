@@ -623,6 +623,10 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return tag;
     }
 
+    @Override
+    public boolean hasFastRenderer() {
+        return true;
+    }
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {

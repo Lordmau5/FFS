@@ -39,6 +39,11 @@ public class ValveRenderer extends FastTESR<AbstractTankValve> {
     }
 
     @Override
+    public boolean isGlobalRenderer(AbstractTankValve te) {
+        return true;
+    }
+
+    @Override
     public void renderTileEntityFast(@Nonnull AbstractTankValve valve, double x, double y, double z, float partialTicks, int destroyStage, float partial, @Nonnull BufferBuilder vb) {
         if ( valve == null || !valve.isValid() || !valve.isMaster() ) {
             return;
