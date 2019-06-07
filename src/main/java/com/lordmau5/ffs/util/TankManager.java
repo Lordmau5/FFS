@@ -24,12 +24,12 @@ import java.util.*;
  * Created by Lordmau5 on 06.10.2016.
  */
 public class TankManager {
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, BlockPos>> airBlockToValve = new WeakHashMap<>();
+    private final SafeWeakHashMap<Integer, SafeWeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new SafeWeakHashMap<>();
+    private final SafeWeakHashMap<Integer, SafeWeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new SafeWeakHashMap<>();
+    private final SafeWeakHashMap<Integer, SafeWeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new SafeWeakHashMap<>();
+    private final SafeWeakHashMap<Integer, SafeWeakHashMap<BlockPos, BlockPos>> airBlockToValve = new SafeWeakHashMap<>();
 
-    private final WeakHashMap<Integer, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
+    private final SafeWeakHashMap<Integer, List<BlockPos>> blocksToCheck = new SafeWeakHashMap<>();
 
     public TankManager() {
     }
@@ -39,11 +39,13 @@ public class TankManager {
     }
 
     private int getDimensionSafely(int dimensionId) {
-        valveToFrameBlocks.putIfAbsent(dimensionId, new WeakHashMap<>());
-        valveToAirBlocks.putIfAbsent(dimensionId, new WeakHashMap<>());
-        frameBlockToValve.putIfAbsent(dimensionId, new WeakHashMap<>());
-        airBlockToValve.putIfAbsent(dimensionId, new WeakHashMap<>());
+        /* This is no longer useful if SafeWeakHashMap work as expected
+        valveToFrameBlocks.putIfAbsent(dimensionId, new SafeWeakHashMap<>());
+        valveToAirBlocks.putIfAbsent(dimensionId, new SafeWeakHashMap<>());
+        frameBlockToValve.putIfAbsent(dimensionId, new SafeWeakHashMap<>());
+        airBlockToValve.putIfAbsent(dimensionId, new SafeWeakHashMap<>());
         blocksToCheck.putIfAbsent(dimensionId, new ArrayList<>());
+        */
         return dimensionId;
     }
 
