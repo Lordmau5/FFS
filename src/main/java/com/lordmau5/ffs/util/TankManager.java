@@ -151,7 +151,8 @@ public class TankManager {
     public boolean isPartOfTank(World world, BlockPos pos) {
         int dimensionId = getDimensionSafely(world);
 
-        return frameBlockToValve.get(dimensionId).containsKey(pos) || airBlockToValve.get(dimensionId).containsKey(pos);
+        return frameBlockToValve.getOrDefault(dimensionId, new WeakHashMap<>()).containsKey(pos)
+                || airBlockToValve.getOrDefault(dimensionId, new WeakHashMap<>()).containsKey(pos);
     }
 
     @SubscribeEvent
