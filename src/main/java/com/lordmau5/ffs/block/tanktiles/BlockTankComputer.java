@@ -2,7 +2,6 @@ package com.lordmau5.ffs.block.tanktiles;
 
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.util.FFSStateProps;
-import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
@@ -13,7 +12,7 @@ import net.minecraft.world.World;
 
 public class BlockTankComputer extends Block {
     public BlockTankComputer() {
-        super(AbstractBlock.Properties.create(Material.IRON).hardnessAndResistance(5.0f, 10.0f));
+        super(Block.Properties.create(Material.IRON).hardnessAndResistance(5.0f, 10.0f));
 
 //        setTranslationKey(FancyFluidStorage.MODID + ".block_tank_computer");
 //        setRegistryName("block_tank_computer");

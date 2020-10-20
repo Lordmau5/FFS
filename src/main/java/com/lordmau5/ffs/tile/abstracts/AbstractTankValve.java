@@ -26,7 +26,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -636,6 +635,11 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         return INFINITE_EXTENT_AABB;
+    }
+
+    @Override
+    public double getMaxRenderDistanceSquared() {
+        return 256.0D;
     }
 
     public int getComparatorOutput() {
