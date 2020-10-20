@@ -33,7 +33,7 @@ public class GuiButtonLockFluid extends ImageButton {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.getTextureManager().bindTexture(toggleTexture);
 
-        int texStart = getState() ? 8 : 0;
+        int texStart = getState() ? 0 : 8;
 
         RenderSystem.enableDepthTest();
         blit(matrixStack, this.x, this.y, (float)texStart, (float)128, this.width, this.height, 256, 256);
