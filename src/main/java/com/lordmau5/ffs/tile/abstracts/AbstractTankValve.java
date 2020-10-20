@@ -295,7 +295,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     }
                 } else {
                     if (isBlockBlacklisted(_pos)) {
-                        return false;
+                        continue;
                     }
                     frame_blocks.get(layer).add(_pos);
                 }
