@@ -8,11 +8,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -41,6 +43,20 @@ public class BlockFluidValve extends AbstractBlockValve {
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
         return new TileEntityFluidValve();
+    }
+
+    @Override
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
+        ItemStack stack = super.getPickBlock(state, target, world, pos, player);
+
+        if (player.isSneaking()) {
+            TileEntity tile = world.getTileEntity(pos);
+            if (tile instanceof TileEntityFluidValve) {
+                ((TileEntityFluidValve) tile).getTankConfig().writeToNBT(stack.getOrCreateTag());
+            }
+        }
+
+        return stack;
     }
 
     @Override
