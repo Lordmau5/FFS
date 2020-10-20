@@ -17,7 +17,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
+import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
@@ -26,7 +26,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -300,6 +299,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     frame_blocks.get(layer).add(_pos);
                 }
             }
+
             if ( currentAirBlocks > maxAirBlocks ) {
                 if ( buildPlayer != null ) {
                     GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
@@ -323,7 +323,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         BlockState state = world.getBlockState(pos);
 
         ResourceLocation blacklist = new ResourceLocation(FancyFluidStorage.MODID, "blacklist");
-        ITag<Block> blockITag = BlockTags.getCollection().get(blacklist);
+        Tag<Block> blockITag = BlockTags.getCollection().get(blacklist);
         if (blockITag == null) {
             return ServerConfig.general.blockBlacklistInvert;
         }
@@ -596,8 +596,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT nbt) {
-        super.read(state, nbt);
+    public void read(CompoundNBT nbt) {
+        super.read(nbt);
 
         isMain = nbt.getBoolean("IsMain");
         if ( isMain() ) {

@@ -101,11 +101,11 @@ public class BlockFluidValve extends AbstractBlockValve {
 
         tooltip.add(
                 new TranslationTextComponent("description.ffs.fluid_valve.fluid", fluidStack.getDisplayName().getString())
-                .mergeStyle(TextFormatting.GRAY)
+                .applyTextStyle(TextFormatting.GRAY)
         );
         tooltip.add(
                 new TranslationTextComponent("description.ffs.fluid_valve.amount", GenericUtil.intToFancyNumber(fluidStack.getAmount()) + "mB")
-                .mergeStyle(TextFormatting.GRAY)
+                .applyTextStyle(TextFormatting.GRAY)
         );
     }
 }

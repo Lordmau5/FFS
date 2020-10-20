@@ -29,7 +29,7 @@ public class GuiButtonLockFluid extends ImageButton {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(int mouseX, int mouseY, float partialTicks) {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.getTextureManager().bindTexture(toggleTexture);
 
@@ -37,8 +37,8 @@ public class GuiButtonLockFluid extends ImageButton {
 
         int texStart = getState() ? 0 : 8;
 
-        blit(matrixStack, this.x, this.y, (float)texStart, (float)128, this.width, this.height, 256, 256);
-        
+        blit(this.x, this.y, (float)texStart, (float)128, this.width, this.height, 256, 256);
+
         RenderSystem.enableDepthTest();
     }
 }

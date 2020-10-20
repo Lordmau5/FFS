@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ChunkManager;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
@@ -96,8 +97,8 @@ public class GenericUtil {
                 return false;
             }
 
-            Optional<FluidStack> stack = FluidUtil.getFluidContained(current);
-            if (stack.isPresent() && !stack.get().isEmpty() && valve.getTankConfig().isFluidLocked() && !valve.getTankConfig().getLockedFluid().isFluidEqual(stack.get())) {
+            LazyOptional<FluidStack> stack = FluidUtil.getFluidContained(current);
+            if (stack.isPresent() && !stack.orElseGet(() -> FluidStack.EMPTY).isEmpty() && valve.getTankConfig().isFluidLocked() && !valve.getTankConfig().getLockedFluid().isFluidEqual(stack.orElseGet(() -> FluidStack.EMPTY))) {
                 return false;
             }
 

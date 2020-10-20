@@ -136,14 +136,14 @@ public class GuiValve extends Screen {
 
     private void drawGUIValve(MatrixStack matrixStack, int x, int y, float partialTicks) {
         this.getMinecraft().getTextureManager().bindTexture(tex_valve);
-        blit(matrixStack, this.left, this.top, 0, 0, this.xSize_Valve, this.ySize_Valve);
+        blit(this.left, this.top, 0, 0, this.xSize_Valve, this.ySize_Valve);
 
         ITextComponent fluid = new TranslationTextComponent("gui.ffs.fluid_valve.empty");
         if ( this.valve.getTankConfig().getFluidStack() != FluidStack.EMPTY ) {
             fluid = this.valve.getTankConfig().getFluidStack().getDisplayName();
         }
 
-        drawCenteredString(matrixStack, this.font, fluid, this.left + (this.xSize_Valve / 2), this.top + 6, 16777215);
+        drawCenteredString(this.font, fluid.getFormattedText(), this.left + (this.xSize_Valve / 2), this.top + 6, 16777215);
 
         FluidStack stack = null;
         if ( this.valve.getTankConfig() != null && this.valve.getTankConfig().getFluidTank() != null ) {
@@ -155,7 +155,7 @@ public class GuiValve extends Screen {
         }
 
         // call to super to draw buttons and other such fancy things
-        super.render(matrixStack, x, y, partialTicks);
+        super.render(x, y, partialTicks);
 
         if ( this.tile instanceof INameableTile ) {
             drawTileName(matrixStack, this.left, this.top, partialTicks);
@@ -172,14 +172,14 @@ public class GuiValve extends Screen {
 
     private void drawGUINoValve(MatrixStack matrixStack, int x, int y, float partialTicks) {
         this.getMinecraft().getTextureManager().bindTexture(tex_no_valve);
-        blit(matrixStack, this.left, this.top, 0, 0, this.xSize_NoValve, this.ySize_NoValve);
+        blit(this.left, this.top, 0, 0, this.xSize_NoValve, this.ySize_NoValve);
 
         ITextComponent fluid = new TranslationTextComponent("gui.ffs.fluid_valve.empty");
         if ( !this.valve.getTankConfig().isEmpty() ) {
             fluid = this.valve.getTankConfig().getFluidStack().getDisplayName();
         }
 
-        drawCenteredString(matrixStack, this.font, fluid, this.left + (this.xSize_NoValve / 2), this.top + 6, 16777215);
+        drawCenteredString(this.font, fluid.getFormattedText(), this.left + (this.xSize_NoValve / 2), this.top + 6, 16777215);
 
         FluidStack stack = null;
         if ( this.valve.getTankConfig() != null && this.valve.getTankConfig().getFluidTank() != null ) {
@@ -191,7 +191,7 @@ public class GuiValve extends Screen {
         }
 
         // call to super to draw buttons and other such fancy things
-        super.render(matrixStack, x, y, partialTicks);
+        super.render(x, y, partialTicks);
 
         if ( this.mouseX >= this.left + 66 && this.mouseX < this.left + 66 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8 ) {
             lockedFluidHoveringText(matrixStack);
@@ -203,61 +203,65 @@ public class GuiValve extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int x, int y, float partialTicks) {
+    public void render(int x, int y, float partialTicks) {
         this.mouseX = x;
         this.mouseY = y;
 
         if ( isValve ) {
-            drawGUIValve(matrixStack, mouseX, mouseY, partialTicks);
+            drawGUIValve(null, mouseX, mouseY, partialTicks);
         } else {
-            drawGUINoValve(matrixStack, mouseX, mouseY, partialTicks);
+            drawGUINoValve(null, mouseX, mouseY, partialTicks);
         }
     }
 
     private void drawTileName(MatrixStack matrixStack, int x, int y, float partialTicks) {
         int length = this.font.getStringWidth("Tile Name");
-        this.font.drawString(matrixStack, TextFormatting.BLACK + "Tile Name", x + 86 + (length / 2), y + 90, Color.white.getRGB());
-        this.tileName.render(matrixStack, x, y, partialTicks);
+        this.font.drawString(TextFormatting.BLACK + "Tile Name", x + 86 + (length / 2), y + 90, Color.white.getRGB());
+        this.tileName.render(x, y, partialTicks);
     }
 
     private void lockedFluidHoveringText(MatrixStack ms) {
-        List<ITextComponent> texts = new ArrayList<>();
+        List<String> texts = new ArrayList<>();
         if (this.valve.getTankConfig().isFluidLocked()) {
             texts.add(
                     (new TranslationTextComponent("gui.ffs.fluid_valve.fluid_base"))
-                    .appendString(" ")
-                    .append(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_locked").mergeStyle(TextFormatting.RED))
+                    .appendText(" ")
+                    .appendSibling(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_locked").applyTextStyle(TextFormatting.RED))
+                    .getFormattedText()
             );
             texts.add(
                     (new TranslationTextComponent("description.ffs.fluid_valve.fluid", this.valve.getTankConfig().getLockedFluid().getDisplayName()))
-                    .mergeStyle(TextFormatting.GRAY)
+                    .applyTextStyle(TextFormatting.GRAY)
+                    .getFormattedText()
             );
         }
         else {
             texts.add(
                     (new TranslationTextComponent("gui.ffs.fluid_valve.fluid_base"))
-                    .appendString(" ")
-                    .append(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_unlocked").mergeStyle(TextFormatting.GREEN))
+                    .appendText(" ")
+                    .appendSibling(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_unlocked").applyTextStyle(TextFormatting.GREEN))
+                    .getFormattedText()
             );
         }
 
-        this.renderWrappedToolTip(ms, texts, this.mouseX, this.mouseY, this.font);
+        this.renderTooltip(texts, this.mouseX, this.mouseY, this.font);
     }
 
     private void fluidHoveringText(MatrixStack ms, ITextComponent fluid, int tank_x, int tank_y, int height) {
         if ( this.mouseX >= this.left + tank_x && this.mouseX < this.left + tank_x + 48 &&
                 this.mouseY >= this.top + tank_y && this.mouseY < this.top + tank_y + height ) {
-            List<ITextComponent> texts = new ArrayList<>();
-            texts.add(fluid);
+            List<String> texts = new ArrayList<>();
+            texts.add(fluid.getFormattedText());
             texts.add(
                     new StringTextComponent(
                             TextFormatting.GRAY
                                     + (GenericUtil.intToFancyNumber(this.valve.getTankConfig().getFluidAmount()) + " / " + GenericUtil.intToFancyNumber(this.valve.getTankConfig().getFluidCapacity()))
                                     + " mB"
                     )
+                    .getFormattedText()
             );
 
-            this.renderWrappedToolTip(ms, texts, this.mouseX, this.mouseY, this.font);
+            this.renderTooltip(texts, this.mouseX, this.mouseY, this.font);
         }
     }
 
@@ -265,7 +269,6 @@ public class GuiValve extends Screen {
         if ( fluid == null ) {
             return;
         }
-        ms.push();
 
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -274,8 +277,6 @@ public class GuiValve extends Screen {
         int color = fluid.getFluid().getAttributes().getColor(fluid);
         ClientRenderHelper.setGLColorFromInt(color);
         drawTiledTexture(x, y, ClientRenderHelper.getTexture(fluid.getFluid().getAttributes().getStillTexture(fluid)), width, height);
-
-        ms.pop();
     }
 
     public void drawTiledTexture(int x, int y, TextureAtlasSprite icon, int width, int height) {

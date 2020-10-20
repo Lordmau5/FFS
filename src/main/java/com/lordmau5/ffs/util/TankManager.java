@@ -1,7 +1,6 @@
 package com.lordmau5.ffs.util;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
-import com.lordmau5.ffs.holder.Items;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
@@ -11,12 +10,12 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
@@ -25,7 +24,6 @@ import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.event.world.ChunkWatchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
@@ -34,15 +32,15 @@ import java.util.*;
 public class TankManager {
 
     private static class HashMapCache {
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, BlockPos>> airBlockToValve = new WeakHashMap<>();
+        private final WeakHashMap<DimensionType, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
+        private final WeakHashMap<DimensionType, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
+        private final WeakHashMap<DimensionType, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
+        private final WeakHashMap<DimensionType, WeakHashMap<BlockPos, BlockPos>> airBlockToValve = new WeakHashMap<>();
 
-        private final WeakHashMap<RegistryKey<World>, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
+        private final WeakHashMap<DimensionType, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
 
         private WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToFrameBlocks(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+            DimensionType dimensionType = world.getDimension().getType();
 
             valveToFrameBlocks.putIfAbsent(dimensionType, new WeakHashMap<>());
 
@@ -50,7 +48,7 @@ public class TankManager {
         }
 
         private WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToAirBlocks(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+            DimensionType dimensionType = world.getDimension().getType();
 
             valveToAirBlocks.putIfAbsent(dimensionType, new WeakHashMap<>());
 
@@ -58,7 +56,7 @@ public class TankManager {
         }
 
         private WeakHashMap<BlockPos, BlockPos> getFrameBlockToValve(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+            DimensionType dimensionType = world.getDimension().getType();
 
             frameBlockToValve.putIfAbsent(dimensionType, new WeakHashMap<>());
 
@@ -66,7 +64,7 @@ public class TankManager {
         }
 
         private WeakHashMap<BlockPos, BlockPos> getAirBlockToValve(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+            DimensionType dimensionType = world.getDimension().getType();
 
             airBlockToValve.putIfAbsent(dimensionType, new WeakHashMap<>());
 
@@ -74,7 +72,7 @@ public class TankManager {
         }
 
         private List<BlockPos> getBlocksToCheck(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+            DimensionType dimensionType = world.getDimension().getType();
 
             blocksToCheck.putIfAbsent(dimensionType, new ArrayList<>());
 
