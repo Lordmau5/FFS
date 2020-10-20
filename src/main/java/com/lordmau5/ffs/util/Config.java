@@ -77,7 +77,6 @@ public class Config {
             if ( !built )
                 build();
 
-            System.out.println("FFS - " + "Updating config.");
 //            WirelessUtils.LOG.info("Updating config.");
 
             if ( bindings == null || bindings.isEmpty() )
@@ -135,7 +134,6 @@ public class Config {
 
                 final int mods = field.getModifiers();
                 if ( Modifier.isStatic(mods) && obj != null ) {
-                    System.out.println("FFS - " + "Skipping static field in non-root config: " + field.getName());
 //                    WirelessUtils.LOG.warn("Skipping static field in non-root config: " + field.getName());
                     continue;
                 }
@@ -146,7 +144,6 @@ public class Config {
                 if ( adapter == null && !ADAPTERS.containsKey(type) && classes.contains(type) )
                     is_class = true;
                 else if ( adapter == null ) {
-                    System.out.println("FFS - " + "Skipping field with un-handleable type: " + field.getName() + " (Type: " + field.getType() + ")");
 //                    WirelessUtils.LOG.warn("Skipping field with un-handleable type: " + field.getName() + " (Type: " + field.getType() + ")");
                     continue;
                 } else if ( !adapter.canHandle(obj, field) )
@@ -172,7 +169,6 @@ public class Config {
                     builder.push(name);
 
                     if ( depth >= 50 ) {
-                        System.out.println("FFS - " + "Config is nested too deeply. Skipping field: " + name);
 //                        WirelessUtils.LOG.warn("Config is nested too deeply. Skipping field: " + name);
                     }
                     else {
@@ -182,7 +178,6 @@ public class Config {
                         try {
                             value = field.get(obj);
                         } catch (final IllegalAccessException ex) {
-                            System.out.println("FFS - " + "Unable to scan instance. Skipping field: " + name);
 //                            WirelessUtils.LOG.error("Unable to scan instance. Skipping field: " + name);
                             valid = false;
                         }
@@ -213,7 +208,6 @@ public class Config {
             try {
                 field.set(obj, value);
             } catch (final IllegalArgumentException | IllegalAccessException ex) {
-                System.out.println("FFS - " + "Unable to set value for field: " + field.getName());
 //                WirelessUtils.LOG.error("Unable to set value for field: " + field.getName(), ex);
             }
         }
