@@ -1,28 +1,25 @@
 package com.lordmau5.ffs.tile.interfaces;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Direction;
 
-/**
- * Created by Dustin on 22.01.2016.
- */
 public interface IFacingTile {
 
-    default EnumFacing getTileFacing() {
+    default Direction getTileFacing() {
         return null;
     }
 
-    void setTileFacing(EnumFacing facing);
+    void setTileFacing(Direction facing);
 
-    default void saveTileFacingToNBT(NBTTagCompound tag) {
+    default void saveTileFacingToNBT(CompoundNBT tag) {
         if ( getTileFacing() != null ) {
-            tag.setString("tile_facing", getTileFacing().getName());
+            tag.putInt("TileFacing", getTileFacing().getIndex());
         }
     }
 
-    default void readTileFacingFromNBT(NBTTagCompound tag) {
-        if ( tag.hasKey("tile_facing") ) {
-            setTileFacing(EnumFacing.byName(tag.getString("tile_facing")));
+    default void readTileFacingFromNBT(CompoundNBT tag) {
+        if ( tag.contains("TileFacing") ) {
+            setTileFacing(Direction.byIndex(tag.getInt("TileFacing")));
         }
     }
 

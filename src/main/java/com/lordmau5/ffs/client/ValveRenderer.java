@@ -1,17 +1,22 @@
 package com.lordmau5.ffs.client;
 
 import com.lordmau5.ffs.FancyFluidStorage;
-import com.lordmau5.ffs.config.ModConfig;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.config.ServerConfig;
+import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.ClientRenderHelper;
 import com.lordmau5.ffs.util.LayerBlockPos;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.client.model.animation.FastTESR;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
@@ -19,33 +24,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-/**
- * Created by Dustin on 29.06.2015.
- * <p>
- * Shoutouts to Escapee for helping me with the new math behind the rendering! <3
- */
-public class ValveRenderer extends FastTESR<AbstractTankValve> {
+public class ValveRenderer extends TileEntityRenderer<TileEntityFluidValve> {
 
-    private void preGL() {
-        GlStateManager.pushMatrix();
-
-        GlStateManager.disableCull();
-    }
-
-    private void postGL() {
-        GlStateManager.enableCull();
-
-        GlStateManager.popMatrix();
+    public ValveRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
+        super(rendererDispatcherIn);
     }
 
     @Override
-    public boolean isGlobalRenderer(AbstractTankValve te) {
+    public boolean isGlobalRenderer(TileEntityFluidValve te) {
         return true;
     }
 
     @Override
-    public void renderTileEntityFast(@Nonnull AbstractTankValve valve, double x, double y, double z, float partialTicks, int destroyStage, float partial, @Nonnull BufferBuilder vb) {
-        if ( valve == null || !valve.isValid() || !valve.isMaster() ) {
+    public void render(@Nonnull TileEntityFluidValve valve, float partialTicks, MatrixStack ms, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+        if ( !valve.isValid() || !valve.isMain() ) {
             return;
         }
 
@@ -57,31 +49,33 @@ public class ValveRenderer extends FastTESR<AbstractTankValve> {
 
         float fillPercentage = (float) valve.getTankConfig().getFluidAmount() / (float) valve.getTankConfig().getFluidCapacity();
 
-        if ( fillPercentage > 0 && valve.getTankConfig().getFluidStack() != null ) {
+        if ( fillPercentage > 0 && valve.getTankConfig().getFluidStack() != FluidStack.EMPTY ) {
             FluidStack fluid = valve.getTankConfig().getFluidStack();
 
-            vb.setTranslation(x, y, z);
-
-            TreeMap<Integer, List<LayerBlockPos>> airBlocks = FancyFluidStorage.tankManager.getAirBlocksForValve(valve);
+            TreeMap<Integer, List<LayerBlockPos>> airBlocks = FancyFluidStorage.TANK_MANAGER.getAirBlocksForValve(valve);
             if ( airBlocks == null || airBlocks.isEmpty() ) {
                 return;
             }
 
-            TextureAtlasSprite still = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getStill(fluid).toString());
-            TextureAtlasSprite flowing = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getFlowing(fluid).toString());
+            TextureAtlasSprite still = Minecraft.getInstance().getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE).apply(fluid.getFluid().getAttributes().getStillTexture(fluid));
+            TextureAtlasSprite flowing = Minecraft.getInstance().getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE).apply(fluid.getFluid().getAttributes().getFlowingTexture(fluid));
 
-            preGL();
-            if ( fluid.getFluid().isGaseous() ) {
-                renderGasTank(still, flowing, airBlocks, valve, valvePos, vb, fluid, fillPercentage);
+            ms.push();
+
+            Matrix4f matrix = ms.getLast().getMatrix();
+
+            if ( fluid.getFluid().getAttributes().isGaseous() ) {
+                renderGasTank(still, flowing, airBlocks, valve, valvePos, bufferIn, matrix, fluid, fillPercentage);
             } else {
-                renderFluidTank(still, flowing, airBlocks, valve, valvePos, vb, fluid);
+                renderFluidTank(still, flowing, airBlocks, valve, valvePos, bufferIn, matrix, fluid);
             }
-            postGL();
+
+            ms.pop();
         }
     }
 
-    private void renderGasTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, AbstractTankValve valve, BlockPos valvePos, BufferBuilder vb, FluidStack fluid, float fillPercentage) {
-        int color = ClientRenderHelper.changeAlpha(fluid.getFluid().getColor(), (int) (fillPercentage * 255));
+    private void renderGasTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, IRenderTypeBuffer vb, Matrix4f matrix, FluidStack fluid, float fillPercentage) {
+        int color = ClientRenderHelper.changeAlpha(fluid.getFluid().getAttributes().getColor(), (int) (fillPercentage * 255));
 
         List<Integer> layers = new ArrayList<>(airBlocks.keySet());
         int topLayer = layers.get(layers.size() - 1) - 1;
@@ -89,14 +83,14 @@ public class ValveRenderer extends FastTESR<AbstractTankValve> {
             for (LayerBlockPos pos : airBlocks.get(layer)) {
                 BlockPos fromPos = pos.subtract(valvePos);
 
-                renderFluidBlock(still, flowing, vb, fluid, pos, fromPos, color, fromPos.getX() + 1d, fromPos.getY() + 1d, fromPos.getZ() + 1d, layer == topLayer);
+                renderFluidBlock(valve.getWorld(), still, flowing, vb, matrix, fluid, pos, fromPos, color, fromPos.getX() + 1f, fromPos.getY() + 1f, fromPos.getZ() + 1f, layer == topLayer);
             }
         }
     }
 
-    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, AbstractTankValve valve, BlockPos valvePos, BufferBuilder vb, FluidStack fluid) {
+    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, IRenderTypeBuffer vb, Matrix4f matrix, FluidStack fluid) {
         List<Integer> layers = new ArrayList<>(airBlocks.keySet());
-        List<Double> fillLevels = new ArrayList<>();
+        List<Float> fillLevels = new ArrayList<>();
         double fluidLeft = valve.getTankConfig().getFluidAmount();
         for (Integer layer : layers) {
             if ( fluidLeft <= 0 ) {
@@ -107,32 +101,33 @@ public class ValveRenderer extends FastTESR<AbstractTankValve> {
                 continue;
             }
 
-            double layerCapacity = (double) ModConfig.general.mbPerTankBlock * (double) layerBlockSize;
-            fillLevels.add(Math.min(1, fluidLeft / layerCapacity));
+            double layerCapacity = (double) ServerConfig.general.mbPerTankBlock * (double) layerBlockSize;
+            fillLevels.add((float) Math.min(1, fluidLeft / layerCapacity));
             fluidLeft -= layerCapacity;
         }
+
         for (int i = 0; i < fillLevels.size(); i++) {
             int layer = layers.get(i) + 1;
-            double currentLayerHeight = fillLevels.get(i);
+            float currentLayerHeight = fillLevels.get(i);
 
             for (LayerBlockPos pos : airBlocks.get(layer)) {
                 BlockPos fromPos = pos.subtract(valvePos);
 
-                renderFluidBlock(still, flowing, vb, fluid, pos, fromPos, fluid.getFluid().getColor(fluid), fromPos.getX() + 1d, fromPos.getY() + currentLayerHeight, fromPos.getZ() + 1d, i == fillLevels.size() - 1);
+                renderFluidBlock(valve.getWorld(), still, flowing, vb, matrix, fluid, pos, fromPos, fluid.getFluid().getAttributes().getColor(fluid), fromPos.getX() + 1f, fromPos.getY() + currentLayerHeight, fromPos.getZ() + 1f, i == fillLevels.size() - 1);
             }
         }
     }
 
-    private void renderFluidBlock(TextureAtlasSprite still, TextureAtlasSprite flowing, BufferBuilder vb, FluidStack fluid, BlockPos pos, BlockPos from, int color, double x2, double y2, double z2, boolean isTop) {
-        int brightness = getWorld().getCombinedLight(pos, fluid.getFluid().getLuminosity());
+    private void renderFluidBlock(World world, TextureAtlasSprite still, TextureAtlasSprite flowing, IRenderTypeBuffer vb, Matrix4f matrix, FluidStack fluid, BlockPos pos, BlockPos from, int color, float x2, float y2, float z2, boolean isTop) {
+        int brightness = WorldRenderer.getCombinedLight(world, pos);
 
-        double x1 = from.getX(), y1 = from.getY(), z1 = from.getZ();
+        float x1 = from.getX(), y1 = from.getY(), z1 = from.getZ();
 
         BlockPos currentOffset;
-        for (EnumFacing facing : EnumFacing.values()) {
+        for (Direction facing : Direction.values()) {
             currentOffset = pos.offset(facing);
-            if ( facing == EnumFacing.UP && isTop || !getWorld().getBlockState(currentOffset).isOpaqueCube() && !getWorld().isAirBlock(currentOffset) ) {
-                ClientRenderHelper.putTexturedQuad(vb, (facing != EnumFacing.DOWN && facing != EnumFacing.UP) ? flowing : still, x1, y1, z1, x2 - x1, y2 - y1, z2 - z1, facing, color, brightness, facing != EnumFacing.DOWN && facing != EnumFacing.UP);
+            if ( facing == Direction.UP && isTop || !world.getBlockState(currentOffset).isOpaqueCube(world, currentOffset) && !world.isAirBlock(currentOffset) ) {
+                ClientRenderHelper.putTexturedQuad(vb, (facing != Direction.DOWN && facing != Direction.UP) ? flowing : still, matrix, x1, y1, z1, x2 - x1, y2 - y1, z2 - z1, facing, color, brightness, facing != Direction.DOWN && facing != Direction.UP);
             }
         }
     }

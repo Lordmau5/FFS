@@ -1,99 +1,87 @@
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        jcenter()
         mavenCentral()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
-
-plugins {
-//    id 'com.matthewprenger.cursegradle' version '1.0.5'
-}
-
-apply plugin: 'java'
-apply plugin: 'net.minecraftforge.gradle.forge'
-
-sourceSets {
-  main {
-    java {
-      srcDir 'src/main/java'
-    }
-    resources {
-      srcDir 'src/main/resources'
-    }
-  }
-}
-
-idea {
-  module.inheritOutputDirs = true
-}
-
-repositories {
-    mavenCentral()
-    maven { // HWYLA / Tehnut's maven
-        name "tehnut"
-        url "http://tehnut.info/maven"
-    }
-    maven { // Chisel / tterrag's maven
-        name "tterrag"
-        url "http://maven.tterrag.com/"
-    }
-    maven {
-        name 'CoFH Maven'
-        url "http://maven.covers1624.net"
-    }
-    maven { // IC2 / Player's maven
-        name "player"
-        url "http://maven.ic2.player.to/"
-    }
-    flatDir {
-      dirs "libs"
-    }
-}
-
-dependencies {
-    deobfCompile "net.industrial-craft:industrialcraft-2:2.8.108-ex112"
-
-    deobfCompile "mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.23-16"
-
-    deobfCompile "mcp.mobius.waila:Hwyla:1.8.26-B41_1.12.2"
-}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
 
 if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version"
 
-group = 'lordmau5.ffs'
+group = 'com.lordmau5.ffs'
 version = "$minecraft_version-$mod_version"
-archivesBaseName = "Fancy Fluid Storage"
+archivesBaseName = 'Fancy Fluid Storage'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-    runDir = "runtime/client"
-    version = "$minecraft_version-$forge_version"
-    mappings = "stable_39"
+    mappings channel: 'snapshot', version: '20200916-1.16.2'
+
+    // Default run configurations.
+    // These can be tweaked, removed, or duplicated as needed.
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                ffs {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                ffs {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            args '--mod', 'ffs', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                ffs {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
 }
 
-processResources {
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
-
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+dependencies {
+    minecraft "net.minecraftforge:forge:$minecraft_version-$forge_version"
 }

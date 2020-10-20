@@ -1,0 +1,27 @@
+{
+  "bird": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "ffs:bird_01",
+        "stream": true
+      },
+      {
+        "name": "ffs:bird_02",
+        "stream": true
+      },
+      {
+        "name": "ffs:bird_03",
+        "stream": true
+      },
+      {
+        "name": "ffs:bird_04",
+        "stream": true
+      },
+      {
+        "name": "ffs:bird_05",
+        "stream": true
+      }
+    ]
+  }
+}

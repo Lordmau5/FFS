@@ -1,24 +1,32 @@
 package com.lordmau5.ffs.tile.valves;
 
 
+import com.lordmau5.ffs.holder.TileEntities;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.util.Direction;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-/**
- * Created by Dustin on 28.06.2015.
- */
 public class TileEntityFluidValve extends AbstractTankValve {
 
+    private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> getTankConfig().getFluidTank());
+
+    public TileEntityFluidValve() {
+        super(TileEntities.tileEntityFluidValve);
+    }
+
     @Override
-    public void update() {
-        super.update();
+    public void tick() {
+        super.tick();
 
         if ( getWorld().isRemote ) {
             return;
@@ -29,7 +37,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
         }
 
         FluidStack fluidStack = getTankConfig().getFluidStack();
-        if ( fluidStack == null ) {
+        if ( fluidStack == FluidStack.EMPTY ) {
             return;
         }
 
@@ -38,36 +46,22 @@ public class TileEntityFluidValve extends AbstractTankValve {
             return;
         }
 
-        if ( fluid == FluidRegistry.WATER ) {
+        if ( fluid == Fluids.WATER ) {
             if ( getWorld().isRaining() ) {
-                int rate = (int) Math.floor(getWorld().rainingStrength * 5 * getWorld().getBiomeForCoordsBody(getPos()).getRainfall());
-                if ( getPos().getY() == getWorld().getPrecipitationHeight(getPos()).getY() - 1 ) {
+                int rate = (int) Math.floor(getWorld().rainingStrength * 5 * getWorld().getBiome(getPos()).getDownfall());
+                if ( getPos().getY() == getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, getPos()).getY() - 1 ) {
                     FluidStack waterStack = fluidStack.copy();
-                    waterStack.amount = rate * 10;
-                    getTankConfig().getFluidTank().fill(waterStack, true);
+                    waterStack.setAmount(rate * 10);
+                    getTankConfig().getFluidTank().fill(waterStack, IFluidHandler.FluidAction.EXECUTE);
                 }
             }
         }
     }
 
     @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
-        return isValid() && capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY;
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        if (cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+            return holder.cast();
+        return super.getCapability(cap, side);
     }
-
-    @Override
-    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
-        if ( getTileFacing() == null || !isValid() ) {
-            return null;
-        }
-
-        if ( capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY ) {
-            if ( getTankConfig() != null ) {
-                return (T) getTankConfig().getFluidTank();
-            }
-        }
-
-        return super.getCapability(capability, facing);
-    }
-
 }

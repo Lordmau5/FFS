@@ -2,9 +2,6 @@ package com.lordmau5.ffs.util;
 
 import net.minecraft.util.math.BlockPos;
 
-/**
- * Created by Lordmau5 on 21.11.2016.
- */
 public class LayerBlockPos extends BlockPos {
     private int layer;
 
@@ -28,7 +25,7 @@ public class LayerBlockPos extends BlockPos {
     }
 
     @Override
-    public boolean equals(Object p_equals_1_) {
-        return super.equals(p_equals_1_);
+    public boolean equals(Object otherLayeredBlockPos) {
+        return super.equals(otherLayeredBlockPos);
     }
 }

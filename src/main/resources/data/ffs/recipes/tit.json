@@ -1,0 +1,10 @@
+{
+    "type": "minecraft:smelting",
+    "group": "ffs",
+    "ingredient": {
+        "item": "ffs:tit_egg"
+    },
+    "result": "ffs:tit",
+    "experience": 0,
+    "cookingtime": 200
+}

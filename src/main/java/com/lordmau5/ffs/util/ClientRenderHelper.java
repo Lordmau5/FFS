@@ -1,70 +1,62 @@
 package com.lordmau5.ffs.util;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-/**
- * Big thanks to KitsuneAlex for offering me parts of his ClientRenderHelper code <3
- */
-
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class ClientRenderHelper {
     public static final ResourceLocation MC_BLOCK_SHEET = new ResourceLocation("textures/atlas/blocks.png");
 
     public static void setBlockTextureSheet() {
-
-        Minecraft.getMinecraft().renderEngine.bindTexture(MC_BLOCK_SHEET);
+        Minecraft.getInstance().getTextureManager().bindTexture(MC_BLOCK_SHEET);
     }
 
     public static void setGLColorFromInt(int color) {
-
         float red = (float) (color >> 16 & 255) / 255.0F;
         float green = (float) (color >> 8 & 255) / 255.0F;
         float blue = (float) (color & 255) / 255.0F;
-        GlStateManager.color(red, green, blue, 1.0F);
-    }
-
-    public static TextureAtlasSprite getTexture(String location) {
-
-        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location);
+        GlStateManager.color4f(red, green, blue, 1.0F);
     }
 
     public static TextureAtlasSprite getTexture(ResourceLocation location) {
-
-        return getTexture(location.toString());
+        return Minecraft.getInstance().getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE).apply(location);
     }
 
-    public static void putTexturedQuad(BufferBuilder renderer, TextureAtlasSprite sprite, double x, double y, double z, double w, double h, double d, EnumFacing face, int color, int brightness, boolean flowing) {
+    public static void putTexturedQuad(IRenderTypeBuffer renderer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int color, int brightness, boolean flowing) {
         int l1 = brightness >> 0x10 & 0xFFFF;
         int l2 = brightness & 0xFFFF;
         int a = color >> 24 & 0xFF;
         int r = color >> 16 & 0xFF;
         int g = color >> 8 & 0xFF;
         int b = color & 0xFF;
-        putTexturedQuad(renderer, sprite, x, y, z, w, h, d, face, r, g, b, a, l1, l2, flowing);
+        putTexturedQuad(renderer, sprite, matrix, x, y, z, w, h, d, direction, r, g, b, a, l1, l2, flowing);
     }
 
-    private static void putTexturedQuad(BufferBuilder renderer, TextureAtlasSprite sprite, double x, double y, double z, double w, double h, double d, EnumFacing face, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
+    private static void putTexturedQuad(IRenderTypeBuffer renderTypeBuffer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
         if ( sprite == null ) {
             return;
         }
-        double minU;
-        double maxU;
-        double minV;
-        double maxV;
+        float minU;
+        float maxU;
+        float minV;
+        float maxV;
         double size = 16f;
         if ( flowing ) {
             size = 8f;
         }
-        double x2 = x + w;
-        double y2 = y + h;
-        double z2 = z + d;
+        float x2 = x + w;
+        float y2 = y + h;
+        float z2 = z + d;
         double xt1 = x % 1d;
         double xt2 = xt1 + w;
         while ( xt2 > 1f ) xt2 -= 1f;
@@ -81,7 +73,7 @@ public class ClientRenderHelper {
             yt2 = tmp;
         }
 
-        switch (face) {
+        switch (direction) {
             case DOWN:
             case UP:
                 minU = sprite.getInterpolatedU(xt1 * size);
@@ -110,42 +102,43 @@ public class ClientRenderHelper {
                 maxV = sprite.getMaxV();
         }
 
-        switch (face) {
+        IVertexBuilder renderer = renderTypeBuffer.getBuffer(RenderType.getText(sprite.getAtlasTexture().getTextureLocation()));
+        switch (direction) {
             case DOWN:
-                renderer.pos(x, y, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
                 break;
             case UP:
-                renderer.pos(x, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x, y2, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y2, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y2, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y2, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
                 break;
             case NORTH:
-                renderer.pos(x, y, z).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y, z).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y, z).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y, z).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
                 break;
             case SOUTH:
-                renderer.pos(x, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y2, z2).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x, y2, z2).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y2, z2).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y2, z2).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
                 break;
             case WEST:
-                renderer.pos(x, y, z).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x, y2, z2).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y, z).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y2, z2).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
                 break;
             case EAST:
-                renderer.pos(x2, y, z).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y2, z2).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(x2, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y, z).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y2, z2).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.pos(matrix, x2, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
                 break;
         }
     }

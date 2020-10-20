@@ -1,79 +1,100 @@
 package com.lordmau5.ffs;
 
-import com.lordmau5.ffs.compat.Compatibility;
-import com.lordmau5.ffs.compat.top.TOPCompatibility;
-import com.lordmau5.ffs.init.ModBlocksAndItems;
-import com.lordmau5.ffs.init.ModRecipes;
-import com.lordmau5.ffs.network.NetworkHandler;
-import com.lordmau5.ffs.proxy.GuiHandler;
-import com.lordmau5.ffs.proxy.IProxy;
+import com.lordmau5.ffs.config.ServerConfig;
+import com.lordmau5.ffs.holder.Blocks;
+import com.lordmau5.ffs.holder.Items;
+import com.lordmau5.ffs.holder.Sounds;
+import com.lordmau5.ffs.holder.TileEntities;
+import com.lordmau5.ffs.proxy.ClientProxy;
+import com.lordmau5.ffs.proxy.CommonProxy;
+import com.lordmau5.ffs.util.Config;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
-/**
- * Created by Dustin on 28.06.2015.
- */
-@Mod(modid = FancyFluidStorage.MODID, name = "Fancy Fluid Storage", dependencies = "after:waila")
+import javax.annotation.Nonnull;
+
+@Mod(FancyFluidStorage.MODID)
 public class FancyFluidStorage {
     public static final String MODID = "ffs";
-    public static final TankManager tankManager = new TankManager();
-    public static Block blockFluidValve;
-    public static Block blockTankComputer;
-    public static Item itemTitEgg;
-    public static Item itemTit;
-    @Mod.Instance(MODID)
+    public static final TankManager TANK_MANAGER = new TankManager();
+
+    // Registers
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
+    public static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, MODID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);
+
     public static FancyFluidStorage INSTANCE;
 
-    @SidedProxy(clientSide = "com.lordmau5.ffs.proxy.ClientProxy", serverSide = "com.lordmau5.ffs.proxy.CommonProxy")
-    private static IProxy PROXY;
+    public static final CommonProxy proxy = DistExecutor.safeRunForDist(
+        () -> ClientProxy::new,
+        () -> CommonProxy::new
+    );
 
-    @SuppressWarnings("deprecation")
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        Compatibility.INSTANCE.init();
+    public static final ItemGroup ITEM_GROUP = new ItemGroup(-1, MODID) {
+        @Override
+        @Nonnull
+        @OnlyIn(Dist.CLIENT)
+        public ItemStack createIcon() {
+            return new ItemStack(Blocks.fluidValve);
+        }
+    };
 
-        ModBlocksAndItems.preInit(event);
+    public FancyFluidStorage() {
+        INSTANCE = this;
 
-        NetworkRegistry.INSTANCE.registerGuiHandler(FancyFluidStorage.INSTANCE, new GuiHandler());
-        NetworkHandler.registerChannels(event.getSide());
+        final ModLoadingContext context = ModLoadingContext.get();
+        final IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        TOPCompatibility.register();
+        Blocks.registerAll();
+        BLOCKS.register(bus);
 
-        PROXY.preInit();
-    }
+        Items.registerAll();
+        ITEMS.register(bus);
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
-        ModRecipes.init();
+        TileEntities.registerAll();
+        TILE_ENTITIES.register(bus);
 
-        PROXY.init(event);
-    }
+        Sounds.registerAll();
+        SOUND_EVENTS.register(bus);
 
-    @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
+        proxy.registerEvents(bus);
+
         GenericUtil.init();
 
-        ForgeChunkManager.setForcedChunkLoadingCallback(INSTANCE, (tickets, world) -> {
-            if ( tickets != null && tickets.size() > 0 )
-                GenericUtil.initChunkLoadTicket(world, tickets.get(0));
-        });
+        context.registerConfig(ModConfig.Type.SERVER, Config.walkClass(ServerConfig.class, bus));
     }
 
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
-        if ( event.getWorld().isRemote ) {
-            FancyFluidStorage.tankManager.removeAllForDimension(event.getWorld().provider.getDimension());
+        IWorld iWorld = event.getWorld();
+
+        if (iWorld.isRemote() || !(iWorld instanceof World) ) {
+            return;
         }
+
+        World world = (World) iWorld;
+
+        FancyFluidStorage.TANK_MANAGER.removeAllForDimension(world);
     }
 }

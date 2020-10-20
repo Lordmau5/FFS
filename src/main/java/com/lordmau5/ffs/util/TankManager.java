@@ -1,50 +1,76 @@
 package com.lordmau5.ffs.util;
 
-import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.holder.Items;
+import com.lordmau5.ffs.network.FFSPacket;
+import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.event.world.ChunkWatchEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
-/**
- * Created by Lordmau5 on 06.10.2016.
- */
 public class TankManager {
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
-    private final WeakHashMap<Integer, WeakHashMap<BlockPos, BlockPos>> airBlockToValve = new WeakHashMap<>();
 
-    private final WeakHashMap<Integer, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
+    private static class HashMapCache {
+        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
+        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
+        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
+        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, BlockPos>> airBlockToValve = new WeakHashMap<>();
+
+        private final WeakHashMap<RegistryKey<World>, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
+    }
 
     public TankManager() {
     }
 
-    private int getDimensionSafely(World world) {
-        return getDimensionSafely(world.provider.getDimension());
+    private static final HashMapCache CLIENT = new HashMapCache();
+    private static final HashMapCache SERVER = new HashMapCache();
+
+    public static HashMapCache get(@Nullable World world) {
+        return (world != null && world.isRemote) ? CLIENT : SERVER;
     }
 
-    private int getDimensionSafely(int dimensionId) {
-        valveToFrameBlocks.putIfAbsent(dimensionId, new WeakHashMap<>());
-        valveToAirBlocks.putIfAbsent(dimensionId, new WeakHashMap<>());
-        frameBlockToValve.putIfAbsent(dimensionId, new WeakHashMap<>());
-        airBlockToValve.putIfAbsent(dimensionId, new WeakHashMap<>());
-        blocksToCheck.putIfAbsent(dimensionId, new ArrayList<>());
-        return dimensionId;
+    @OnlyIn(Dist.CLIENT)
+    public static void clear() {
+        CLIENT.valveToFrameBlocks.clear();
+        CLIENT.valveToAirBlocks.clear();
+        CLIENT.frameBlockToValve.clear();
+        CLIENT.airBlockToValve.clear();
+        CLIENT.blocksToCheck.clear();
+
+        System.out.println("Cleared tanks!");
+    }
+
+    private IWorld getDimensionSafely(World world) {
+        get(world).valveToFrameBlocks.putIfAbsent(world.getDimensionKey(), new WeakHashMap<>());
+        get(world).valveToAirBlocks.putIfAbsent(world.getDimensionKey(), new WeakHashMap<>());
+        get(world).frameBlockToValve.putIfAbsent(world.getDimensionKey(), new WeakHashMap<>());
+        get(world).airBlockToValve.putIfAbsent(world.getDimensionKey(), new WeakHashMap<>());
+        get(world).blocksToCheck.putIfAbsent(world.getDimensionKey(), new ArrayList<>());
+
+        return world;
     }
 
     public void add(World world, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
@@ -53,53 +79,53 @@ public class TankManager {
         }
 
         TileEntity tile = world.getTileEntity(valvePos);
-        if ( tile == null || !(tile instanceof AbstractTankValve) ) {
+        if ( !(tile instanceof AbstractTankValve) ) {
             return;
         }
 
-        if ( !((AbstractTankValve) tile).isMaster() ) {
+        if ( !((AbstractTankValve) tile).isMain() ) {
             return;
         }
 
-        addIgnore(world.provider.getDimension(), valvePos, airBlocks, frameBlocks);
+        addIgnore(world, valvePos, airBlocks, frameBlocks);
     }
 
-    public void addIgnore(int dimensionId, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
-        dimensionId = getDimensionSafely(dimensionId);
+    public void addIgnore(World world, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
+        getDimensionSafely(world);
 
-        valveToAirBlocks.get(dimensionId).put(valvePos, airBlocks);
+        get(world).valveToAirBlocks.get(world.getDimensionKey()).put(valvePos, airBlocks);
         for (int layer : airBlocks.keySet()) {
             for (LayerBlockPos pos : airBlocks.get(layer)) {
-                airBlockToValve.get(dimensionId).put(pos, valvePos);
+                get(world).airBlockToValve.get(world.getDimensionKey()).put(pos, valvePos);
             }
         }
 
-        valveToFrameBlocks.get(dimensionId).put(valvePos, frameBlocks);
+        get(world).valveToFrameBlocks.get(world.getDimensionKey()).put(valvePos, frameBlocks);
         for (int layer : frameBlocks.keySet()) {
             for (LayerBlockPos pos : frameBlocks.get(layer)) {
-                frameBlockToValve.get(dimensionId).put(pos, valvePos);
+                get(world).frameBlockToValve.get(world.getDimensionKey()).put(pos, valvePos);
             }
         }
     }
 
-    public void remove(int dimensionId, BlockPos valve) {
-        dimensionId = getDimensionSafely(dimensionId);
+    public void remove(World world, BlockPos valve) {
+        getDimensionSafely(world);
 
-        airBlockToValve.get(dimensionId).values().removeAll(Collections.singleton(valve));
-        valveToAirBlocks.get(dimensionId).remove(valve);
+        get(world).airBlockToValve.get(world.getDimensionKey()).values().removeAll(Collections.singleton(valve));
+        get(world).valveToAirBlocks.get(world.getDimensionKey()).remove(valve);
 
-        frameBlockToValve.get(dimensionId).values().removeAll(Collections.singleton(valve));
-        valveToFrameBlocks.get(dimensionId).remove(valve);
+        get(world).frameBlockToValve.get(world.getDimensionKey()).values().removeAll(Collections.singleton(valve));
+        get(world).valveToFrameBlocks.get(world.getDimensionKey()).remove(valve);
     }
 
-    public void removeAllForDimension(int dimensionId) {
-        dimensionId = getDimensionSafely(dimensionId);
+    public void removeAllForDimension(World world) {
+        getDimensionSafely(world);
 
-        valveToAirBlocks.get(dimensionId).clear();
-        valveToFrameBlocks.get(dimensionId).clear();
-        airBlockToValve.get(dimensionId).clear();
-        frameBlockToValve.get(dimensionId).clear();
-        blocksToCheck.get(dimensionId).clear();
+        get(world).valveToAirBlocks.get(world.getDimensionKey()).clear();
+        get(world).valveToFrameBlocks.get(world.getDimensionKey()).clear();
+        get(world).airBlockToValve.get(world.getDimensionKey()).clear();
+        get(world).frameBlockToValve.get(world.getDimensionKey()).clear();
+        get(world).blocksToCheck.get(world.getDimensionKey()).clear();
     }
 
     public AbstractTankValve getValveForBlock(World world, BlockPos pos) {
@@ -107,25 +133,27 @@ public class TankManager {
             return null;
         }
 
-        int dimensionId = getDimensionSafely(world);
+        getDimensionSafely(world);
 
         TileEntity tile = null;
-        if ( frameBlockToValve.get(dimensionId).containsKey(pos) ) {
-            tile = world.getTileEntity(frameBlockToValve.get(dimensionId).get(pos));
-        } else if ( airBlockToValve.get(dimensionId).containsKey(pos) ) {
-            tile = world.getTileEntity(airBlockToValve.get(dimensionId).get(pos));
+        if ( get(world).frameBlockToValve.get(world.getDimensionKey()).containsKey(pos) ) {
+            tile = world.getTileEntity(get(world).frameBlockToValve.get(world.getDimensionKey()).get(pos));
+        } else if ( get(world).airBlockToValve.get(world.getDimensionKey()).containsKey(pos) ) {
+            tile = world.getTileEntity(get(world).airBlockToValve.get(world.getDimensionKey()).get(pos));
         }
 
         return tile instanceof AbstractTankValve ? (AbstractTankValve) tile : null;
     }
 
     public List<BlockPos> getFrameBlocksForValve(AbstractTankValve valve) {
-        int dimensionId = getDimensionSafely(valve.getWorld());
+        World world = valve.getWorld();
+
+        getDimensionSafely(world);
 
         List<BlockPos> blocks = new ArrayList<>();
-        if ( valveToFrameBlocks.get(dimensionId).containsKey(valve.getPos()) ) {
-            for (int layer : valveToFrameBlocks.get(dimensionId).get(valve.getPos()).keySet()) {
-                blocks.addAll(valveToFrameBlocks.get(dimensionId).get(valve.getPos()).get(layer));
+        if ( get(world).valveToFrameBlocks.get(world.getDimensionKey()).containsKey(valve.getPos()) ) {
+            for (int layer : get(world).valveToFrameBlocks.get(world.getDimensionKey()).get(valve.getPos()).keySet()) {
+                blocks.addAll(get(world).valveToFrameBlocks.get(world.getDimensionKey()).get(valve.getPos()).get(layer));
             }
         }
 
@@ -133,26 +161,30 @@ public class TankManager {
     }
 
     public TreeMap<Integer, List<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
-        int dimensionId = getDimensionSafely(valve.getWorld());
+        World world = valve.getWorld();
 
-        if ( valveToAirBlocks.get(dimensionId).containsKey(valve.getPos()) ) {
-            return valveToAirBlocks.get(dimensionId).get(valve.getPos());
+        getDimensionSafely(world);
+
+        if ( get(world).valveToAirBlocks.get(world.getDimensionKey()).containsKey(valve.getPos()) ) {
+            return get(world).valveToAirBlocks.get(world.getDimensionKey()).get(valve.getPos());
         }
 
         return null;
     }
 
     public boolean isValveInLists(World world, AbstractTankValve valve) {
-        int dimensionId = getDimensionSafely(world);
+        getDimensionSafely(world);
 
-        return valveToAirBlocks.get(dimensionId).containsKey(valve.getPos());
+        return get(world).valveToAirBlocks.get(world.getDimensionKey()).containsKey(valve.getPos());
     }
 
     public boolean isPartOfTank(World world, BlockPos pos) {
-        int dimensionId = getDimensionSafely(world);
+        getDimensionSafely(world);
 
-        return frameBlockToValve.getOrDefault(dimensionId, new WeakHashMap<>()).containsKey(pos)
-                || airBlockToValve.getOrDefault(dimensionId, new WeakHashMap<>()).containsKey(pos);
+        boolean ret = get(world).frameBlockToValve.getOrDefault(world.getDimensionKey(), new WeakHashMap<>()).containsKey(pos)
+                || get(world).airBlockToValve.getOrDefault(world.getDimensionKey(), new WeakHashMap<>()).containsKey(pos);
+
+        return ret;
     }
 
     @SubscribeEvent
@@ -161,7 +193,7 @@ public class TankManager {
             return;
         }
 
-        if ( !(event.getEntity() instanceof EntityCreature) ) {
+        if ( !(event.getEntity() instanceof CreatureEntity) ) {
             return;
         }
 
@@ -180,13 +212,13 @@ public class TankManager {
             return;
         }
 
-        int dimensionId = event.world.provider.getDimension();
-        if ( blocksToCheck.isEmpty() || blocksToCheck.get(dimensionId) == null || blocksToCheck.get(dimensionId).isEmpty() ) {
+        World world = event.world;
+        if ( get(world).blocksToCheck.isEmpty() || get(world).blocksToCheck.get(world.getDimensionKey()) == null || get(world).blocksToCheck.get(world.getDimensionKey()).isEmpty() ) {
             return;
         }
 
         AbstractTankValve valve;
-        for (BlockPos pos : blocksToCheck.get(dimensionId)) {
+        for (BlockPos pos : get(world).blocksToCheck.get(world.getDimensionKey())) {
             if ( isPartOfTank(event.world, pos) ) {
                 valve = getValveForBlock(event.world, pos);
                 if ( valve != null ) {
@@ -197,57 +229,62 @@ public class TankManager {
                 }
             }
         }
-        blocksToCheck.get(dimensionId).clear();
+        get(world).blocksToCheck.get(world.getDimensionKey()).clear();
     }
 
     private void addBlockForCheck(World world, BlockPos pos) {
-        int dimensionId = getDimensionSafely(world);
-        List<BlockPos> blocks = blocksToCheck.get(dimensionId);
+        getDimensionSafely(world);
+
+        List<BlockPos> blocks = get(world).blocksToCheck.get(world.getDimensionKey());
         if ( blocks == null ) {
             blocks = new ArrayList<>();
         }
 
         blocks.add(pos);
-        blocksToCheck.put(dimensionId, blocks);
+        get(world).blocksToCheck.put(world.getDimensionKey(), blocks);
     }
 
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event) {
-        World world = event.getWorld();
+        IWorld world = event.getWorld();
         BlockPos pos = event.getPos();
 
-        if ( world.isRemote ) {
+        if ( world.isRemote() || !(world instanceof World) ) {
             return;
         }
 
-        if ( !isPartOfTank(world, pos) ) {
+        World wWorld = (World) world;
+
+        if ( !isPartOfTank(wWorld, pos) ) {
             return;
         }
 
-        addBlockForCheck(world, pos);
+        addBlockForCheck(wWorld, pos);
     }
 
     @SubscribeEvent
-    public void onBlockPlace(BlockEvent.PlaceEvent event) {
-        World world = event.getWorld();
+    public void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        IWorld world = event.getWorld();
         BlockPos pos = event.getPos();
 
-        if ( world.isRemote ) {
+        if ( world.isRemote() || !(world instanceof World) ) {
             return;
         }
 
-        if ( !isPartOfTank(world, pos) ) {
+        World wWorld = (World) world;
+
+        if ( !isPartOfTank(wWorld, pos) ) {
             return;
         }
 
-        addBlockForCheck(world, pos);
+        addBlockForCheck(wWorld, pos);
     }
 
     @SubscribeEvent
     public void onRightClick(PlayerInteractEvent.RightClickBlock event) {
         BlockPos pos = event.getPos();
         World world = event.getWorld();
-        EntityPlayer player = event.getEntityPlayer();
+        PlayerEntity player = event.getPlayer();
 
         if ( player == null ) {
             return;
@@ -257,26 +294,18 @@ public class TankManager {
             return;
         }
 
-        if ( event.getHand() == EnumHand.OFF_HAND ) {
+        if ( event.getHand() == Hand.OFF_HAND ) {
             event.setCanceled(true);
             return;
         }
 
-        if ( player.getHeldItemOffhand() != ItemStack.EMPTY ) {
-            if ( player.getHeldItemOffhand().getItem() == FancyFluidStorage.itemTit ) {
-                return;
-            }
-        }
-
         if ( world.isRemote ) {
-            player.swingArm(EnumHand.MAIN_HAND);
+            player.swingArm(Hand.MAIN_HAND);
         }
 
         if ( world.getBlockState(pos).getBlock() instanceof AbstractBlockValve ) {
             return;
         }
-
-        event.setCanceled(true);
 
         if ( player.isSneaking() ) {
             ItemStack mainHand = player.getHeldItemMainhand();
@@ -284,21 +313,26 @@ public class TankManager {
                 if ( player.isCreative() ) {
                     mainHand = mainHand.copy();
                 }
-                mainHand.onItemUse(player, world, pos, EnumHand.MAIN_HAND, event.getFace(), (float) event.getHitVec().x, (float) event.getHitVec().y, (float) event.getHitVec().z);
+//                mainHand.onItemUse(player, world, pos, Hand.MAIN_HAND, event.getFace(), (float) event.getHitVec().x, (float) event.getHitVec().y, (float) event.getHitVec().z);
             }
             return;
         }
 
+        event.setCanceled(true);
+
         AbstractTankValve tile = getValveForBlock(world, pos);
-        if ( tile != null && tile.getMasterValve() != null ) {
-            AbstractTankValve valve = tile.getMasterValve();
+        if ( tile != null && tile.getMainValve() != null ) {
+            AbstractTankValve valve = tile.getMainValve();
             if ( valve.isValid() ) {
                 if ( GenericUtil.isFluidContainer(event.getItemStack()) ) {
                     if ( GenericUtil.fluidContainerHandler(world, valve, player) ) {
                         valve.markForUpdateNow();
                     }
                 } else {
-                    player.openGui(FancyFluidStorage.INSTANCE, 1, tile.getWorld(), tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
+                    if (!world.isRemote) {
+                        NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OpenGUI(tile, false), (ServerPlayerEntity) player);
+                    }
+//                    player.openGui(FancyFluidStorage.INSTANCE, 1, tile.getWorld(), tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
                 }
             }
         }
@@ -306,7 +340,7 @@ public class TankManager {
 
     @SubscribeEvent
     public void onFillBucket(FillBucketEvent event) {
-        if ( event.getEntityPlayer().isSneaking() ) {
+        if ( event.getEntity().isSneaking() ) {
             return;
         }
 
@@ -314,13 +348,28 @@ public class TankManager {
             return;
         }
 
-        BlockPos pos = event.getTarget().getBlockPos();
+        if (event.getTarget().getType() != RayTraceResult.Type.BLOCK) {
+            return;
+        }
+
+        BlockRayTraceResult rayTraceResult = (BlockRayTraceResult) event.getTarget();
+
+        BlockPos pos = rayTraceResult.getPos();
 
         if ( !isPartOfTank(event.getWorld(), pos) ) {
             return;
         }
 
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (!(event.getPlayer() instanceof ServerPlayerEntity)) {
+            return;
+        }
+
+        NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.ClearTanks(), (ServerPlayerEntity) event.getPlayer());
     }
 
 }

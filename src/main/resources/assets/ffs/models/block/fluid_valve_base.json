@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "ffs:blocks/fluid/fluid_valve_base"
+  }
+}

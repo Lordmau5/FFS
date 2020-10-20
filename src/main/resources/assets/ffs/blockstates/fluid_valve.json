@@ -1,0 +1,33 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "ffs:block/fluid_valve_base"
+      }
+    },
+    {
+      "when": {
+        "tile_valid": "false"
+      },
+      "apply": {
+        "model": "ffs:block/fluid_valve_invalid"
+      }
+    },
+    {
+      "when": {
+        "tile_valid": "true"
+      },
+      "apply": {
+        "model": "ffs:block/fluid_valve_valid"
+      }
+    },
+    {
+      "when": {
+        "tile_main": "true"
+      },
+      "apply": {
+        "model": "ffs:block/fluid_valve_main"
+      }
+    }
+  ]
+}

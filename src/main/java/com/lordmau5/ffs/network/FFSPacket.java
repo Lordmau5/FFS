@@ -1,27 +1,69 @@
 package com.lordmau5.ffs.network;
 
+import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.LayerBlockPos;
-import io.netty.buffer.ByteBuf;
+import com.lordmau5.ffs.util.TankManager;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
-/**
- * Created by Dustin on 07.07.2015.
- */
 public abstract class FFSPacket {
-    public abstract void encode(ByteBuf buffer);
-
-    public abstract void decode(ByteBuf buffer);
-
     public static abstract class Client {
-        public static class OnTankBuild extends FFSPacket {
-            private int dimensionId;
+        public static class OpenGUI {
+            public BlockPos pos;
+            public boolean isValve;
+
+            public OpenGUI() {
+            }
+
+            public OpenGUI(AbstractTankTile tile, boolean isValve) {
+                this.pos = tile.getPos();
+                this.isValve = isValve;
+            }
+
+            public void encode(PacketBuffer buffer) {
+                buffer.writeBlockPos(this.pos);
+                buffer.writeBoolean(this.isValve);
+            }
+
+            public static OpenGUI decode(PacketBuffer buffer) {
+                OpenGUI packet = new OpenGUI();
+
+                packet.pos = buffer.readBlockPos();
+                packet.isValve = buffer.readBoolean();
+
+                return packet;
+            }
+
+            public BlockPos getValvePos() {
+                return pos;
+            }
+
+            public boolean getIsValve() {
+                return isValve;
+            }
+
+            public static void onReceived(OpenGUI msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+                NetworkEvent.Context ctx = ctxSupplier.get();
+
+                ctx.enqueueWork(() -> FFSPacketClientHandler.handleOnOpenGUI(msg));
+
+                ctx.setPacketHandled(true);
+            }
+        }
+
+        public static class OnTankBuild {
             private BlockPos valvePos;
             private TreeMap<Integer, List<LayerBlockPos>> airBlocks;
             private TreeMap<Integer, List<LayerBlockPos>> frameBlocks;
@@ -30,15 +72,12 @@ public abstract class FFSPacket {
             }
 
             public OnTankBuild(AbstractTankValve valve) {
-                this.dimensionId = valve.getWorld().provider.getDimension();
                 this.valvePos = valve.getPos();
                 this.airBlocks = valve.getAirBlocks();
                 this.frameBlocks = valve.getFrameBlocks();
             }
 
-            @Override
-            public void encode(ByteBuf buffer) {
-                buffer.writeInt(this.dimensionId);
+            public void encode(PacketBuffer buffer) {
                 buffer.writeLong(this.valvePos.toLong());
 
                 buffer.writeInt(this.airBlocks.size());
@@ -62,12 +101,12 @@ public abstract class FFSPacket {
                 }
             }
 
-            @Override
-            public void decode(ByteBuf buffer) {
-                this.dimensionId = buffer.readInt();
-                this.valvePos = BlockPos.fromLong(buffer.readLong());
+            public static OnTankBuild decode(PacketBuffer buffer) {
+                OnTankBuild packet = new OnTankBuild();
 
-                this.airBlocks = new TreeMap<>();
+                packet.valvePos = BlockPos.fromLong(buffer.readLong());
+
+                packet.airBlocks = new TreeMap<>();
                 int layerSize = buffer.readInt();
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
@@ -76,10 +115,10 @@ public abstract class FFSPacket {
                     for (int j = 0; j < airBlockSize; j++) {
                         layerBlocks.add(new LayerBlockPos(BlockPos.fromLong(buffer.readLong()), buffer.readInt()));
                     }
-                    this.airBlocks.put(layer, layerBlocks);
+                    packet.airBlocks.put(layer, layerBlocks);
                 }
 
-                this.frameBlocks = new TreeMap<>();
+                packet.frameBlocks = new TreeMap<>();
                 layerSize = buffer.readInt();
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
@@ -88,12 +127,10 @@ public abstract class FFSPacket {
                     for (int j = 0; j < frameBlockSize; j++) {
                         layerBlocks.add(new LayerBlockPos(BlockPos.fromLong(buffer.readLong()), buffer.readInt()));
                     }
-                    this.frameBlocks.put(layer, layerBlocks);
+                    packet.frameBlocks.put(layer, layerBlocks);
                 }
-            }
 
-            public int getDimension() {
-                return dimensionId;
+                return packet;
             }
 
             public BlockPos getValvePos() {
@@ -107,44 +144,74 @@ public abstract class FFSPacket {
             public TreeMap<Integer, List<LayerBlockPos>> getFrameBlocks() {
                 return frameBlocks;
             }
+
+            public static void onReceived(OnTankBuild msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+                NetworkEvent.Context ctx = ctxSupplier.get();
+
+                ctx.enqueueWork(() -> FFSPacketClientHandler.handleOnTankBuild(msg));
+
+                ctx.setPacketHandled(true);
+            }
         }
 
-        public static class OnTankBreak extends FFSPacket {
-            private int dimensionId;
+        public static class OnTankBreak {
             private BlockPos valvePos;
 
             public OnTankBreak() {
             }
 
             public OnTankBreak(AbstractTankValve valve) {
-                this.dimensionId = valve.getWorld().provider.getDimension();
                 this.valvePos = valve.getPos();
             }
 
-            @Override
-            public void encode(ByteBuf buffer) {
-                buffer.writeInt(this.dimensionId);
-                buffer.writeLong(this.valvePos.toLong());
+            public void encode(PacketBuffer buffer) {
+                buffer.writeBlockPos(this.valvePos);
             }
 
-            @Override
-            public void decode(ByteBuf buffer) {
-                this.dimensionId = buffer.readInt();
-                this.valvePos = BlockPos.fromLong(buffer.readLong());
-            }
+            public static OnTankBreak decode(PacketBuffer buffer) {
+                OnTankBreak packet = new OnTankBreak();
 
-            public int getDimension() {
-                return dimensionId;
+                packet.valvePos = buffer.readBlockPos();
+
+                return packet;
             }
 
             public BlockPos getValvePos() {
                 return valvePos;
             }
+
+            public static void onReceived(OnTankBreak msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+                NetworkEvent.Context ctx = ctxSupplier.get();
+
+                ctx.enqueueWork(() -> FFSPacketClientHandler.handleOnTankBreak(msg));
+
+                ctx.setPacketHandled(true);
+            }
+        }
+
+        public static class ClearTanks {
+
+            public ClearTanks() {
+            }
+
+            public void encode(PacketBuffer buffer) {}
+
+            public static ClearTanks decode(PacketBuffer buffer) {
+                return new ClearTanks();
+            }
+
+            public static void onReceived(ClearTanks msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+                NetworkEvent.Context ctx = ctxSupplier.get();
+
+                ctx.enqueueWork(() -> FancyFluidStorage.TANK_MANAGER.clear());
+
+                ctx.setPacketHandled(true);
+            }
         }
     }
 
     public static class Server {
-        public static class UpdateTileName extends FFSPacket {
+        public static class UpdateTileName {
             private BlockPos pos;
             private String name;
 
@@ -156,16 +223,18 @@ public abstract class FFSPacket {
                 this.name = name;
             }
 
-            @Override
-            public void encode(ByteBuf buffer) {
-                buffer.writeLong(this.pos.toLong());
-                ByteBufUtils.writeUTF8String(buffer, this.name);
+            public void encode(PacketBuffer buffer) {
+                buffer.writeBlockPos(this.pos);
+                buffer.writeString(this.name);
             }
 
-            @Override
-            public void decode(ByteBuf buffer) {
-                this.pos = BlockPos.fromLong(buffer.readLong());
-                this.name = ByteBufUtils.readUTF8String(buffer);
+            public static UpdateTileName decode(PacketBuffer buffer) {
+                UpdateTileName packet = new UpdateTileName();
+
+                packet.pos = buffer.readBlockPos();
+                packet.name = buffer.readString();
+
+                return packet;
             }
 
             public BlockPos getPos() {
@@ -175,9 +244,29 @@ public abstract class FFSPacket {
             public String getName() {
                 return name;
             }
+
+            public static void onReceived(UpdateTileName msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+                NetworkEvent.Context ctx = ctxSupplier.get();
+
+                ctx.enqueueWork(() -> {
+                    ServerPlayerEntity playerEntity = ctx.getSender();
+                    World world = playerEntity != null ? playerEntity.world : null;
+
+                    if (world != null) {
+                        TileEntity tile = world.getTileEntity(msg.getPos());
+                        if (tile instanceof AbstractTankTile && tile instanceof INameableTile) {
+                            AbstractTankTile abstractTankTile = (AbstractTankTile) tile;
+                            ((INameableTile) abstractTankTile).setTileName(msg.getName());
+                            abstractTankTile.markForUpdateNow();
+                        }
+                    }
+                });
+
+                ctx.setPacketHandled(true);
+            }
         }
 
-        public static class UpdateFluidLock extends FFSPacket {
+        public static class UpdateFluidLock {
             private BlockPos pos;
             private boolean fluidLock;
 
@@ -189,16 +278,18 @@ public abstract class FFSPacket {
                 this.fluidLock = valve.getTankConfig().isFluidLocked();
             }
 
-            @Override
-            public void encode(ByteBuf buffer) {
-                buffer.writeLong(this.pos.toLong());
+            public void encode(PacketBuffer buffer) {
+                buffer.writeBlockPos(this.pos);
                 buffer.writeBoolean(this.fluidLock);
             }
 
-            @Override
-            public void decode(ByteBuf buffer) {
-                this.pos = BlockPos.fromLong(buffer.readLong());
-                this.fluidLock = buffer.readBoolean();
+            public static UpdateFluidLock decode(PacketBuffer buffer) {
+                UpdateFluidLock packet = new UpdateFluidLock();
+
+                packet.pos = buffer.readBlockPos();
+                packet.fluidLock = buffer.readBoolean();
+
+                return packet;
             }
 
             public BlockPos getPos() {
@@ -208,9 +299,28 @@ public abstract class FFSPacket {
             public boolean isFluidLock() {
                 return fluidLock;
             }
+
+            public static void onReceived(UpdateFluidLock msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+                NetworkEvent.Context ctx = ctxSupplier.get();
+
+                ctx.enqueueWork(() -> {
+                    ServerPlayerEntity playerEntity = ctx.getSender();
+                    World world = playerEntity != null ? playerEntity.world : null;
+
+                    if (world != null) {
+                        TileEntity tile = world.getTileEntity(msg.getPos());
+                        if (tile instanceof AbstractTankValve) {
+                            AbstractTankValve valve = (AbstractTankValve) tile;
+                            valve.setFluidLock(msg.isFluidLock());
+                        }
+                    }
+                });
+
+                ctx.setPacketHandled(true);
+            }
         }
 
-        public static class OnTankRequest extends FFSPacket {
+        public static class OnTankRequest {
             private BlockPos pos;
 
             public OnTankRequest() {
@@ -220,18 +330,38 @@ public abstract class FFSPacket {
                 this.pos = valve.getPos();
             }
 
-            @Override
-            public void encode(ByteBuf buffer) {
-                buffer.writeLong(this.pos.toLong());
+            public void encode(PacketBuffer buffer) {
+                buffer.writeBlockPos(this.pos);
             }
 
-            @Override
-            public void decode(ByteBuf buffer) {
-                this.pos = BlockPos.fromLong(buffer.readLong());
+            public static OnTankRequest decode(PacketBuffer buffer) {
+                OnTankRequest packet = new OnTankRequest();
+
+                packet.pos = buffer.readBlockPos();
+
+                return packet;
             }
 
             public BlockPos getPos() {
                 return pos;
+            }
+
+            public static void onReceived(OnTankRequest msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+                NetworkEvent.Context ctx = ctxSupplier.get();
+
+                ctx.enqueueWork(() -> {
+                    ServerPlayerEntity playerEntity = ctx.getSender();
+                    World world = playerEntity != null ? playerEntity.world : null;
+
+                    if (world != null) {
+                        TileEntity tile = world.getTileEntity(msg.getPos());
+                        if (tile instanceof AbstractTankValve) {
+                            NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OnTankBuild((AbstractTankValve) tile), playerEntity);
+                        }
+                    }
+                });
+
+                ctx.setPacketHandled(true);
             }
         }
     }

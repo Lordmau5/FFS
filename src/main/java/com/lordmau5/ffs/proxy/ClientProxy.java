@@ -1,37 +1,35 @@
 package com.lordmau5.ffs.proxy;
 
-import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.client.ValveRenderer;
-import com.lordmau5.ffs.compat.waila.WailaPluginTank;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.item.Item;
-import net.minecraftforge.client.model.ModelLoader;
+import com.lordmau5.ffs.holder.Blocks;
+import com.lordmau5.ffs.holder.TileEntities;
+import com.lordmau5.ffs.network.NetworkHandler;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-/**
- * Created by Dustin on 29.06.2015.
- */
+@OnlyIn(Dist.CLIENT)
 public class ClientProxy extends CommonProxy {
-    public void preInit() {
-        ClientRegistry.bindTileEntitySpecialRenderer(AbstractTankValve.class, new ValveRenderer());
 
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(FancyFluidStorage.blockFluidValve), 0, new ModelResourceLocation("ffs:block_fluid_valve", "inventory"));
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(FancyFluidStorage.blockTankComputer), 0, new ModelResourceLocation("ffs:block_tank_computer", "inventory"));
+    @Override
+    public void registerEvents(IEventBus modBus) {
+        super.registerEvents(modBus);
 
-        ModelLoader.setCustomModelResourceLocation(FancyFluidStorage.itemTit, 0, new ModelResourceLocation(FancyFluidStorage.itemTit.getRegistryName().toString()));
-        ModelLoader.setCustomModelResourceLocation(FancyFluidStorage.itemTitEgg, 0, new ModelResourceLocation(FancyFluidStorage.itemTitEgg.getRegistryName().toString()));
+        modBus.addListener(this::clientSetup);
     }
 
-    public void init(FMLInitializationEvent event) {
-//        MinecraftForge.EVENT_BUS.register(new OverlayRenderHandler());
-
-        if ( Loader.isModLoaded("waila") ) {
-            WailaPluginTank.init();
+    private void clientSetup(final FMLClientSetupEvent event) {
+        if (ModList.get().isLoaded("waila")){
+//            WailaPluginTank.init();
         }
 
-        super.init(event);
+        RenderTypeLookup.setRenderLayer(Blocks.fluidValve, RenderType.getCutout());
+
+        ClientRegistry.bindTileEntityRenderer(TileEntities.tileEntityFluidValve, ValveRenderer::new);
     }
 }
