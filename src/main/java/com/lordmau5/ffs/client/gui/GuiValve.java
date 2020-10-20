@@ -236,6 +236,7 @@ public class GuiValve extends Screen {
         else {
             texts.add(
                     (new TranslationTextComponent("gui.ffs.fluid_valve.fluid_base"))
+                    .appendString(" ")
                     .append(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_unlocked").mergeStyle(TextFormatting.GREEN))
             );
         }
