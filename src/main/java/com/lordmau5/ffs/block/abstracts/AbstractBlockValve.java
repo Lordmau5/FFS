@@ -11,7 +11,6 @@ import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;

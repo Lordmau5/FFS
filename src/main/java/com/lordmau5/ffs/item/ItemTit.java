@@ -2,7 +2,6 @@ package com.lordmau5.ffs.item;
 
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.holder.Sounds;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

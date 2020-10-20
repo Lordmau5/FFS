@@ -5,7 +5,6 @@ import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.LayerBlockPos;
-import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;

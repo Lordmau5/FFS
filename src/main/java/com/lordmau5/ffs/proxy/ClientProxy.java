@@ -3,7 +3,6 @@ package com.lordmau5.ffs.proxy;
 import com.lordmau5.ffs.client.ValveRenderer;
 import com.lordmau5.ffs.holder.Blocks;
 import com.lordmau5.ffs.holder.TileEntities;
-import com.lordmau5.ffs.network.NetworkHandler;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraftforge.api.distmarker.Dist;

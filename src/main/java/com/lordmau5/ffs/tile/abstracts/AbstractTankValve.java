@@ -638,6 +638,11 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return INFINITE_EXTENT_AABB;
     }
 
+    @Override
+    public double getMaxRenderDistanceSquared() {
+        return 256.0D;
+    }
+
     public int getComparatorOutput() {
         if ( !isValid() ) {
             return 0;
