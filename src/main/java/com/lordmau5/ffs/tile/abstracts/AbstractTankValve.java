@@ -294,7 +294,16 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     }
                 } else {
                     if (isBlockBlacklisted(_pos)) {
-                        continue;
+                        if ( buildPlayer != null ) {
+                            GenericUtil.sendMessageToClient(
+                                    buildPlayer,
+                                    "chat.ffs.valve_blacklisted_block_found",
+                                    false,
+                                    _pos.getCoordinatesAsString(),
+                                    getWorld().getBlockState(_pos).getBlock().getTranslatedName()
+                            );
+                        }
+                        return false;
                     }
                     frame_blocks.get(layer).add(_pos);
                 }
@@ -317,9 +326,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     private boolean isBlockBlacklisted(BlockPos pos) {
-        if (world.getTileEntity(pos) instanceof AbstractTankTile) return false;
+        if (getWorld().getTileEntity(pos) instanceof AbstractTankTile) return false;
 
-        BlockState state = world.getBlockState(pos);
+        BlockState state = getWorld().getBlockState(pos);
 
         ResourceLocation blacklist = new ResourceLocation(FancyFluidStorage.MODID, "blacklist");
         ITag<Block> blockITag = BlockTags.getCollection().get(blacklist);

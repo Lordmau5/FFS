@@ -10,6 +10,7 @@
   "chat.ffs.valve_other_tank": "One or more blocks already belong to another tank!",
   "chat.ffs.valve_too_much_air": "Too many air blocks! Limit: %s",
   "chat.ffs.valve_different_fluids": "One or more valves contain different fluids! Could not build the tank!",
+  "chat.ffs.valve_blacklisted_block_found": "Blacklisted block found at %s! (%s)",
 
   "description.ffs.fluid_valve.fluid": "Fluid: %s",
   "description.ffs.fluid_valve.amount": "Amount: %s",
