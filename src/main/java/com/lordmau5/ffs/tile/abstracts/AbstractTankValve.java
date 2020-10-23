@@ -304,8 +304,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                                     buildPlayer,
                                     "chat.ffs.valve_blacklisted_block_found",
                                     false,
-                                    _pos.getCoordinatesAsString(),
-                                    getWorld().getBlockState(_pos).getBlock().getTranslatedName()
+                                    _pos.getX(),
+                                    _pos.getY(),
+                                    _pos.getZ()
                             );
                         }
                         return false;
