@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.proxy;
 
 import com.lordmau5.ffs.FancyFluidStorage;
+import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.network.NetworkHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -16,5 +17,7 @@ public class CommonProxy {
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         NetworkHandler.registerChannels();
+
+        Compatibility.init();
     }
 }

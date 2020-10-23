@@ -82,8 +82,17 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+repositories {
+    maven { // TOP
+        name 'tterrag maven'
+        url "https://maven.tterrag.com/"
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:$minecraft_version-$forge_version"
+
+    implementation fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
 }
 
 processResources {
