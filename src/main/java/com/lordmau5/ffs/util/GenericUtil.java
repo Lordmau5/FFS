@@ -1,11 +1,10 @@
 package com.lordmau5.ffs.util;
 
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FallingBlock;
-import net.minecraft.block.GlassBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -140,6 +139,23 @@ public class GenericUtil {
 //        chunkloadTicketMap.put(world, chunkloadTicket);
 //        return chunkloadTicket;
         return null;
+    }
+
+    // Check if a block is either air or water-loggable
+    public static boolean isAirOrWaterloggable(World world, BlockPos pos) {
+        if (world.isAirBlock(pos)) {
+            return true;
+        }
+
+        BlockState state = world.getBlockState(pos);
+        Block block = state.getBlock();
+
+        // Comparing against ILiquidContainer instead of IWaterLoggable for better compatibility
+        if (block instanceof ILiquidContainer) {
+            return ((ILiquidContainer) block).canContainFluid(world, pos, state, Fluids.WATER);
+        }
+
+        return false;
     }
 
 }

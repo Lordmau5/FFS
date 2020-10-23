@@ -25,6 +25,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 
 import java.util.*;
@@ -225,10 +226,14 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         updateBlockAndNeighbors();
     }
 
+    private boolean isAirOrWaterloggable(World world, BlockPos pos) {
+        return GenericUtil.isAirOrWaterloggable(world, pos);
+    }
+
     private void setTankTileFacing(TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntity tankTile) {
         List<BlockPos> possibleAirBlocks = new ArrayList<>();
         for (Direction dr : Direction.values()) {
-            if ( getWorld().isAirBlock(tankTile.getPos().offset(dr)) ) {
+            if ( isAirOrWaterloggable(getWorld(), tankTile.getPos().offset(dr)) ) {
                 possibleAirBlocks.add(tankTile.getPos().offset(dr));
             }
         }
@@ -286,7 +291,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                 checked_blocks.add(offsetPos);
 
                 LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
-                if ( getWorld().isAirBlock(offsetPos) ) {
+                if ( isAirOrWaterloggable(getWorld(), offsetPos) ) {
                     if ( !air_blocks.get(layer).contains(_pos) ) {
                         air_blocks.get(layer).add(_pos);
                         to_check.add(offsetPos);
@@ -358,7 +363,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         for (int layer : maps.get(1).keySet()) {
             for (BlockPos pos : maps.get(1).get(layer)) {
-                if ( !getWorld().isAirBlock(pos) ) {
+                if ( !isAirOrWaterloggable(getWorld(), pos) ) {
                     return false;
                 }
             }
