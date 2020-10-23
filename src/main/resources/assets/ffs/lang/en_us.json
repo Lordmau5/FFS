@@ -18,5 +18,8 @@
   "gui.ffs.fluid_valve.empty": "Empty",
   "gui.ffs.fluid_valve.fluid_base": "Fluid",
   "gui.ffs.fluid_valve.fluid_locked": "Locked",
-  "gui.ffs.fluid_valve.fluid_unlocked": "Unlocked"
+  "gui.ffs.fluid_valve.fluid_unlocked": "Unlocked",
+
+  "top.ffs.part_of_tank": "Part of a tank",
+  "top.ffs.fluid": "Fluid: %s"
 }
