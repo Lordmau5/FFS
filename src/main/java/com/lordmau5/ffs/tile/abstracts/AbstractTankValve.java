@@ -306,8 +306,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                                     false,
                                     _pos.getX(),
                                     _pos.getY(),
-                                    _pos.getZ(),
-                                    getWorld().getBlockState(_pos).getBlock().getNameTextComponent()
+                                    _pos.getZ()
                             );
                         }
                         return false;
