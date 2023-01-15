@@ -10,14 +10,14 @@ import com.lordmau5.ffs.proxy.CommonProxy;
 import com.lordmau5.ffs.util.Config;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.lordmau5.ffs.util.TankManager;
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.world.WorldEvent;
@@ -40,7 +40,7 @@ public class FancyFluidStorage {
 
     // Registers
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
-    public static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, MODID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);
 
@@ -51,11 +51,11 @@ public class FancyFluidStorage {
         () -> CommonProxy::new
     );
 
-    public static final ItemGroup ITEM_GROUP = new ItemGroup(-1, MODID) {
+    public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(-1, MODID) {
         @Override
         @Nonnull
         @OnlyIn(Dist.CLIENT)
-        public ItemStack createIcon() {
+        public ItemStack makeIcon() {
             return new ItemStack(Blocks.fluidValve);
         }
     };
@@ -73,7 +73,7 @@ public class FancyFluidStorage {
         ITEMS.register(bus);
 
         TileEntities.registerAll();
-        TILE_ENTITIES.register(bus);
+        BLOCK_ENTITIES.register(bus);
 
         Sounds.registerAll();
         SOUND_EVENTS.register(bus);
@@ -87,13 +87,13 @@ public class FancyFluidStorage {
 
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
-        IWorld iWorld = event.getWorld();
+        LevelAccessor iWorld = event.getWorld();
 
-        if (iWorld.isRemote() || !(iWorld instanceof World) ) {
+        if (iWorld.isClientSide() || !(iWorld instanceof Level) ) {
             return;
         }
 
-        World world = (World) iWorld;
+        Level world = (Level) iWorld;
 
         FancyFluidStorage.TANK_MANAGER.removeAllForDimension(world);
     }

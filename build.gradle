@@ -1,28 +1,28 @@
 buildscript {
     repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://maven.minecraftforge.net' }
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version"
+// if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version"
 
 group = 'com.lordmau5.ffs'
-version = "$minecraft_version-$mod_version"
+version = "3.1.0" //$minecraft_version-$mod_version"
 archivesBaseName = 'Fancy Fluid Storage'
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-    mappings channel: 'snapshot', version: "$forge_mappings"
+    mappings channel: 'official', version: "$minecraft_version"
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -94,19 +94,19 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:$minecraft_version-$forge_version"
 
-    implementation fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
+    //implementation fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
 }
 
 processResources {
-    inputs.property 'mod_version', project.mod_version
-
-    from(sourceSets.main.resources.srcDirs) {
-        include 'META-INF/mods.toml'
-
-        expand 'mod_version':project.mod_version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'META-INF/mods.toml'
-    }
+//    inputs.property 'mod_version', project.mod_version
+//
+//    from(sourceSets.main.resources.srcDirs) {
+//        include 'META-INF/mods.toml'
+//
+//        expand 'mod_version':project.mod_version
+//    }
+//
+//    from(sourceSets.main.resources.srcDirs) {
+//        exclude 'META-INF/mods.toml'
+//    }
 }

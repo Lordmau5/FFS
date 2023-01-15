@@ -1,12 +1,12 @@
 package com.lordmau5.ffs.network;
 
 import com.lordmau5.ffs.FancyFluidStorage;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fmllegacy.network.NetworkDirection;
+import net.minecraftforge.fmllegacy.network.NetworkRegistry;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
 
 import java.util.Optional;
 
@@ -101,7 +101,7 @@ public class NetworkHandler {
         );
     }
 
-    public static void sendPacketToPlayer(Object packet, ServerPlayerEntity player) {
+    public static void sendPacketToPlayer(Object packet, ServerPlayer player) {
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }
 

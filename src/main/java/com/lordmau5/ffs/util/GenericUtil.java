@@ -1,32 +1,37 @@
 package com.lordmau5.ffs.util;
 
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ChunkManager;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
 import java.text.NumberFormat;
 import java.util.*;
 
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.GlassBlock;
+import net.minecraft.world.level.block.LiquidBlockContainer;
+import net.minecraft.world.level.block.state.BlockState;
+
 public class GenericUtil {
-    private static Map<World, ChunkManager> chunkloadTicketMap;
+    private static Map<Level, ChunkMap> chunkloadTicketMap;
 
     public static void init() {
         chunkloadTicketMap = new HashMap<>();
     }
 
     public static String getUniquePositionName(AbstractTankValve valve) {
-        return "tile_" + Long.toHexString(valve.getPos().toLong());
+        return "tile_" + Long.toHexString(valve.getBlockPos().asLong());
     }
 
     public static boolean isBlockGlass(BlockState blockState) {
@@ -39,13 +44,13 @@ public class GenericUtil {
         }
 
         ItemStack is = new ItemStack(blockState.getBlock(), 1);
-        return blockState.getMaterial() == Material.GLASS && !is.getTranslationKey().contains("pane");
+        return blockState.getMaterial() == Material.GLASS && !is.getDescriptionId().contains("pane");
     }
 
     public static Direction getInsideForTankFrame(TreeMap<Integer, List<LayerBlockPos>> airBlocks, BlockPos frame) {
         for (Direction direction : Direction.values()) {
             for (int layer : airBlocks.keySet()) {
-                if ( airBlocks.get(layer).contains(frame.offset(direction)) ) {
+                if ( airBlocks.get(layer).contains(frame.relative(direction)) ) {
                     return direction;
                 }
             }
@@ -53,16 +58,16 @@ public class GenericUtil {
         return null;
     }
 
-    public static boolean areTankBlocksValid(BlockState bottomBlock, World world, BlockPos bottomPos, Direction direction) {
+    public static boolean areTankBlocksValid(BlockState bottomBlock, Level world, BlockPos bottomPos, Direction direction) {
         return isValidTankBlock(world, bottomPos, bottomBlock, direction);
     }
 
-    public static boolean isValidTankBlock(World world, BlockPos pos, BlockState state, Direction direction) {
+    public static boolean isValidTankBlock(Level world, BlockPos pos, BlockState state, Direction direction) {
         if ( state == null ) {
             return false;
         }
 
-        if ( world.isAirBlock(pos) ) {
+        if ( world.isEmptyBlock(pos) ) {
             return false;
         }
 
@@ -76,19 +81,19 @@ public class GenericUtil {
 //            }
 //        }
 
-        return isBlockGlass(state) || direction == null || state.isSolidSide(world, pos, direction);
+        return isBlockGlass(state) || direction == null || state.isFaceSturdy(world, pos, direction);
     }
 
     public static boolean isFluidContainer(ItemStack playerItem) {
         return playerItem != ItemStack.EMPTY && FluidUtil.getFluidHandler(playerItem).isPresent();
     }
 
-    public static boolean fluidContainerHandler(World world, AbstractTankValve valve, PlayerEntity player) {
-        if ( world.isRemote ) {
+    public static boolean fluidContainerHandler(Level world, AbstractTankValve valve, Player player) {
+        if ( world.isClientSide ) {
             return true;
         }
 
-        ItemStack current = player.getHeldItemMainhand();
+        ItemStack current = player.getMainHandItem();
 
         if ( current != ItemStack.EMPTY ) {
             if ( !isFluidContainer(current) ) {
@@ -100,7 +105,7 @@ public class GenericUtil {
                 return false;
             }
 
-            return FluidUtil.interactWithFluidHandler(player, Hand.MAIN_HAND, valve.getTankConfig().getFluidTank());
+            return FluidUtil.interactWithFluidHandler(player, InteractionHand.MAIN_HAND, valve.getTankConfig().getFluidTank());
         }
         return false;
     }
@@ -109,27 +114,27 @@ public class GenericUtil {
         return NumberFormat.getIntegerInstance(Locale.ENGLISH).format(number);
     }
 
-    public static void sendMessageToClient(PlayerEntity player, String key, boolean actionBar) {
+    public static void sendMessageToClient(Player player, String key, boolean actionBar) {
         if ( player == null ) {
             return;
         }
 
-        player.sendStatusMessage(new TranslationTextComponent(key), actionBar);
+        player.displayClientMessage(new TranslatableComponent(key), actionBar);
     }
 
-    public static void sendMessageToClient(PlayerEntity player, String key, boolean actionBar, Object... args) {
+    public static void sendMessageToClient(Player player, String key, boolean actionBar, Object... args) {
         if ( player == null ) {
             return;
         }
 
-        player.sendStatusMessage(new TranslationTextComponent(key, args), actionBar);
+        player.displayClientMessage(new TranslatableComponent(key, args), actionBar);
     }
 
-    public static void initChunkLoadTicket(World world, ChunkManager ticket) {
+    public static void initChunkLoadTicket(Level world, ChunkMap ticket) {
         chunkloadTicketMap.put(world, ticket);
     }
 
-    public static ChunkManager getChunkLoadTicket(World world) {
+    public static ChunkMap getChunkLoadTicket(Level world) {
         if ( chunkloadTicketMap.containsKey(world) ) {
             return chunkloadTicketMap.get(world);
         }
@@ -141,8 +146,8 @@ public class GenericUtil {
     }
 
     // Check if a block is either air or water-loggable
-    public static boolean isAirOrWaterloggable(World world, BlockPos pos) {
-        if (world.isAirBlock(pos)) {
+    public static boolean isAirOrWaterloggable(Level world, BlockPos pos) {
+        if (world.isEmptyBlock(pos)) {
             return true;
         }
 
@@ -150,8 +155,8 @@ public class GenericUtil {
         Block block = state.getBlock();
 
         // Comparing against ILiquidContainer instead of IWaterLoggable for better compatibility
-        if (block instanceof ILiquidContainer) {
-            return ((ILiquidContainer) block).canContainFluid(world, pos, state, Fluids.WATER);
+        if (block instanceof LiquidBlockContainer) {
+            return ((LiquidBlockContainer) block).canPlaceLiquid(world, pos, state, Fluids.WATER);
         }
 
         return false;

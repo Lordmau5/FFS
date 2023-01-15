@@ -1,17 +1,17 @@
 package com.lordmau5.ffs.client.gui;
 
 import com.lordmau5.ffs.FancyFluidStorage;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.ImageButton;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.resources.ResourceLocation;
 
 public class GuiButtonLockFluid extends ImageButton {
     private static final ResourceLocation toggleTexture = new ResourceLocation(FancyFluidStorage.MODID, "textures/gui/gui_tank_no_valve.png");
     private boolean state;
 
-    GuiButtonLockFluid(int x, int y, boolean state, IPressable onPress) {
+    GuiButtonLockFluid(int x, int y, boolean state, OnPress onPress) {
         super(x, y, 8, 8, 0, 128, 0, toggleTexture, onPress);
         this.state = state;
     }
@@ -29,9 +29,8 @@ public class GuiButtonLockFluid extends ImageButton {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getTextureManager().bindTexture(toggleTexture);
+    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        RenderSystem.setShaderTexture(0, toggleTexture);
 
         RenderSystem.disableDepthTest();
 

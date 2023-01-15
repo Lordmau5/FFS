@@ -2,26 +2,21 @@ package com.lordmau5.ffs.block.tanktiles;
 
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.util.FFSStateProps;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
 
 public class BlockTankComputer extends Block {
     public BlockTankComputer() {
-        super(Block.Properties.create(Material.IRON).hardnessAndResistance(5.0f, 10.0f));
+        super(Block.Properties.of(Material.METAL).strength(5.0f, 10.0f));
 
 //        setTranslationKey(FancyFluidStorage.MODID + ".block_tank_computer");
 //        setRegistryName("block_tank_computer");
-        setDefaultState(getDefaultState().with(FFSStateProps.TILE_VALID, false));
-    }
-
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
+        registerDefaultState(defaultBlockState().setValue(FFSStateProps.TILE_VALID, false));
     }
 
 //    @Override
@@ -30,12 +25,12 @@ public class BlockTankComputer extends Block {
 //    }
 
     //    @Override
-    public void onBlockExploded(BlockState state, World world, BlockPos pos, Explosion explosion) {
-        TileEntity tile = world.getTileEntity(pos);
+    public void onBlockExploded(BlockState state, Level world, BlockPos pos, Explosion explosion) {
+        BlockEntity tile = world.getBlockEntity(pos);
         if ( tile instanceof AbstractTankTile && ((AbstractTankTile) tile).getMainValve() != null ) {
             ((AbstractTankTile) tile).getMainValve().breakTank();
         }
-        super.onExplosionDestroy(world, pos, explosion);
+        super.wasExploded(world, pos, explosion);
     }
 
 //    @Override

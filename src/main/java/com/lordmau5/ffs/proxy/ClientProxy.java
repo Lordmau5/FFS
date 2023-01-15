@@ -1,16 +1,18 @@
 package com.lordmau5.ffs.proxy;
 
+import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.client.ValveRenderer;
 import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.holder.Blocks;
 import com.lordmau5.ffs.holder.TileEntities;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fmlclient.registry.ClientRegistry;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientProxy extends CommonProxy {
@@ -22,11 +24,11 @@ public class ClientProxy extends CommonProxy {
         modBus.addListener(this::clientSetup);
     }
 
-    private void clientSetup(final FMLClientSetupEvent event) {
+    private void clientSetup(final EntityRenderersEvent.RegisterRenderers event) {
         Compatibility.initClient();
 
-        RenderTypeLookup.setRenderLayer(Blocks.fluidValve, RenderType.getCutout());
+        ItemBlockRenderTypes.setRenderLayer(Blocks.fluidValve, RenderType.cutout());
 
-        ClientRegistry.bindTileEntityRenderer(TileEntities.tileEntityFluidValve, ValveRenderer::new);
+        event.registerBlockEntityRenderer(TileEntities.tileEntityFluidValve.get(), ValveRenderer::new);
     }
 }

@@ -2,8 +2,8 @@ package com.lordmau5.ffs.holder;
 
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.block.valves.BlockFluidValve;
-import net.minecraft.block.Block;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.function.Supplier;

@@ -1,7 +1,7 @@
 package com.lordmau5.ffs.tile.interfaces;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
 
 public interface IFacingTile {
 
@@ -11,15 +11,15 @@ public interface IFacingTile {
 
     void setTileFacing(Direction facing);
 
-    default void saveTileFacingToNBT(CompoundNBT tag) {
+    default void saveTileFacingToNBT(CompoundTag tag) {
         if ( getTileFacing() != null ) {
-            tag.putInt("TileFacing", getTileFacing().getIndex());
+            tag.putInt("TileFacing", getTileFacing().get3DDataValue());
         }
     }
 
-    default void readTileFacingFromNBT(CompoundNBT tag) {
+    default void readTileFacingFromNBT(CompoundTag tag) {
         if ( tag.contains("TileFacing") ) {
-            setTileFacing(Direction.byIndex(tag.getInt("TileFacing")));
+            setTileFacing(Direction.from3DDataValue(tag.getInt("TileFacing")));
         }
     }
 

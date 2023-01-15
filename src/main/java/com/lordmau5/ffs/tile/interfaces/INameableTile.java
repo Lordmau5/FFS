@@ -1,6 +1,6 @@
 package com.lordmau5.ffs.tile.interfaces;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 public interface INameableTile {
 
@@ -10,13 +10,13 @@ public interface INameableTile {
 
     void setTileName(String name);
 
-    default void saveTileNameToNBT(CompoundNBT tag) {
+    default void saveTileNameToNBT(CompoundTag tag) {
         if ( !getTileName().isEmpty() ) {
             tag.putString("TileName", getTileName());
         }
     }
 
-    default void readTileNameFromNBT(CompoundNBT tag) {
+    default void readTileNameFromNBT(CompoundTag tag) {
         if ( tag.contains("TileName") ) {
             setTileName(tag.getString("TileName"));
         }

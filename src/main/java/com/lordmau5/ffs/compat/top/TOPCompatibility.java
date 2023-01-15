@@ -1,9 +1,9 @@
-package com.lordmau5.ffs.compat.top;
+// package com.lordmau5.ffs.compat.top;
 
-import net.minecraftforge.fml.InterModComms;
+// import net.minecraftforge.fml.InterModComms;
 
-public class TOPCompatibility {
-    public static void register() {
-        InterModComms.sendTo("theoneprobe", "getTheOneProbe", TOPDataProvider::new);
-    }
-}
+// public class TOPCompatibility {
+//     public static void register() {
+//         InterModComms.sendTo("theoneprobe", "getTheOneProbe", TOPDataProvider::new);
+//     }
+// }

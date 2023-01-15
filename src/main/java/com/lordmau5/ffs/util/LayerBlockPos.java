@@ -1,6 +1,6 @@
 package com.lordmau5.ffs.util;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public class LayerBlockPos extends BlockPos {
     private int layer;

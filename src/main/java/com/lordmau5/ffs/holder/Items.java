@@ -3,9 +3,9 @@ package com.lordmau5.ffs.holder;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.item.ItemTit;
 import com.lordmau5.ffs.item.ItemTitEgg;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.function.Supplier;
@@ -24,7 +24,7 @@ public class Items {
         register("tit", () -> new ItemTit(new Item.Properties()));
         register("tit_egg", () -> new ItemTitEgg(new Item.Properties()));
 
-        register("fluid_valve", () -> new BlockItem(Blocks.fluidValve, new Item.Properties().group(FancyFluidStorage.ITEM_GROUP)));
+        register("fluid_valve", () -> new BlockItem(Blocks.fluidValve, new Item.Properties().tab(FancyFluidStorage.ITEM_GROUP)));
     }
 
     public static RegistryObject<Item> register(final String name, final Supplier<Item> supplier) {

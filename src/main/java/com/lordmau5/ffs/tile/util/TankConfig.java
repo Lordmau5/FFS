@@ -1,9 +1,9 @@
 package com.lordmau5.ffs.tile.util;
 
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 
@@ -71,30 +71,30 @@ public class TankConfig {
         return this.fluidTank.isEmpty();
     }
 
-    public void readFromNBT(CompoundNBT mainTag) {
+    public void readFromNBT(CompoundTag mainTag) {
         resetVariables();
 
         if ( !mainTag.contains("TankConfig") ) {
             return;
         }
 
-        CompoundNBT tag = mainTag.getCompound("TankConfig");
+        CompoundTag tag = mainTag.getCompound("TankConfig");
 
         getFluidTank().readFromNBT(tag);
 
         if ( tag.contains("LockedFluid") ) {
-            CompoundNBT base = tag.getCompound("LockedFluid");
+            CompoundTag base = tag.getCompound("LockedFluid");
             lockFluid(FluidStack.loadFluidStackFromNBT(base));
         }
         setFluidCapacity(tag.getInt("Capacity"));
 
     }
 
-    public void writeToNBT(CompoundNBT mainTag) {
-        CompoundNBT tag = new CompoundNBT();
+    public void writeToNBT(CompoundTag mainTag) {
+        CompoundTag tag = new CompoundTag();
 
         if ( isFluidLocked() ) {
-            CompoundNBT lockedFluidTag = new CompoundNBT();
+            CompoundTag lockedFluidTag = new CompoundTag();
 
             getLockedFluid().writeToNBT(lockedFluidTag);
 

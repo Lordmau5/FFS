@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
@@ -67,7 +68,7 @@ public class Config {
             return this;
         }
 
-        private void onConfigEvent(final ModConfig.ModConfigEvent event) {
+        private void onConfigEvent(final ModConfigEvent event) {
             final ModConfig config = event.getConfig();
             if ( built && config.getSpec() == spec )
                 update();
