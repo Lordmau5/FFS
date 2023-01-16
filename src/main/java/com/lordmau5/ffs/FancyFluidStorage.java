@@ -14,7 +14,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -55,13 +55,11 @@ public class FancyFluidStorage {
 
     private void setupClient(final FMLClientSetupEvent event) {
         Compatibility.initClient();
-
-        ItemBlockRenderTypes.setRenderLayer(Blocks.fluidValve.get(), RenderType.cutout());
     }
 
     @SubscribeEvent
-    public void onWorldUnload(WorldEvent.Unload event) {
-        LevelAccessor iWorld = event.getWorld();
+    public void onWorldUnload(LevelEvent.Unload event) {
+        LevelAccessor iWorld = event.getLevel();
 
         if (iWorld.isClientSide() || !(iWorld instanceof Level) ) {
             return;

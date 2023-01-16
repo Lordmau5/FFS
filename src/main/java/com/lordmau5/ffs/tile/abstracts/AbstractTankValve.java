@@ -17,7 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.Direction;
@@ -66,12 +65,12 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         initialWaitTick = 20;
     }
 
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-
-        breakTank();
-    }
+//    @Override
+//    public void setRemoved() {
+//        super.setRemoved();
+//
+//        breakTank();
+//    }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {
         AbstractTankTile.tick(level, pos, state, be);

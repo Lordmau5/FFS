@@ -19,11 +19,11 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -201,8 +201,8 @@ public class TankManager {
     }
 
     @SubscribeEvent
-    public void entityJoinWorld(EntityJoinWorldEvent event) {
-        if ( event.getWorld() == null || event.getEntity() == null ) {
+    public void entityJoinWorld(EntityJoinLevelEvent event) {
+        if ( event.getLevel() == null || event.getEntity() == null ) {
             return;
         }
 
@@ -210,14 +210,14 @@ public class TankManager {
             return;
         }
 
-        if ( isPartOfTank(event.getWorld(), event.getEntity().blockPosition()) ) {
+        if ( isPartOfTank(event.getLevel(), event.getEntity().blockPosition()) ) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.WorldTickEvent event) {
-        if ( event.world.isClientSide ) {
+    public void onServerTick(TickEvent.LevelTickEvent event) {
+        if ( event.level.isClientSide ) {
             return;
         }
 
@@ -225,7 +225,7 @@ public class TankManager {
             return;
         }
 
-        Level world = event.world;
+        Level world = event.level;
 
         if (get(world).getBlocksToCheck(world).isEmpty() ) {
             return;
@@ -233,10 +233,10 @@ public class TankManager {
 
         AbstractTankValve valve;
         for (BlockPos pos : get(world).getBlocksToCheck(world)) {
-            if ( isPartOfTank(event.world, pos) ) {
-                valve = getValveForBlock(event.world, pos);
+            if ( isPartOfTank(event.level, pos) ) {
+                valve = getValveForBlock(event.level, pos);
                 if ( valve != null ) {
-                    if ( !GenericUtil.isValidTankBlock(event.world, pos, event.world.getBlockState(pos), GenericUtil.getInsideForTankFrame(valve.getAirBlocks(), pos)) ) {
+                    if ( !GenericUtil.isValidTankBlock(event.level, pos, event.level.getBlockState(pos), GenericUtil.getInsideForTankFrame(valve.getAirBlocks(), pos)) ) {
                         valve.breakTank();
                         break;
                     }
@@ -260,19 +260,19 @@ public class TankManager {
 
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event) {
-        addBlockForCheck(event.getWorld(), event.getPos());
+        addBlockForCheck(event.getLevel(), event.getPos());
     }
 
     @SubscribeEvent
     public void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
-        addBlockForCheck(event.getWorld(), event.getPos());
+        addBlockForCheck(event.getLevel(), event.getPos());
     }
 
     @SubscribeEvent
     public void onRightClick(PlayerInteractEvent.RightClickBlock event) {
         BlockPos pos = event.getPos();
-        Level world = event.getWorld();
-        Player player = event.getPlayer();
+        Level world = event.getLevel();
+        Player player = event.getEntity();
 
         if ( player == null ) {
             return;
@@ -343,7 +343,7 @@ public class TankManager {
 
         BlockPos pos = rayTraceResult.getBlockPos();
 
-        if ( !isPartOfTank(event.getWorld(), pos) ) {
+        if ( !isPartOfTank(event.getLevel(), pos) ) {
             return;
         }
 
@@ -352,11 +352,11 @@ public class TankManager {
 
     @SubscribeEvent
     public void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (!(event.getPlayer() instanceof ServerPlayer)) {
+        if (!(event.getEntity() instanceof ServerPlayer)) {
             return;
         }
 
-        NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.ClearTanks(), (ServerPlayer) event.getPlayer());
+        NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.ClearTanks(), (ServerPlayer) event.getEntity());
     }
 
 }

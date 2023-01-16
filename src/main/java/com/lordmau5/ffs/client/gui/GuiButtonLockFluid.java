@@ -6,6 +6,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.resources.ResourceLocation;
 
+import net.minecraft.client.gui.components.Button.OnPress;
+
 public class GuiButtonLockFluid extends ImageButton {
     private static final ResourceLocation toggleTexture = new ResourceLocation(FancyFluidStorage.MOD_ID, "textures/gui/gui_tank_no_valve.png");
     private boolean state;

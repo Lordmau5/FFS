@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 //@ObjectHolder(FancyFluidStorage.MODID)
 public class BlockEntities {
 
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, FancyFluidStorage.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FancyFluidStorage.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<TileEntityFluidValve>> tileEntityFluidValve = register("fluid_valve",
             () -> BlockEntityType.Builder.of(TileEntityFluidValve::new, Blocks.fluidValve.get()).build(null));

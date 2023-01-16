@@ -2,12 +2,9 @@ package com.lordmau5.ffs.holder;
 
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.block.valves.BlockFluidValve;
-import com.lordmau5.ffs.client.ValveRenderer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -15,7 +12,6 @@ import net.minecraftforge.registries.*;
 
 import java.util.function.Supplier;
 
-//@ObjectHolder(FancyFluidStorage.MODID)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Blocks {
 
@@ -36,14 +32,14 @@ public class Blocks {
     }
 
     @SubscribeEvent
-    public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
-        final IForgeRegistry<Item> registry = event.getRegistry();
+    public static void onRegisterItems(final RegisterEvent event) {
+        if (!event.getRegistryKey().equals(ForgeRegistries.Keys.ITEMS)) return;
 
-        BLOCKS.getEntries().stream().map(RegistryObject::get).forEach( (block) -> {
-            final Item.Properties properties = new Item.Properties().tab(ModCreativeTab.instance);
-            final BlockItem blockItem = new BlockItem(block, properties);
-            blockItem.setRegistryName(block.getRegistryName());
-            registry.register(blockItem);
+        BLOCKS.getEntries().forEach( (blockRegistryObject) -> {
+            Block block = blockRegistryObject.get();
+            Item.Properties properties = new Item.Properties().tab(ModCreativeTab.instance);
+            Supplier<Item> blockItemFactory = () -> new BlockItem(block, properties);
+            event.register(ForgeRegistries.Keys.ITEMS, blockRegistryObject.getId(), blockItemFactory);
         });
     }
 }

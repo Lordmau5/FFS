@@ -19,6 +19,7 @@ import net.minecraft.core.BlockPos;
 import com.mojang.math.Matrix4f;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
@@ -66,25 +67,28 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
                 return;
             }
 
-            TextureAtlasSprite still = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluid.getFluid().getAttributes().getStillTexture(fluid));
-            TextureAtlasSprite flowing = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluid.getFluid().getAttributes().getFlowingTexture(fluid));
+            IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(fluid.getFluid());
+
+            TextureAtlasSprite still = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(extensions.getStillTexture(fluid));
+            TextureAtlasSprite flowing = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(extensions.getFlowingTexture(fluid));
 
             ms.pushPose();
 
             Matrix4f matrix = ms.last().pose();
 
-            if ( fluid.getFluid().getAttributes().isGaseous() ) {
-                renderGasTank(still, flowing, airBlocks, valve, valvePos, bufferIn, matrix, fluid, fillPercentage);
-            } else {
+//            if ( extensions.isGaseous() ) {
+//                renderGasTank(still, flowing, airBlocks, valve, valvePos, bufferIn, matrix, fluid, fillPercentage);
+//            } else {
                 renderFluidTank(still, flowing, airBlocks, valve, valvePos, bufferIn, matrix, fluid);
-            }
+//            }
 
             ms.popPose();
         }
     }
 
     private void renderGasTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, MultiBufferSource vb, Matrix4f matrix, FluidStack fluid, float fillPercentage) {
-        int color = ClientRenderHelper.changeAlpha(fluid.getFluid().getAttributes().getColor(), (int) (fillPercentage * 255));
+//        int color = ClientRenderHelper.changeAlpha(fluid.getFluid().getAttributes().getColor(), (int) (fillPercentage * 255));
+        int color = 0;
 
         List<Integer> layers = new ArrayList<>(airBlocks.keySet());
         int topLayer = layers.get(layers.size() - 1) - 1;
@@ -115,6 +119,8 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
             fluidLeft -= layerCapacity;
         }
 
+        IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(fluid.getFluid());
+
         for (int i = 0; i < fillLevels.size(); i++) {
             int layer = layers.get(i) + 1;
             float currentLayerHeight = fillLevels.get(i);
@@ -122,7 +128,9 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
             for (LayerBlockPos pos : airBlocks.get(layer)) {
                 BlockPos fromPos = pos.subtract(valvePos);
 
-                renderFluidBlock(valve.getLevel(), still, flowing, vb, matrix, fluid, pos, fromPos, fluid.getFluid().getAttributes().getColor(fluid), fromPos.getX() + 1f, fromPos.getY() + currentLayerHeight, fromPos.getZ() + 1f, i == fillLevels.size() - 1);
+
+
+                renderFluidBlock(valve.getLevel(), still, flowing, vb, matrix, fluid, pos, fromPos, extensions.getTintColor(fluid), fromPos.getX() + 1f, fromPos.getY() + currentLayerHeight, fromPos.getZ() + 1f, i == fillLevels.size() - 1);
             }
         }
     }

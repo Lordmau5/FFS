@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.util;
 
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.material.Fluids;
@@ -8,7 +9,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraftforge.fluids.FluidStack;
@@ -119,7 +119,7 @@ public class GenericUtil {
             return;
         }
 
-        player.displayClientMessage(new TranslatableComponent(key), actionBar);
+        player.displayClientMessage(Component.translatable(key), actionBar);
     }
 
     public static void sendMessageToClient(Player player, String key, boolean actionBar, Object... args) {
@@ -127,7 +127,7 @@ public class GenericUtil {
             return;
         }
 
-        player.displayClientMessage(new TranslatableComponent(key, args), actionBar);
+        player.displayClientMessage(Component.translatable(key, args), actionBar);
     }
 
     public static void initChunkLoadTicket(Level world, ChunkMap ticket) {

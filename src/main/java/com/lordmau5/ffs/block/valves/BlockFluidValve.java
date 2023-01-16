@@ -20,7 +20,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
@@ -109,11 +108,11 @@ public class BlockFluidValve extends AbstractBlockValve {
         FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(tankConfig);
 
         tooltip.add(
-                new TranslatableComponent("description.ffs.fluid_valve.fluid", fluidStack.getDisplayName().getString())
+                Component.translatable("description.ffs.fluid_valve.fluid", fluidStack.getDisplayName().getString())
                 .withStyle(ChatFormatting.GRAY)
         );
         tooltip.add(
-                new TranslatableComponent("description.ffs.fluid_valve.amount", GenericUtil.intToFancyNumber(fluidStack.getAmount()) + "mB")
+                Component.translatable("description.ffs.fluid_valve.amount", GenericUtil.intToFancyNumber(fluidStack.getAmount()) + "mB")
                 .withStyle(ChatFormatting.GRAY)
         );
     }

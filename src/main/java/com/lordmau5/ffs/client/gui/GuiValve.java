@@ -19,9 +19,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
@@ -50,7 +49,7 @@ public class GuiValve extends Screen {
     private int mouseX, mouseY;
 
     public GuiValve(AbstractTankTile tile, boolean isValve) {
-        super(new TranslatableComponent("ffs.gui.valve"));
+        super(Component.literal("ffs.gui.valve"));
 
         this.isValve = isValve;
 
@@ -147,7 +146,7 @@ public class GuiValve extends Screen {
         RenderSystem.setShaderTexture(0, tex_valve);
         blit(matrixStack, this.left, this.top, 0, 0, this.xSize_Valve, this.ySize_Valve);
 
-        Component fluid = new TranslatableComponent("gui.ffs.fluid_valve.empty");
+        Component fluid = Component.translatable("gui.ffs.fluid_valve.empty");
         if ( this.valve.getTankConfig().getFluidStack() != FluidStack.EMPTY ) {
             fluid = this.valve.getTankConfig().getFluidStack().getDisplayName();
         }
@@ -183,7 +182,7 @@ public class GuiValve extends Screen {
         RenderSystem.setShaderTexture(0, tex_no_valve);
         blit(matrixStack, this.left, this.top, 0, 0, this.xSize_NoValve, this.ySize_NoValve);
 
-        Component fluid = new TranslatableComponent("gui.ffs.fluid_valve.empty");
+        Component fluid = Component.translatable("gui.ffs.fluid_valve.empty");
         if ( !this.valve.getTankConfig().isEmpty() ) {
             fluid = this.valve.getTankConfig().getFluidStack().getDisplayName();
         }
@@ -233,20 +232,20 @@ public class GuiValve extends Screen {
         List<Component> texts = new ArrayList<>();
         if (this.valve.getTankConfig().isFluidLocked()) {
             texts.add(
-                    (new TranslatableComponent("gui.ffs.fluid_valve.fluid_base"))
+                    (Component.translatable("gui.ffs.fluid_valve.fluid_base"))
                     .append(" ")
-                    .append(new TranslatableComponent("gui.ffs.fluid_valve.fluid_locked").withStyle(ChatFormatting.RED))
+                    .append(Component.translatable("gui.ffs.fluid_valve.fluid_locked").withStyle(ChatFormatting.RED))
             );
             texts.add(
-                    (new TranslatableComponent("description.ffs.fluid_valve.fluid", this.valve.getTankConfig().getLockedFluid().getDisplayName()))
+                    (Component.translatable("description.ffs.fluid_valve.fluid", this.valve.getTankConfig().getLockedFluid().getDisplayName()))
                     .withStyle(ChatFormatting.GRAY)
             );
         }
         else {
             texts.add(
-                    (new TranslatableComponent("gui.ffs.fluid_valve.fluid_base"))
+                    (Component.translatable("gui.ffs.fluid_valve.fluid_base"))
                     .append(" ")
-                    .append(new TranslatableComponent("gui.ffs.fluid_valve.fluid_unlocked").withStyle(ChatFormatting.GREEN))
+                    .append(Component.translatable("gui.ffs.fluid_valve.fluid_unlocked").withStyle(ChatFormatting.GREEN))
             );
         }
 
@@ -259,7 +258,7 @@ public class GuiValve extends Screen {
             List<Component> texts = new ArrayList<>();
             texts.add(fluid);
             texts.add(
-                    new TextComponent(
+                    Component.literal(
                             ChatFormatting.GRAY
                                     + (GenericUtil.intToFancyNumber(this.valve.getTankConfig().getFluidAmount()) + " / " + GenericUtil.intToFancyNumber(this.valve.getTankConfig().getFluidCapacity()))
                                     + " mB"
@@ -276,10 +275,12 @@ public class GuiValve extends Screen {
         GlStateManager._enableBlend();
         GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
+        IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(fluid.getFluid());
+
         ClientRenderHelper.setBlockTextureSheet();
-        int color = fluid.getFluid().getAttributes().getColor(fluid);
+        int color = extensions.getTintColor(fluid);
         ClientRenderHelper.setGLColorFromInt(color);
-        drawTiledTexture(ms, x, y, ClientRenderHelper.getTexture(fluid.getFluid().getAttributes().getFlowingTexture(fluid)), width, height);
+        drawTiledTexture(ms, x, y, ClientRenderHelper.getTexture(extensions.getStillTexture(fluid)), width, height);
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -331,11 +332,8 @@ public class GuiValve extends Screen {
 
         buildSquare(matrix, builder, x, x + width, y, y + height, zLevel, minU, actualWidth, minV, actualHeight);
 
-        // finish drawing sprites
-        builder.end();
-
         RenderSystem.enableDepthTest();
-        BufferUploader.end(builder);
+        BufferUploader.drawWithShader(builder.end());
     }
 
     private static void buildSquare(Matrix4f matrix, BufferBuilder builder, float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2) {
