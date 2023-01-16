@@ -298,26 +298,25 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                         currentAirBlocks++;
                     }
                 } else {
-                    if (isBlockBlacklisted(_pos)) {
-                        if ( buildPlayer != null ) {
-                            GenericUtil.sendMessageToClient(
-                                    buildPlayer,
-                                    "chat.ffs.valve_blacklisted_block_found",
-                                    false,
-                                    _pos.getX(),
-                                    _pos.getY(),
-                                    _pos.getZ()
-                            );
-                        }
+                    BlockState state = getLevel().getBlockState(_pos);
+
+                    if (isBlockBlacklisted(_pos, state)) {
+                        GenericUtil.sendMessageToClient(
+                                buildPlayer,
+                                "chat.ffs.valve_blacklisted_block_found",
+                                false,
+                                state.getBlock().getName(),
+                                _pos.getX(),
+                                _pos.getY(),
+                                _pos.getZ()
+                        );
                         return false;
                     }
                     frame_blocks.get(layer).add(_pos);
                 }
             }
             if ( currentAirBlocks > maxAirBlocks ) {
-                if ( buildPlayer != null ) {
-                    GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
-                }
+                GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
                 return false;
             }
         }
@@ -331,11 +330,10 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return true;
     }
 
-    private boolean isBlockBlacklisted(BlockPos pos) {
+    private boolean isBlockBlacklisted(BlockPos pos, BlockState state) {
         if (!hasLevel() || getLevel().getBlockEntity(pos) instanceof AbstractTankTile) return false;
 
         TagKey<Block> blacklist = BlockTags.create(new ResourceLocation(FancyFluidStorage.MOD_ID, "blacklist"));
-        BlockState state = getLevel().getBlockState(pos);
 
         if (state.is(blacklist)) {
             return !ServerConfig.general.blockBlacklistInvert;
@@ -368,7 +366,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         List<BlockEntity> facingTiles = new ArrayList<>();
         for (int layer : maps.get(0).keySet()) {
             for (BlockPos pos : maps.get(0).get(layer)) {
-                BlockState check = getLevel().getBlockState(pos);
+                BlockState checkState = getLevel().getBlockState(pos);
                 if ( TankManager.INSTANCE.isPartOfTank(getLevel(), pos) ) {
                     AbstractTankValve valve = TankManager.INSTANCE.getValveForBlock(getLevel(), pos);
                     if ( valve != null && valve != this ) {
@@ -405,7 +403,29 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     }
                 }
 
-                if ( !GenericUtil.areTankBlocksValid(check, getLevel(), pos, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos)) && !GenericUtil.isBlockGlass(check) ) {
+                if (GenericUtil.isBlockFallingBlock(checkState)) {
+                    GenericUtil.sendMessageToClient(
+                            buildPlayer,
+                            "chat.ffs.valve_falling_block_found",
+                            false,
+                            checkState.getBlock().getName(),
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ()
+                    );
+                    return false;
+                }
+
+                if ( !GenericUtil.areTankBlocksValid(checkState, getLevel(), pos, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos)) && !GenericUtil.isBlockGlass(checkState) ) {
+                    GenericUtil.sendMessageToClient(
+                            buildPlayer,
+                            "chat.ffs.valve_invalid_block_found",
+                            false,
+                            checkState.getBlock().getName(),
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ()
+                    );
                     return false;
                 }
             }
