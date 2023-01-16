@@ -349,13 +349,13 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         }
 
         int size = 0;
-        for (int layer : maps.get(1).keySet()) {
-            size += maps.get(1).get(layer).size();
+        for (int layer : getAirBlocks().keySet()) {
+            size += getAirBlocks().get(layer).size();
         }
         getTankConfig().setFluidCapacity(size * ServerConfig.general.mbPerTankBlock);
 
-        for (int layer : maps.get(1).keySet()) {
-            for (BlockPos pos : maps.get(1).get(layer)) {
+        for (int layer : getAirBlocks().keySet()) {
+            for (BlockPos pos : getAirBlocks().get(layer)) {
                 if (!isAirOrWaterloggable(getLevel(), pos)) {
                     return false;
                 }
@@ -365,8 +365,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         FluidStack tempNewFluidStack = getTankConfig().getFluidStack();
 
         List<BlockEntity> facingTiles = new ArrayList<>();
-        for (int layer : maps.get(0).keySet()) {
-            for (BlockPos pos : maps.get(0).get(layer)) {
+        for (int layer : getFrameBlocks().keySet()) {
+            for (BlockPos pos : getFrameBlocks().get(layer)) {
                 BlockState checkState = getLevel().getBlockState(pos);
                 if ( TankManager.INSTANCE.isPartOfTank(getLevel(), pos) ) {
                     AbstractTankValve valve = TankManager.INSTANCE.getValveForBlock(getLevel(), pos);
@@ -417,7 +417,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     return false;
                 }
 
-                if ( !GenericUtil.areTankBlocksValid(checkState, getLevel(), pos, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos)) && !GenericUtil.isBlockGlass(checkState) ) {
+                if ( !GenericUtil.isValidTankBlock(getLevel(), pos, checkState, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos)) ) {
                     GenericUtil.sendMessageToClient(
                             buildPlayer,
                             "chat.ffs.valve_invalid_block_found",
@@ -439,12 +439,12 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         }
 
         for (BlockEntity facingTile : facingTiles) {
-            setTankTileFacing(maps.get(1), facingTile);
+            setTankTileFacing(getAirBlocks(), facingTile);
         }
         setIsMain(true);
 
-        for (int layer : maps.get(0).keySet()) {
-            for (BlockPos pos : maps.get(0).get(layer)) {
+        for (int layer : getFrameBlocks().keySet()) {
+            for (BlockPos pos : getFrameBlocks().get(layer)) {
                 BlockEntity tile = getLevel().getBlockEntity(pos);
                 if ( tile == this ) {
                     continue;
