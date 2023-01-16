@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "minecraft:grass_block",
     "minecraft:dirt",
     "minecraft:dirt_path",
     "minecraft:sponge",
