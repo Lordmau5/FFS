@@ -62,6 +62,10 @@ public class GenericUtil {
         return isValidTankBlock(world, bottomPos, bottomBlock, direction);
     }
 
+    public static boolean isBlockFallingBlock(BlockState state) {
+        return state != null && state.getBlock() instanceof FallingBlock;
+    }
+
     public static boolean isValidTankBlock(Level world, BlockPos pos, BlockState state, Direction direction) {
         if ( state == null ) {
             return false;
@@ -71,7 +75,7 @@ public class GenericUtil {
             return false;
         }
 
-        if ( state.getBlock() instanceof FallingBlock) {
+        if ( isBlockFallingBlock(state)) {
             return false;
         }
 
