@@ -202,7 +202,7 @@ public abstract class FFSPacket {
             public static void onReceived(ClearTanks msg, Supplier<NetworkEvent.Context> ctxSupplier) {
                 NetworkEvent.Context ctx = ctxSupplier.get();
 
-                ctx.enqueueWork(() -> TankManager.clear());
+                ctx.enqueueWork(() -> TankManager.INSTANCE.clear());
 
                 ctx.setPacketHandled(true);
             }

@@ -4,6 +4,7 @@ import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.client.gui.GuiValve;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -29,7 +30,7 @@ public class FFSPacketClientHandler {
         if ( world != null ) {
             BlockEntity tile = world.getBlockEntity(msg.getValvePos());
             if ( tile instanceof AbstractTankValve) {
-                FancyFluidStorage.TANK_MANAGER.add(world, msg.getValvePos(), msg.getAirBlocks(), msg.getFrameBlocks());
+                TankManager.INSTANCE.add(world, msg.getValvePos(), msg.getAirBlocks(), msg.getFrameBlocks());
             }
         }
     }
@@ -38,7 +39,7 @@ public class FFSPacketClientHandler {
         ClientLevel world = Minecraft.getInstance().level;
 
         if (world != null) {
-            FancyFluidStorage.TANK_MANAGER.remove(world, msg.getValvePos());
+            TankManager.INSTANCE.remove(world, msg.getValvePos());
         }
     }
 }

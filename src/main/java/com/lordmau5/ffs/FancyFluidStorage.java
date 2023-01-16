@@ -27,7 +27,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 @Mod(FancyFluidStorage.MOD_ID)
 public class FancyFluidStorage {
     public static final String MOD_ID = "ffs";
-    public static final TankManager TANK_MANAGER = new TankManager();
 
     public FancyFluidStorage() {
         final IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -46,8 +45,6 @@ public class FancyFluidStorage {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(TANK_MANAGER);
-
         NetworkHandler.registerChannels();
 
         Compatibility.init();
@@ -55,18 +52,5 @@ public class FancyFluidStorage {
 
     private void setupClient(final FMLClientSetupEvent event) {
         Compatibility.initClient();
-    }
-
-    @SubscribeEvent
-    public void onWorldUnload(LevelEvent.Unload event) {
-        LevelAccessor iWorld = event.getLevel();
-
-        if (iWorld.isClientSide() || !(iWorld instanceof Level) ) {
-            return;
-        }
-
-        Level world = (Level) iWorld;
-
-        FancyFluidStorage.TANK_MANAGER.removeAllForDimension(world);
     }
 }

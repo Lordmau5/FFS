@@ -11,6 +11,7 @@ import com.lordmau5.ffs.tile.util.TankConfig;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.lordmau5.ffs.util.LayerBlockPos;
+import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractTankValve extends AbstractTankTile implements IFacingTile, INameableTile {
 
-    public final WeakHashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
+    public final HashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
     private final List<AbstractTankTile> tankTiles;
     private int initialWaitTick = 20;
     private TankConfig tankConfig;
@@ -50,7 +51,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         tankTiles = new ArrayList<>();
 
-        maps = new WeakHashMap<>();
+        maps = new HashMap<>();
         maps.put(0, new TreeMap<>());
         maps.put(1, new TreeMap<>());
 
@@ -374,8 +375,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         for (int layer : maps.get(0).keySet()) {
             for (BlockPos pos : maps.get(0).get(layer)) {
                 BlockState check = getLevel().getBlockState(pos);
-                if ( FancyFluidStorage.TANK_MANAGER.isPartOfTank(getLevel(), pos) ) {
-                    AbstractTankValve valve = FancyFluidStorage.TANK_MANAGER.getValveForBlock(getLevel(), pos);
+                if ( TankManager.INSTANCE.isPartOfTank(getLevel(), pos) ) {
+                    AbstractTankValve valve = TankManager.INSTANCE.getValveForBlock(getLevel(), pos);
                     if ( valve != null && valve != this ) {
                         GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_other_tank", false);
                         return false;
@@ -452,7 +453,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         setValid(true);
 
-        FancyFluidStorage.TANK_MANAGER.add(getLevel(), getBlockPos(), getAirBlocks(), getFrameBlocks());
+        TankManager.INSTANCE.add(getLevel(), getBlockPos(), getAirBlocks(), getFrameBlocks());
 
         return true;
     }
@@ -467,7 +468,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
             return;
         }
 
-        FancyFluidStorage.TANK_MANAGER.remove(getLevel(), getBlockPos());
+        TankManager.INSTANCE.remove(getLevel(), getBlockPos());
         NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBreak(this));
 
         for (AbstractTankValve valve : getAllValves(false)) {
@@ -619,7 +620,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
             if ( getLevel() != null && getLevel().isClientSide ) {
                 if ( isValid() ) {
-                    if ( !FancyFluidStorage.TANK_MANAGER.isValveInLists(getLevel(), this) ) {
+                    if ( !TankManager.INSTANCE.isValveInLists(getLevel(), this) ) {
                         NetworkHandler.sendPacketToServer(new FFSPacket.Server.OnTankRequest(this));
                     }
                 }
