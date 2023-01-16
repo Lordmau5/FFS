@@ -15,6 +15,7 @@ import com.mojang.math.Matrix4f;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
 
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
@@ -22,17 +23,19 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.fluids.FluidStack;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class GuiValve extends Screen {
-    private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_valve.png");
-    private static final ResourceLocation tex_no_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
+    private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MOD_ID + ":textures/gui/gui_tank_valve.png");
+    private static final ResourceLocation tex_no_valve = new ResourceLocation(FancyFluidStorage.MOD_ID + ":textures/gui/gui_tank_no_valve.png");
     private final AbstractTankValve valve;
     private final AbstractTankValve mainValve;
     private final int xSize_Valve = 196;
@@ -40,7 +43,7 @@ public class GuiValve extends Screen {
     private final int xSize_NoValve = 96;
     private final int ySize_NoValve = 128;
     private GuiButtonLockFluid lockFluidButton;
-    private boolean isValve = false;
+    private final boolean isValve;
     private AbstractTankTile tile;
     private EditBox tileName;
     private int left = 0, top = 0;
@@ -84,6 +87,10 @@ public class GuiValve extends Screen {
     protected void init() {
         super.init();
 
+//        if (this.mainValve == null) {
+//            return;
+//        }
+
         if ( isValve ) {
             initGuiValve();
         } else {
@@ -113,7 +120,7 @@ public class GuiValve extends Screen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.getMinecraft().options.keyInventory.matches(keyCode, scanCode)) {
-            this.getMinecraft().player.closeContainer();
+            Objects.requireNonNull(this.getMinecraft().player).closeContainer();
             this.getMinecraft().setWindowActive(true);
             return true;
         }
@@ -150,7 +157,7 @@ public class GuiValve extends Screen {
         FluidStack stack = null;
         if ( this.valve.getTankConfig() != null && this.valve.getTankConfig().getFluidTank() != null ) {
             stack = this.valve.getTankConfig().getFluidTank().getFluid();
-            if ( stack != null ) {
+            if ( !stack.isEmpty() ) {
                 int height = Math.min(89, (int) Math.ceil((float) this.valve.getTankConfig().getFluidAmount() / (float) this.valve.getTankConfig().getFluidCapacity() * 89));
                 this.drawFluid(matrixStack, this.left + 20, this.top + 27 + (89 - height), stack, 48, height);
             }
@@ -205,7 +212,7 @@ public class GuiValve extends Screen {
     }
 
     @Override
-    public void render(PoseStack matrixStack, int x, int y, float partialTicks) {
+    public void render(@NotNull PoseStack matrixStack, int x, int y, float partialTicks) {
         this.mouseX = x;
         this.mouseY = y;
 
@@ -218,7 +225,7 @@ public class GuiValve extends Screen {
 
     private void drawTileName(PoseStack matrixStack, int x, int y, float partialTicks) {
         int length = this.font.width("Tile Name");
-        this.font.draw(matrixStack, ChatFormatting.BLACK + "Tile Name", x + 86 + (length / 2), y + 90, Color.white.getRGB());
+        this.font.draw(matrixStack, ChatFormatting.BLACK + "Tile Name", x + 86 + (length / 2.0f), y + 90, Color.white.getRGB());
         this.tileName.render(matrixStack, x, y, partialTicks);
     }
 
@@ -272,7 +279,7 @@ public class GuiValve extends Screen {
         ClientRenderHelper.setBlockTextureSheet();
         int color = fluid.getFluid().getAttributes().getColor(fluid);
         ClientRenderHelper.setGLColorFromInt(color);
-        drawTiledTexture(ms, x, y, ClientRenderHelper.getTexture(fluid.getFluid().getAttributes().getStillTexture(fluid)), width, height);
+        drawTiledTexture(ms, x, y, ClientRenderHelper.getTexture(fluid.getFluid().getAttributes().getFlowingTexture(fluid)), width, height);
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -286,10 +293,14 @@ public class GuiValve extends Screen {
         int drawHeight;
         int drawWidth;
 
-        for (i = 0; i < width; i += 16) {
-            for (j = 0; j < height; j += 16) {
-                drawWidth = Math.min(width - i, 16);
-                drawHeight = Math.min(height - j, 16);
+        int iconWidth = icon.getWidth();
+        int iconHeight = icon.getHeight();
+
+        for (i = 0; i < width; i += iconWidth) {
+            for (j = 0; j < height; j += iconHeight) {
+                drawWidth = Math.min(width - i, iconWidth);
+                drawHeight = Math.min(height - j, iconHeight);
+//                blit(ms, x + i, y + j, 0, drawWidth, drawHeight, icon);
                 drawScaledTexturedModelRectFromIcon(ms, x + i, y + j, icon, drawWidth, drawHeight);
             }
         }
@@ -300,38 +311,25 @@ public class GuiValve extends Screen {
             return;
         }
 
-        RenderSystem.setShaderTexture(0, icon.atlas().location());
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+//        RenderSystem.setShaderTexture(0, icon.atlas().location());
 
         BufferBuilder builder = Tesselator.getInstance().getBuilder();
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-        float u1 = icon.getU0();
-        float v1 = icon.getV0();
-        int spriteHeight = icon.getHeight();
-        int spriteWidth = icon.getWidth();
-        int startX = x;
-        int startY = y;
-        do {
-            int renderHeight = Math.min(spriteHeight, height);
-            height -= renderHeight;
-            float v2 = icon.getV((16f * renderHeight) / spriteHeight);
+        float minU = icon.getU0();
+        float maxU = icon.getU1();
+        float minV = icon.getV0();
+        float maxV = icon.getV1();
 
-            // we need to draw the quads per width too
-            int x2 = startX;
-            int widthLeft = width;
-            Matrix4f matrix = ms.last().pose();
-            // tile horizontally
-            do {
-                int renderWidth = Math.min(spriteWidth, widthLeft);
-                widthLeft -= renderWidth;
+        float actualWidth = minU + (maxU - minU) * width / icon.getWidth();
+        float actualHeight = minV + (maxV - minV) * height / icon.getHeight();
 
-                float u2 = icon.getU((16f * renderWidth) / spriteWidth);
-                buildSquare(matrix, builder, x2, x2 + renderWidth, startY, startY + renderHeight, 100, u1, u2, v1, v2);
-                x2 += renderWidth;
-            } while(widthLeft > 0);
+        float zLevel = 1.0f;
 
-            startY += renderHeight;
-        } while(height > 0);
+        Matrix4f matrix = ms.last().pose();
+
+        buildSquare(matrix, builder, x, x + width, y, y + height, zLevel, minU, actualWidth, minV, actualHeight);
 
         // finish drawing sprites
         builder.end();
@@ -340,7 +338,7 @@ public class GuiValve extends Screen {
         BufferUploader.end(builder);
     }
 
-    private static void buildSquare(Matrix4f matrix, BufferBuilder builder, int x1, int x2, int y1, int y2, int z, float u1, float u2, float v1, float v2) {
+    private static void buildSquare(Matrix4f matrix, BufferBuilder builder, float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2) {
         builder.vertex(matrix, x1, y2, z).uv(u1, v2).endVertex();
         builder.vertex(matrix, x2, y2, z).uv(u2, v2).endVertex();
         builder.vertex(matrix, x2, y1, z).uv(u2, v1).endVertex();

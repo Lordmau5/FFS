@@ -1,7 +1,7 @@
 package com.lordmau5.ffs.tile.valves;
 
 
-import com.lordmau5.ffs.holder.TileEntities;
+import com.lordmau5.ffs.holder.BlockEntities;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -25,7 +25,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
     private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> getTankConfig().getFluidTank());
 
     public TileEntityFluidValve(BlockPos pos, BlockState state) {
-        super(TileEntities.tileEntityFluidValve.get(), pos, state);
+        super(BlockEntities.tileEntityFluidValve.get(), pos, state);
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {
@@ -53,7 +53,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
 
         if ( fluid == Fluids.WATER ) {
             if ( level.isRaining() ) {
-                int rate = (int) Math.floor(level.rainLevel * 5 * level.getBiome(pos).getDownfall());
+                int rate = (int) Math.floor(level.rainLevel * 5 * level.getBiome(pos).value().getDownfall());
                 if ( pos.getY() == level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, pos).getY() - 1 ) {
                     FluidStack waterStack = fluidStack.copy();
                     waterStack.setAmount(rate * 10);

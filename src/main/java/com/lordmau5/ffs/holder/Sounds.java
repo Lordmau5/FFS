@@ -3,16 +3,25 @@ package com.lordmau5.ffs.holder;
 import com.lordmau5.ffs.FancyFluidStorage;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
-@ObjectHolder(FancyFluidStorage.MODID)
+import java.util.function.Supplier;
+
+//@ObjectHolder(FancyFluidStorage.MODID)
 public class Sounds {
 
-    public static SoundEvent birdSounds;
+    private static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FancyFluidStorage.MOD_ID);
 
-    public static void registerAll() {
-        birdSounds = new SoundEvent(new ResourceLocation(FancyFluidStorage.MODID, "bird"));
+    public static final RegistryObject<SoundEvent> birdSounds = register("bird", () -> new SoundEvent(new ResourceLocation(FancyFluidStorage.MOD_ID, "bird")));
 
-        FancyFluidStorage.SOUND_EVENTS.register("bird", () -> birdSounds);
+    private static <T extends SoundEvent> RegistryObject<T> register(final String name, final Supplier<T> sound) {
+        return SOUND_EVENTS.register(name, sound);
+    }
+
+    public static void register() {
+        SOUND_EVENTS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 }

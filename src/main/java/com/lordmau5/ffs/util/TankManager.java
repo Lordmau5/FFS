@@ -25,6 +25,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -195,10 +196,8 @@ public class TankManager {
     }
 
     public boolean isPartOfTank(Level world, BlockPos pos) {
-        boolean ret = get(world).getFrameBlockToValve(world).containsKey(pos)
+        return get(world).getFrameBlockToValve(world).containsKey(pos)
                 || get(world).getAirBlockToValve(world).containsKey(pos);
-
-        return ret;
     }
 
     @SubscribeEvent
@@ -247,44 +246,26 @@ public class TankManager {
         get(world).getBlocksToCheck(world).clear();
     }
 
-    private void addBlockForCheck(Level world, BlockPos pos) {
+    private void addBlockForCheck(LevelAccessor accessor, BlockPos pos) {
+        if ( accessor.isClientSide() || !(accessor instanceof Level world) ) {
+            return;
+        }
+
+        if ( !isPartOfTank(world, pos) ) {
+            return;
+        }
+
         get(world).getBlocksToCheck(world).add(pos);
     }
 
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event) {
-        LevelAccessor world = event.getWorld();
-        BlockPos pos = event.getPos();
-
-        if ( world.isClientSide() || !(world instanceof Level) ) {
-            return;
-        }
-
-        Level wWorld = (Level) world;
-
-        if ( !isPartOfTank(wWorld, pos) ) {
-            return;
-        }
-
-        addBlockForCheck(wWorld, pos);
+        addBlockForCheck(event.getWorld(), event.getPos());
     }
 
     @SubscribeEvent
     public void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
-        LevelAccessor world = event.getWorld();
-        BlockPos pos = event.getPos();
-
-        if ( world.isClientSide() || !(world instanceof Level) ) {
-            return;
-        }
-
-        Level wWorld = (Level) world;
-
-        if ( !isPartOfTank(wWorld, pos) ) {
-            return;
-        }
-
-        addBlockForCheck(wWorld, pos);
+        addBlockForCheck(event.getWorld(), event.getPos());
     }
 
     @SubscribeEvent

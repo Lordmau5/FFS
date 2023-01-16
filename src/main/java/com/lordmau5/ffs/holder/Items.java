@@ -3,32 +3,24 @@ package com.lordmau5.ffs.holder;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.item.ItemTit;
 import com.lordmau5.ffs.item.ItemTitEgg;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.fmllegacy.RegistryObject;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.*;
 
 import java.util.function.Supplier;
 
-@ObjectHolder(FancyFluidStorage.MODID)
 public class Items {
 
-    @ObjectHolder("tit")
-    public static final ItemTit tit = null;
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, FancyFluidStorage.MOD_ID);
 
-    @ObjectHolder("tit_egg")
-    public static final ItemTitEgg titEgg = null;
+    public static final RegistryObject<ItemTit> tit = register("tit", () -> new ItemTit(new Item.Properties()));;
+    public static final RegistryObject<ItemTitEgg> titEgg = register("tit_egg", () -> new ItemTitEgg(new Item.Properties()));
 
-    // Initialization
-    public static void registerAll() {
-        register("tit", () -> new ItemTit(new Item.Properties()));
-        register("tit_egg", () -> new ItemTitEgg(new Item.Properties()));
-
-        register("fluid_valve", () -> new BlockItem(Blocks.fluidValve, new Item.Properties().tab(FancyFluidStorage.ITEM_GROUP)));
+    private static <T extends Item> RegistryObject<T> register(final String name, final Supplier<T> item) {
+        return ITEMS.register(name, item);
     }
 
-    public static RegistryObject<Item> register(final String name, final Supplier<Item> supplier) {
-        return FancyFluidStorage.ITEMS.register(name, supplier);
+    public static void register() {
+        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
-
 }

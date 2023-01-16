@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.block.valves;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.holder.BlockEntities;
 import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
@@ -32,34 +33,33 @@ public class BlockFluidValve extends AbstractBlockValve {
     public BlockFluidValve() {
         super();
 
-        registerDefaultState(defaultBlockState().setValue(FFSStateProps.TILE_VALID, false).setValue(FFSStateProps.TILE_MAIN, false));
+        registerDefaultState(getStateDefinition().any().setValue(FFSStateProps.TILE_VALID, false).setValue(FFSStateProps.TILE_MAIN, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-
         builder.add(FFSStateProps.TILE_MAIN, FFSStateProps.TILE_VALID);
     }
 
+    @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityFluidValve(pos, state);
+        return BlockEntities.tileEntityFluidValve.get().create(pos, state);
     }
 
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-            BlockEntityType<T> eb) {
-        return TileEntityFluidValve::tick;
+            BlockEntityType<T> type) {
+        return type == BlockEntities.tileEntityFluidValve.get() ? TileEntityFluidValve::tick : null;
     }
 
     @Override
-    public ItemStack getPickBlock(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
-        ItemStack stack = super.getPickBlock(state, target, world, pos, player);
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+        ItemStack stack = super.getCloneItemStack(state, target, level, pos, player);
 
         if (player.isShiftKeyDown()) {
-            BlockEntity tile = world.getBlockEntity(pos);
+            BlockEntity tile = level.getBlockEntity(pos);
             if (tile instanceof TileEntityFluidValve) {
                 ((TileEntityFluidValve) tile).getTankConfig().writeToNBT(stack.getOrCreateTag());
             }

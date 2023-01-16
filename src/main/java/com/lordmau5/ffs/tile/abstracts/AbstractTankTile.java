@@ -1,5 +1,7 @@
 package com.lordmau5.ffs.tile.abstracts;
 
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -9,6 +11,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public abstract class AbstractTankTile extends BlockEntity {
 
@@ -65,14 +71,12 @@ public abstract class AbstractTankTile extends BlockEntity {
     }
 
     @Override
-    public CompoundTag save(CompoundTag nbt) {
-        super.save(nbt);
+    public void saveAdditional(CompoundTag nbt) {
+        super.saveAdditional(nbt);
 
         if ( getMainValve() != null ) {
             nbt.putLong("valvePos", getMainValve().getBlockPos().asLong());
         }
-
-        return nbt;
     }
 
     @Override
@@ -81,24 +85,30 @@ public abstract class AbstractTankTile extends BlockEntity {
 
         boolean oldIsValid = isValid();
 
-        load(pkt.getTag());
+        if (pkt.getTag() != null) {
+            load(pkt.getTag());
+        }
 
         if ( getLevel() != null && getLevel().isClientSide && oldIsValid != isValid() ) {
             markForUpdateNow();
         }
     }
 
+    @Nullable
     @Override
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        CompoundTag tag = new CompoundTag();
-        save(tag);
-        return new ClientboundBlockEntityDataPacket(getBlockPos(), 42, tag);
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        ClientboundBlockEntityDataPacket packet = ClientboundBlockEntityDataPacket.create(this);
+        if (packet.getTag() != null) {
+            saveAdditional(packet.getTag());
+        }
+        return packet;
     }
 
+    @NotNull
     @Override
     public CompoundTag getUpdateTag() {
-        CompoundTag tag = new CompoundTag();
-        save(tag);
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
         return tag;
     }
 

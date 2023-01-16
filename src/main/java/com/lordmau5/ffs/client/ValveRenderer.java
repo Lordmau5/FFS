@@ -18,6 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import com.mojang.math.Matrix4f;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;

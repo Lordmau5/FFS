@@ -15,10 +15,10 @@ apply plugin: 'maven-publish'
 // if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version"
 
 group = 'com.lordmau5.ffs'
-version = "3.1.0" //$minecraft_version-$mod_version"
+version = "$minecraft_version-$mod_version"
 archivesBaseName = 'Fancy Fluid Storage'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {

@@ -56,16 +56,16 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
     public abstract BlockEntity newBlockEntity(BlockPos pos, BlockState state);
 
     @Override
-    public void onBlockExploded(BlockState state, Level world, BlockPos pos, Explosion explosion) {
-        BlockEntity tile = world.getBlockEntity(pos);
+    public void wasExploded(Level level, BlockPos pos, Explosion explosion) {
+        BlockEntity tile = level.getBlockEntity(pos);
         if ( tile instanceof AbstractTankValve ) {
-            AbstractTankValve valve = (AbstractTankValve) world.getBlockEntity(pos);
+            AbstractTankValve valve = (AbstractTankValve) level.getBlockEntity(pos);
             if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
 
-        super.wasExploded(world, pos, explosion);
+        super.wasExploded(level, pos, explosion);
     }
 
     @Override
@@ -81,15 +81,15 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
     }
 
     @Override
-    public boolean removedByPlayer(BlockState state, Level world, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-        if ( !world.isClientSide ) {
-            AbstractTankValve valve = (AbstractTankValve) world.getBlockEntity(pos);
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+        if ( !level.isClientSide ) {
+            AbstractTankValve valve = (AbstractTankValve) level.getBlockEntity(pos);
             if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
 
-        return super.removedByPlayer(state, world, pos, player, willHarvest, fluid);
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
     }
 
     @Override
@@ -113,7 +113,7 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
 
             NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OpenGUI(valve, false), (ServerPlayer) player);
         } else {
-            valve.buildTank_player(player, hit.getDirection().getOpposite());
+            valve.buildTank(player, hit.getDirection().getOpposite());
         }
         return InteractionResult.CONSUME;
     }
@@ -134,7 +134,7 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
     }
 
     @Override
-    public boolean canCreatureSpawn(BlockState state, BlockGetter world, BlockPos pos, SpawnPlacements.Type type, @Nullable EntityType<?> entityType) {
+    public boolean isValidSpawn(BlockState state, BlockGetter level, BlockPos pos, SpawnPlacements.Type type, EntityType<?> entityType) {
         return false;
     }
 
