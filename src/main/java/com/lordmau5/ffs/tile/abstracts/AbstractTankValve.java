@@ -12,6 +12,8 @@ import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
+import net.minecraft.data.tags.BlockTagsProvider;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +29,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -330,24 +333,16 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     private boolean isBlockBlacklisted(BlockPos pos) {
-        return false;
+        if (!hasLevel() || getLevel().getBlockEntity(pos) instanceof AbstractTankTile) return false;
 
-    // TODO: Figure out how to iterate over all block tags and find the ones we have blacklisted
-//
-//        if (getLevel().getBlockEntity(pos) instanceof AbstractTankTile) return false;
-//
-//        BlockState state = getLevel().getBlockState(pos);
-//
-//        ResourceLocation blacklist = new ResourceLocation(FancyFluidStorage.MODID, "blacklist");
-//        Tag<Block> blockITag = BlockTags.getAllTags().getTag(blacklist);
-//        if (blockITag == null) {
-//            return ServerConfig.general.blockBlacklistInvert;
-//        }
-//
-//        if (blockITag.contains(state.getBlock())) {
-//            return !ServerConfig.general.blockBlacklistInvert;
-//        }
-//        return ServerConfig.general.blockBlacklistInvert;
+        TagKey<Block> blacklist = BlockTags.create(new ResourceLocation(FancyFluidStorage.MOD_ID, "blacklist"));
+        BlockState state = getLevel().getBlockState(pos);
+
+        if (state.is(blacklist)) {
+            return !ServerConfig.general.blockBlacklistInvert;
+        }
+
+        return ServerConfig.general.blockBlacklistInvert;
     }
 
     private boolean setupTank() {
