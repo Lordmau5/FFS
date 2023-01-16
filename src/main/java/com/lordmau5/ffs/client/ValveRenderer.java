@@ -5,6 +5,7 @@ import com.lordmau5.ffs.config.ServerConfig;
 import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.ClientRenderHelper;
 import com.lordmau5.ffs.util.LayerBlockPos;
+import com.lordmau5.ffs.util.TankManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -58,10 +59,10 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
 
         float fillPercentage = (float) valve.getTankConfig().getFluidAmount() / (float) valve.getTankConfig().getFluidCapacity();
 
-        if ( fillPercentage > 0 && valve.getTankConfig().getFluidStack() != FluidStack.EMPTY ) {
+        if ( fillPercentage > 0 && !valve.getTankConfig().getFluidStack().isEmpty() ) {
             FluidStack fluid = valve.getTankConfig().getFluidStack();
 
-            TreeMap<Integer, List<LayerBlockPos>> airBlocks = FancyFluidStorage.TANK_MANAGER.getAirBlocksForValve(valve);
+            TreeMap<Integer, List<LayerBlockPos>> airBlocks = TankManager.INSTANCE.getAirBlocksForValve(valve);
             if ( airBlocks == null || airBlocks.isEmpty() ) {
                 return;
             }

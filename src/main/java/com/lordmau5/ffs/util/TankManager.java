@@ -18,66 +18,69 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 public class TankManager {
 
+    public static TankManager INSTANCE = new TankManager();
+
     private static class HashMapCache {
-        private final WeakHashMap<ResourceKey<Level>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
-        private final WeakHashMap<ResourceKey<Level>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
-        private final WeakHashMap<ResourceKey<Level>, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
-        private final WeakHashMap<ResourceKey<Level>, WeakHashMap<BlockPos, BlockPos>> airBlockToValve = new WeakHashMap<>();
+        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new HashMap<>();
+        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new HashMap<>();
+        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, BlockPos>> frameBlockToValve = new HashMap<>();
+        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, BlockPos>> airBlockToValve = new HashMap<>();
 
-        private final WeakHashMap<ResourceKey<Level>, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
+        private final HashMap<ResourceKey<Level>, List<BlockPos>> blocksToCheck = new HashMap<>();
 
-        private WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToFrameBlocks(Level world) {
-            ResourceKey<Level> dimensionType = world.dimension();
+        private HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToFrameBlocks(Level world) {
+            ResourceKey<Level> dimension = world.dimension();
 
-            valveToFrameBlocks.putIfAbsent(dimensionType, new WeakHashMap<>());
+            valveToFrameBlocks.putIfAbsent(dimension, new HashMap<>());
 
-            return valveToFrameBlocks.get(dimensionType);
+            return valveToFrameBlocks.get(dimension);
         }
 
-        private WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToAirBlocks(Level world) {
-            ResourceKey<Level> dimensionType = world.dimension();
+        private HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToAirBlocks(Level world) {
+            ResourceKey<Level> dimension = world.dimension();
 
-            valveToAirBlocks.putIfAbsent(dimensionType, new WeakHashMap<>());
+            valveToAirBlocks.putIfAbsent(dimension, new HashMap<>());
 
-            return valveToAirBlocks.get(dimensionType);
+            return valveToAirBlocks.get(dimension);
         }
 
-        private WeakHashMap<BlockPos, BlockPos> getFrameBlockToValve(Level world) {
-            ResourceKey<Level> dimensionType = world.dimension();
+        private HashMap<BlockPos, BlockPos> getFrameBlockToValve(Level world) {
+            ResourceKey<Level> dimension = world.dimension();
 
-            frameBlockToValve.putIfAbsent(dimensionType, new WeakHashMap<>());
+            frameBlockToValve.putIfAbsent(dimension, new HashMap<>());
 
-            return frameBlockToValve.get(dimensionType);
+            return frameBlockToValve.get(dimension);
         }
 
-        private WeakHashMap<BlockPos, BlockPos> getAirBlockToValve(Level world) {
-            ResourceKey<Level> dimensionType = world.dimension();
+        private HashMap<BlockPos, BlockPos> getAirBlockToValve(Level world) {
+            ResourceKey<Level> dimension = world.dimension();
 
-            airBlockToValve.putIfAbsent(dimensionType, new WeakHashMap<>());
+            airBlockToValve.putIfAbsent(dimension, new HashMap<>());
 
-            return airBlockToValve.get(dimensionType);
+            return airBlockToValve.get(dimension);
         }
 
         private List<BlockPos> getBlocksToCheck(Level world) {
-            ResourceKey<Level> dimensionType = world.dimension();
+            ResourceKey<Level> dimension = world.dimension();
 
-            blocksToCheck.putIfAbsent(dimensionType, new ArrayList<>());
+            blocksToCheck.putIfAbsent(dimension, new ArrayList<>());
 
-            return blocksToCheck.get(dimensionType);
+            return blocksToCheck.get(dimension);
         }
 
         private void clear() {
@@ -90,17 +93,29 @@ public class TankManager {
     }
 
     public TankManager() {
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private static final HashMapCache CLIENT = new HashMapCache();
-    private static final HashMapCache SERVER = new HashMapCache();
+//    public static void initialize() {
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::entityJoinWorld);
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::onServerTick);
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::onBlockBreak);
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::onBlockPlace);
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::onRightClick);
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::onFillBucket);
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::onDimensionChange);
+//        MinecraftForge.EVENT_BUS.addListener(TankManager::onWorldUnload);
+//    }
 
-    public static HashMapCache get(@Nullable Level world) {
+    private final HashMapCache CLIENT = new HashMapCache();
+    private final HashMapCache SERVER = new HashMapCache();
+
+    public HashMapCache get(@Nullable Level world) {
         return (world != null && world.isClientSide) ? CLIENT : SERVER;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void clear() {
+    public void clear() {
         CLIENT.clear();
     }
 
@@ -184,8 +199,10 @@ public class TankManager {
     public TreeMap<Integer, List<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
         Level world = valve.getLevel();
 
-        if ( get(world).getValveToAirBlocks(world).containsKey(valve.getBlockPos()) ) {
-            return get(world).getValveToAirBlocks(world).get(valve.getBlockPos());
+        var valveToAirBlocks = get(world).getValveToAirBlocks(world);
+
+        if ( valveToAirBlocks.containsKey(valve.getBlockPos()) ) {
+            return valveToAirBlocks.get(valve.getBlockPos());
         }
 
         return null;
@@ -199,6 +216,20 @@ public class TankManager {
         return get(world).getFrameBlockToValve(world).containsKey(pos)
                 || get(world).getAirBlockToValve(world).containsKey(pos);
     }
+
+    private void addBlockForCheck(LevelAccessor accessor, BlockPos pos) {
+        if ( accessor.isClientSide() || !(accessor instanceof Level world) ) {
+            return;
+        }
+
+        if ( !isPartOfTank(world, pos) ) {
+            return;
+        }
+
+        get(world).getBlocksToCheck(world).add(pos);
+    }
+
+    // --- Events ---
 
     @SubscribeEvent
     public void entityJoinWorld(EntityJoinWorldEvent event) {
@@ -216,7 +247,7 @@ public class TankManager {
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.WorldTickEvent event) {
+    public void onServerTick(final TickEvent.WorldTickEvent event) {
         if ( event.world.isClientSide ) {
             return;
         }
@@ -246,25 +277,13 @@ public class TankManager {
         get(world).getBlocksToCheck(world).clear();
     }
 
-    private void addBlockForCheck(LevelAccessor accessor, BlockPos pos) {
-        if ( accessor.isClientSide() || !(accessor instanceof Level world) ) {
-            return;
-        }
-
-        if ( !isPartOfTank(world, pos) ) {
-            return;
-        }
-
-        get(world).getBlocksToCheck(world).add(pos);
-    }
-
     @SubscribeEvent
-    public void onBlockBreak(BlockEvent.BreakEvent event) {
+    public void onBlockBreak(final BlockEvent.BreakEvent event) {
         addBlockForCheck(event.getWorld(), event.getPos());
     }
 
     @SubscribeEvent
-    public void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+    public void onBlockPlace(final BlockEvent.EntityPlaceEvent event) {
         addBlockForCheck(event.getWorld(), event.getPos());
     }
 
@@ -357,6 +376,17 @@ public class TankManager {
         }
 
         NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.ClearTanks(), (ServerPlayer) event.getPlayer());
+    }
+
+    @SubscribeEvent
+    public void onWorldUnload(WorldEvent.Unload event) {
+        LevelAccessor iWorld = event.getWorld();
+
+        if (iWorld.isClientSide() || !(iWorld instanceof Level world) ) {
+            return;
+        }
+
+        INSTANCE.removeAllForDimension(world);
     }
 
 }

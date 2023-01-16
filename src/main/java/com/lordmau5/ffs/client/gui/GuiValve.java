@@ -148,7 +148,7 @@ public class GuiValve extends Screen {
         blit(matrixStack, this.left, this.top, 0, 0, this.xSize_Valve, this.ySize_Valve);
 
         Component fluid = new TranslatableComponent("gui.ffs.fluid_valve.empty");
-        if ( this.valve.getTankConfig().getFluidStack() != FluidStack.EMPTY ) {
+        if ( !this.valve.getTankConfig().getFluidStack().isEmpty() ) {
             fluid = this.valve.getTankConfig().getFluidStack().getDisplayName();
         }
 

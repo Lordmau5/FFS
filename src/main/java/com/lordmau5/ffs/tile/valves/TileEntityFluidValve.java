@@ -42,7 +42,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
         }
 
         FluidStack fluidStack = valve.getTankConfig().getFluidStack();
-        if ( fluidStack == FluidStack.EMPTY ) {
+        if ( fluidStack.isEmpty() ) {
             return;
         }
 
