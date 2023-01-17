@@ -50,7 +50,7 @@ public class GuiValve extends Screen {
     private int mouseX, mouseY;
 
     public GuiValve(AbstractTankTile tile, boolean isValve) {
-        super(new TranslatableComponent("ffs.gui.valve"));
+        super(new TranslatableComponent("gui.ffs.fluid_valve"));
 
         this.isValve = isValve;
 
@@ -75,7 +75,7 @@ public class GuiValve extends Screen {
 //            this.tileName.setText(this.valve.getTileName());
 //            this.tileName.setMaxStringLength(32);
         }
-        this.addWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 62, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
+        this.addRenderableWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 62, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
             this.lockFluidButton.toggleState();
 
             this.mainValve.setFluidLock(this.lockFluidButton.getState());
@@ -96,7 +96,7 @@ public class GuiValve extends Screen {
         } else {
             this.left = (this.width - this.xSize_NoValve) / 2;
             this.top = (this.height - this.ySize_NoValve) / 2;
-            this.addWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 65, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
+            this.addRenderableWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 65, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
                 this.lockFluidButton.toggleState();
 
                 this.mainValve.setFluidLock(this.lockFluidButton.getState());
@@ -154,7 +154,7 @@ public class GuiValve extends Screen {
 
         drawCenteredString(matrixStack, this.font, fluid, this.left + (this.xSize_Valve / 2), this.top + 6, 16777215);
 
-        FluidStack stack = null;
+        FluidStack stack = FluidStack.EMPTY;
         if ( this.valve.getTankConfig() != null && this.valve.getTankConfig().getFluidTank() != null ) {
             stack = this.valve.getTankConfig().getFluidTank().getFluid();
             if ( !stack.isEmpty() ) {
@@ -173,7 +173,7 @@ public class GuiValve extends Screen {
         if ( this.mouseX >= this.left + 62 && this.mouseX < this.left + 62 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8 ) {
             lockedFluidHoveringText(matrixStack);
         } else {
-            if ( stack != null ) {
+            if ( !stack.isEmpty() ) {
                 fluidHoveringText(matrixStack, fluid, 20, 27, 89);
             }
         }
@@ -190,7 +190,7 @@ public class GuiValve extends Screen {
 
         drawCenteredString(matrixStack, this.font, fluid, this.left + (this.xSize_NoValve / 2), this.top + 6, 16777215);
 
-        FluidStack stack = null;
+        FluidStack stack = FluidStack.EMPTY;
         if ( this.valve.getTankConfig() != null && this.valve.getTankConfig().getFluidTank() != null ) {
             stack = this.valve.getTankConfig().getFluidTank().getFluid();
             if ( !stack.isEmpty() ) {
@@ -205,7 +205,7 @@ public class GuiValve extends Screen {
         if ( this.mouseX >= this.left + 66 && this.mouseX < this.left + 66 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8 ) {
             lockedFluidHoveringText(matrixStack);
         } else {
-            if ( stack != null ) {
+            if ( !stack.isEmpty() ) {
                 fluidHoveringText(matrixStack, fluid, 24, 27, 89);
             }
         }
