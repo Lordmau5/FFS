@@ -26,7 +26,7 @@ public class GenericUtil {
     }
 
     public static String getUniquePositionName(AbstractTankValve valve) {
-        return "tile_" + Long.toHexString(valve.getPos().toLong());
+        return "tile_" + Long.toHexString(valve.getBlockPos().asLong());
     }
 
     public static boolean isBlockGlass(BlockState blockState) {
@@ -39,13 +39,13 @@ public class GenericUtil {
         }
 
         ItemStack is = new ItemStack(blockState.getBlock(), 1);
-        return blockState.getMaterial() == Material.GLASS && !is.getTranslationKey().contains("pane");
+        return blockState.getMaterial() == Material.GLASS && !is.getDescriptionId().contains("pane");
     }
 
     public static Direction getInsideForTankFrame(TreeMap<Integer, List<LayerBlockPos>> airBlocks, BlockPos frame) {
         for (Direction direction : Direction.values()) {
             for (int layer : airBlocks.keySet()) {
-                if ( airBlocks.get(layer).contains(frame.offset(direction)) ) {
+                if ( airBlocks.get(layer).contains(frame.relative(direction)) ) {
                     return direction;
                 }
             }
@@ -53,8 +53,8 @@ public class GenericUtil {
         return null;
     }
 
-    public static boolean areTankBlocksValid(BlockState bottomBlock, World world, BlockPos bottomPos, Direction direction) {
-        return isValidTankBlock(world, bottomPos, bottomBlock, direction);
+    public static boolean isBlockFallingBlock(BlockState state) {
+        return state != null && state.getBlock() instanceof FallingBlock;
     }
 
     public static boolean isValidTankBlock(World world, BlockPos pos, BlockState state, Direction direction) {
@@ -62,11 +62,11 @@ public class GenericUtil {
             return false;
         }
 
-        if ( world.isAirBlock(pos) ) {
+        if ( world.isEmptyBlock(pos) ) {
             return false;
         }
 
-        if ( state.getBlock() instanceof FallingBlock) {
+        if ( isBlockFallingBlock(state)) {
             return false;
         }
 
@@ -76,7 +76,7 @@ public class GenericUtil {
 //            }
 //        }
 
-        return isBlockGlass(state) || direction == null || state.isSolidSide(world, pos, direction);
+        return isBlockGlass(state) || direction == null || state.isFaceSturdy(world, pos, direction);
     }
 
     public static boolean isFluidContainer(ItemStack playerItem) {
@@ -84,11 +84,11 @@ public class GenericUtil {
     }
 
     public static boolean fluidContainerHandler(World world, AbstractTankValve valve, PlayerEntity player) {
-        if ( world.isRemote ) {
+        if ( world.isClientSide ) {
             return true;
         }
 
-        ItemStack current = player.getHeldItemMainhand();
+        ItemStack current = player.getMainHandItem();
 
         if ( current != ItemStack.EMPTY ) {
             if ( !isFluidContainer(current) ) {
@@ -114,7 +114,7 @@ public class GenericUtil {
             return;
         }
 
-        player.sendStatusMessage(new TranslationTextComponent(key), actionBar);
+        player.displayClientMessage(new TranslationTextComponent(key), actionBar);
     }
 
     public static void sendMessageToClient(PlayerEntity player, String key, boolean actionBar, Object... args) {
@@ -122,7 +122,7 @@ public class GenericUtil {
             return;
         }
 
-        player.sendStatusMessage(new TranslationTextComponent(key, args), actionBar);
+        player.displayClientMessage(new TranslationTextComponent(key, args), actionBar);
     }
 
     public static void initChunkLoadTicket(World world, ChunkManager ticket) {
@@ -142,7 +142,7 @@ public class GenericUtil {
 
     // Check if a block is either air or water-loggable
     public static boolean isAirOrWaterloggable(World world, BlockPos pos) {
-        if (world.isAirBlock(pos)) {
+        if (world.isEmptyBlock(pos)) {
             return true;
         }
 
@@ -151,7 +151,7 @@ public class GenericUtil {
 
         // Comparing against ILiquidContainer instead of IWaterLoggable for better compatibility
         if (block instanceof ILiquidContainer) {
-            return ((ILiquidContainer) block).canContainFluid(world, pos, state, Fluids.WATER);
+            return ((ILiquidContainer) block).canPlaceLiquid(world, pos, state, Fluids.WATER);
         }
 
         return false;

@@ -5,13 +5,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.registries.ObjectHolder;
 
-@ObjectHolder(FancyFluidStorage.MODID)
+@ObjectHolder(FancyFluidStorage.MOD_ID)
 public class Sounds {
 
     public static SoundEvent birdSounds;
 
     public static void registerAll() {
-        birdSounds = new SoundEvent(new ResourceLocation(FancyFluidStorage.MODID, "bird"));
+        birdSounds = new SoundEvent(new ResourceLocation(FancyFluidStorage.MOD_ID, "bird"));
 
         FancyFluidStorage.SOUND_EVENTS.register("bird", () -> birdSounds);
     }

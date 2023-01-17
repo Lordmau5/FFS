@@ -5,7 +5,7 @@ import net.minecraft.item.Item;
 
 public class ItemTitEgg extends Item {
     public ItemTitEgg(final Item.Properties properties) {
-        super(properties.group(FancyFluidStorage.ITEM_GROUP));
+        super(properties.tab(FancyFluidStorage.ITEM_GROUP));
     }
 
 }

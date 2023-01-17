@@ -10,13 +10,18 @@ import com.lordmau5.ffs.util.ClientRenderHelper;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldVertexBufferUploader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.test.TestExecutor;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -29,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuiValve extends Screen {
-    private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_valve.png");
-    private static final ResourceLocation tex_no_valve = new ResourceLocation(FancyFluidStorage.MODID + ":textures/gui/gui_tank_no_valve.png");
+    private static final ResourceLocation tex_valve = new ResourceLocation(FancyFluidStorage.MOD_ID + ":textures/gui/gui_tank_valve.png");
+    private static final ResourceLocation tex_no_valve = new ResourceLocation(FancyFluidStorage.MOD_ID + ":textures/gui/gui_tank_no_valve.png");
     private final AbstractTankValve valve;
     private final AbstractTankValve mainValve;
     private final int xSize_Valve = 196;
@@ -102,17 +107,17 @@ public class GuiValve extends Screen {
         super.onClose();
 
         if ( this.tile instanceof INameableTile ) {
-            if ( !this.tileName.getText().isEmpty() ) {
-                NetworkHandler.sendPacketToServer(new FFSPacket.Server.UpdateTileName(this.tile, this.tileName.getText()));
+            if ( !this.tileName.getValue().isEmpty() ) {
+                NetworkHandler.sendPacketToServer(new FFSPacket.Server.UpdateTileName(this.tile, this.tileName.getValue()));
             }
         }
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (this.getMinecraft().gameSettings.keyBindInventory.matchesKey(keyCode, scanCode)) {
-            this.getMinecraft().player.closeScreen();
-            this.getMinecraft().setGameFocused(true);
+        if (this.getMinecraft().options.keyInventory.matches(keyCode, scanCode)) {
+            this.getMinecraft().player.closeContainer();
+            this.getMinecraft().setWindowActive(true);
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -135,20 +140,20 @@ public class GuiValve extends Screen {
     }
 
     private void drawGUIValve(MatrixStack matrixStack, int x, int y, float partialTicks) {
-        this.getMinecraft().getTextureManager().bindTexture(tex_valve);
+        this.getMinecraft().getTextureManager().bind(tex_valve);
         blit(matrixStack, this.left, this.top, 0, 0, this.xSize_Valve, this.ySize_Valve);
 
         ITextComponent fluid = new TranslationTextComponent("gui.ffs.fluid_valve.empty");
-        if ( this.valve.getTankConfig().getFluidStack() != FluidStack.EMPTY ) {
+        if ( !this.valve.getTankConfig().getFluidStack().isEmpty() ) {
             fluid = this.valve.getTankConfig().getFluidStack().getDisplayName();
         }
 
         drawCenteredString(matrixStack, this.font, fluid, this.left + (this.xSize_Valve / 2), this.top + 6, 16777215);
 
-        FluidStack stack = null;
+        FluidStack stack = FluidStack.EMPTY;
         if ( this.valve.getTankConfig() != null && this.valve.getTankConfig().getFluidTank() != null ) {
             stack = this.valve.getTankConfig().getFluidTank().getFluid();
-            if ( stack != null ) {
+            if ( !stack.isEmpty() ) {
                 int height = Math.min(89, (int) Math.ceil((float) this.valve.getTankConfig().getFluidAmount() / (float) this.valve.getTankConfig().getFluidCapacity() * 89));
                 this.drawFluid(matrixStack, this.left + 20, this.top + 27 + (89 - height), stack, 48, height);
             }
@@ -164,14 +169,14 @@ public class GuiValve extends Screen {
         if ( this.mouseX >= this.left + 62 && this.mouseX < this.left + 62 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8 ) {
             lockedFluidHoveringText(matrixStack);
         } else {
-            if ( stack != null ) {
+            if ( !stack.isEmpty() ) {
                 fluidHoveringText(matrixStack, fluid, 20, 27, 89);
             }
         }
     }
 
     private void drawGUINoValve(MatrixStack matrixStack, int x, int y, float partialTicks) {
-        this.getMinecraft().getTextureManager().bindTexture(tex_no_valve);
+        this.getMinecraft().getTextureManager().bind(tex_no_valve);
         blit(matrixStack, this.left, this.top, 0, 0, this.xSize_NoValve, this.ySize_NoValve);
 
         ITextComponent fluid = new TranslationTextComponent("gui.ffs.fluid_valve.empty");
@@ -181,10 +186,10 @@ public class GuiValve extends Screen {
 
         drawCenteredString(matrixStack, this.font, fluid, this.left + (this.xSize_NoValve / 2), this.top + 6, 16777215);
 
-        FluidStack stack = null;
+        FluidStack stack = FluidStack.EMPTY;
         if ( this.valve.getTankConfig() != null && this.valve.getTankConfig().getFluidTank() != null ) {
             stack = this.valve.getTankConfig().getFluidTank().getFluid();
-            if ( stack != null ) {
+            if ( !stack.isEmpty() ) {
                 int height = Math.min(89, (int) Math.ceil((float) this.valve.getTankConfig().getFluidAmount() / (float) this.valve.getTankConfig().getFluidCapacity() * 89));
                 this.drawFluid(matrixStack, this.left + 24, this.top + 27 + (89 - height), stack, 48, height);
             }
@@ -196,7 +201,7 @@ public class GuiValve extends Screen {
         if ( this.mouseX >= this.left + 66 && this.mouseX < this.left + 66 + 8 && this.mouseY >= this.top + 26 && this.mouseY < this.top + 26 + 8 ) {
             lockedFluidHoveringText(matrixStack);
         } else {
-            if ( stack != null ) {
+            if ( !stack.isEmpty() ) {
                 fluidHoveringText(matrixStack, fluid, 24, 27, 89);
             }
         }
@@ -215,8 +220,8 @@ public class GuiValve extends Screen {
     }
 
     private void drawTileName(MatrixStack matrixStack, int x, int y, float partialTicks) {
-        int length = this.font.getStringWidth("Tile Name");
-        this.font.drawString(matrixStack, TextFormatting.BLACK + "Tile Name", x + 86 + (length / 2), y + 90, Color.white.getRGB());
+        int length = this.font.width("Tile Name");
+        this.font.draw(matrixStack, TextFormatting.BLACK + "Tile Name", x + 86 + (length / 2), y + 90, Color.white.getRGB());
         this.tileName.render(matrixStack, x, y, partialTicks);
     }
 
@@ -225,19 +230,19 @@ public class GuiValve extends Screen {
         if (this.valve.getTankConfig().isFluidLocked()) {
             texts.add(
                     (new TranslationTextComponent("gui.ffs.fluid_valve.fluid_base"))
-                    .appendString(" ")
-                    .append(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_locked").mergeStyle(TextFormatting.RED))
+                    .append(" ")
+                    .append(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_locked").withStyle(TextFormatting.RED))
             );
             texts.add(
                     (new TranslationTextComponent("description.ffs.fluid_valve.fluid", this.valve.getTankConfig().getLockedFluid().getDisplayName()))
-                    .mergeStyle(TextFormatting.GRAY)
+                    .withStyle(TextFormatting.GRAY)
             );
         }
         else {
             texts.add(
                     (new TranslationTextComponent("gui.ffs.fluid_valve.fluid_base"))
-                    .appendString(" ")
-                    .append(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_unlocked").mergeStyle(TextFormatting.GREEN))
+                    .append(" ")
+                    .append(new TranslationTextComponent("gui.ffs.fluid_valve.fluid_unlocked").withStyle(TextFormatting.GREEN))
             );
         }
 
@@ -262,23 +267,20 @@ public class GuiValve extends Screen {
     }
 
     public void drawFluid(MatrixStack ms, int x, int y, FluidStack fluid, int width, int height) {
-        if ( fluid == null ) {
-            return;
-        }
-        ms.push();
+        ms.pushPose();
 
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         ClientRenderHelper.setBlockTextureSheet();
         int color = fluid.getFluid().getAttributes().getColor(fluid);
         ClientRenderHelper.setGLColorFromInt(color);
-        drawTiledTexture(x, y, ClientRenderHelper.getTexture(fluid.getFluid().getAttributes().getStillTexture(fluid)), width, height);
+        drawTiledTexture(ms, x, y, ClientRenderHelper.getTexture(fluid.getFluid().getAttributes().getStillTexture(fluid)), width, height);
 
-        ms.pop();
+        ms.popPose();
     }
 
-    public void drawTiledTexture(int x, int y, TextureAtlasSprite icon, int width, int height) {
+    public void drawTiledTexture(MatrixStack ms, int x, int y, TextureAtlasSprite icon, int width, int height) {
         int i;
         int j;
 
@@ -289,29 +291,58 @@ public class GuiValve extends Screen {
             for (j = 0; j < height; j += 16) {
                 drawWidth = Math.min(width - i, 16);
                 drawHeight = Math.min(height - j, 16);
-                drawScaledTexturedModelRectFromIcon(x + i, y + j, icon, drawWidth, drawHeight);
+                drawScaledTexturedModelRectFromIcon(ms, x + i, y + j, icon, drawWidth, drawHeight);
             }
         }
-        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager._color4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public void drawScaledTexturedModelRectFromIcon(int x, int y, TextureAtlasSprite icon, int width, int height) {
+    public void drawScaledTexturedModelRectFromIcon(MatrixStack ms, int x, int y, TextureAtlasSprite icon, int width, int height) {
         if ( icon == null ) {
             return;
         }
-        float minU = icon.getMinU();
-        float maxU = icon.getMaxU();
-        float minV = icon.getMinV();
-        float maxV = icon.getMaxV();
+
+//        RenderSystem.shad(GameRenderer::getPositionTexShader);
+//        RenderSystem.setShaderTexture(0, icon.atlas().location());
+
+
+
+        BufferBuilder builder = Tessellator.getInstance().getBuilder();
+        builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+
+        float minU = icon.getU0();
+        float maxU = icon.getU1();
+        float minV = icon.getV0();
+        float maxV = icon.getV1();
+
+        float actualWidth = minU + (maxU - minU) * width / icon.getWidth();
+        float actualHeight = minV + (maxV - minV) * height / icon.getHeight();
 
         float zLevel = 1.0f;
 
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        buffer.pos(x, y + height, zLevel).tex(minU, minV + (maxV - minV) * height / 16F).endVertex();
-        buffer.pos(x + width, y + height, zLevel).tex(minU + (maxU - minU) * width / 16F, minV + (maxV - minV) * height / 16F).endVertex();
-        buffer.pos(x + width, y, zLevel).tex(minU + (maxU - minU) * width / 16F, minV).endVertex();
-        buffer.pos(x, y, zLevel).tex(minU, minV).endVertex();
-        Tessellator.getInstance().draw();
+        Matrix4f matrix = ms.last().pose();
+
+        buildSquare(matrix, builder, x, x + width, y, y + height, zLevel, minU, actualWidth, minV, actualHeight);
+
+        RenderSystem.enableDepthTest();
+        builder.end();
+
+        WorldVertexBufferUploader.end(builder);
+
+//        Tessellator.getInstance().end();
+//        BufferUploader.drawWithShader(builder.end());
+
+//        buffer.pos(x, y + height, zLevel).tex(minU, minV + (maxV - minV) * height / 16F).endVertex();
+//        buffer.pos(x + width, y + height, zLevel).tex(minU + (maxU - minU) * width / 16F, minV + (maxV - minV) * height / 16F).endVertex();
+//        buffer.pos(x + width, y, zLevel).tex(minU + (maxU - minU) * width / 16F, minV).endVertex();
+//        buffer.pos(x, y, zLevel).tex(minU, minV).endVertex();
+//        Tessellator.getInstance().draw();
+    }
+
+    private static void buildSquare(Matrix4f matrix, BufferBuilder builder, float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2) {
+        builder.vertex(matrix, x1, y2, z).uv(u1, v2).endVertex();
+        builder.vertex(matrix, x2, y2, z).uv(u2, v2).endVertex();
+        builder.vertex(matrix, x2, y1, z).uv(u2, v1).endVertex();
+        builder.vertex(matrix, x1, y1, z).uv(u1, v1).endVertex();
     }
 }

@@ -8,7 +8,7 @@ import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.function.Supplier;
 
-@ObjectHolder(FancyFluidStorage.MODID)
+@ObjectHolder(FancyFluidStorage.MOD_ID)
 public class TileEntities {
 
     public static TileEntityType<TileEntityFluidValve> tileEntityFluidValve = null;
@@ -17,7 +17,7 @@ public class TileEntities {
 
     public static void registerAll() {
         tileEntityFluidValve =
-                TileEntityType.Builder.create(TileEntityFluidValve::new, Blocks.fluidValve).build(null);
+                TileEntityType.Builder.of(TileEntityFluidValve::new, Blocks.fluidValve).build(null);
 
         register("tile_entity_type_fluid_valve", () -> tileEntityFluidValve);
     }

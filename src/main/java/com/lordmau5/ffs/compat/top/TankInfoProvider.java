@@ -2,6 +2,7 @@ package com.lordmau5.ffs.compat.top;
 
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.util.TankManager;
 import mcjty.theoneprobe.api.IProbeHitData;
 import mcjty.theoneprobe.api.IProbeInfo;
 import mcjty.theoneprobe.api.IProbeInfoProvider;
@@ -20,29 +21,29 @@ import net.minecraftforge.fluids.FluidStack;
 public class TankInfoProvider implements IProbeInfoProvider {
     @Override
     public String getID() {
-        return FancyFluidStorage.MODID;
+        return FancyFluidStorage.MOD_ID;
     }
 
     @Override
     public void addProbeInfo(ProbeMode probeMode, IProbeInfo iProbeInfo, PlayerEntity playerEntity, World world, BlockState blockState, IProbeHitData iProbeHitData) {
         AbstractTankValve valve = null;
-        if ( FancyFluidStorage.TANK_MANAGER.isPartOfTank(world, iProbeHitData.getPos()) ) {
-            valve = FancyFluidStorage.TANK_MANAGER.getValveForBlock(world, iProbeHitData.getPos());
+        if ( TankManager.INSTANCE.isPartOfTank(world, iProbeHitData.getPos()) ) {
+            valve = TankManager.INSTANCE.getValveForBlock(world, iProbeHitData.getPos());
         }
 
         if ( valve != null ) {
             IProbeInfo vert = iProbeInfo.vertical();
             vert.text(
                     (new TranslationTextComponent("top.ffs.part_of_tank"))
-                    .mergeStyle(TextFormatting.GRAY, TextFormatting.ITALIC)
+                    .withStyle(TextFormatting.GRAY, TextFormatting.ITALIC)
             );
             addFluidInfo(vert, Config.getDefaultConfig(), valve.getTankConfig().getFluidStack(), valve.getTankConfig().getFluidCapacity());
         }
     }
 
     private void addFluidInfo(IProbeInfo probeInfo, ProbeConfig config, FluidStack fluidStack, int maxContents) {
-        int contents = fluidStack == FluidStack.EMPTY ? 0 : fluidStack.getAmount();
-        if ( fluidStack != FluidStack.EMPTY ) {
+        int contents = fluidStack.isEmpty() ? 0 : fluidStack.getAmount();
+        if ( !fluidStack.isEmpty() ) {
             probeInfo.text(new TranslationTextComponent("top.ffs.fluid", fluidStack.getDisplayName()));
         }
         if ( config.getTankMode() == 1 ) {
@@ -51,7 +52,7 @@ public class TankInfoProvider implements IProbeInfoProvider {
         } else {
             probeInfo.text(
                 (new StringTextComponent(ElementProgress.format(contents, Config.tankFormat.get(), "mB")))
-                .mergeStyle(TextFormatting.GREEN)
+                .withStyle(TextFormatting.GREEN)
             );
         }
     }

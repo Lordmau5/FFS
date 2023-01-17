@@ -49,8 +49,8 @@ public abstract class AbstractTankTile extends TileEntity implements ITickableTi
     }
 
     public AbstractTankValve getMainValve() {
-        if ( getWorld() != null && this.mainValvePos != null ) {
-            TileEntity tile = getWorld().getTileEntity(this.mainValvePos);
+        if ( getLevel() != null && this.mainValvePos != null ) {
+            TileEntity tile = getLevel().getBlockEntity(this.mainValvePos);
             return tile instanceof AbstractTankValve ? (AbstractTankValve) tile : null;
         }
 
@@ -58,18 +58,18 @@ public abstract class AbstractTankTile extends TileEntity implements ITickableTi
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT nbt) {
-        super.read(state, nbt);
+    public void load(BlockState state, CompoundNBT nbt) {
+        super.load(state, nbt);
 
-        setValvePos(nbt.contains("valvePos") ? BlockPos.fromLong(nbt.getLong("valvePos")) : null);
+        setValvePos(nbt.contains("valvePos") ? BlockPos.of(nbt.getLong("valvePos")) : null);
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT nbt) {
-        super.write(nbt);
+    public CompoundNBT save(CompoundNBT nbt) {
+        super.save(nbt);
 
         if ( getMainValve() != null ) {
-            nbt.putLong("valvePos", getMainValve().getPos().toLong());
+            nbt.putLong("valvePos", getMainValve().getBlockPos().asLong());
         }
 
         return nbt;
@@ -81,9 +81,9 @@ public abstract class AbstractTankTile extends TileEntity implements ITickableTi
 
         boolean oldIsValid = isValid();
 
-        read(getBlockState(), pkt.getNbtCompound());
+        load(getBlockState(), pkt.getTag());
 
-        if ( getWorld() != null && getWorld().isRemote && oldIsValid != isValid() ) {
+        if ( getLevel() != null && getLevel().isClientSide && oldIsValid != isValid() ) {
             markForUpdateNow();
         }
     }
@@ -91,35 +91,35 @@ public abstract class AbstractTankTile extends TileEntity implements ITickableTi
     @Override
     public SUpdateTileEntityPacket getUpdatePacket() {
         CompoundNBT tag = new CompoundNBT();
-        write(tag);
-        return new SUpdateTileEntityPacket(getPos(), 42, tag);
+        save(tag);
+        return new SUpdateTileEntityPacket(getBlockPos(), 42, tag);
     }
 
     @Override
     public CompoundNBT getUpdateTag() {
         CompoundNBT tag = new CompoundNBT();
-        write(tag);
+        save(tag);
         return tag;
     }
 
     @Override
     public void handleUpdateTag(BlockState state, CompoundNBT tag) {
-        read(state, tag);
+        load(state, tag);
     }
 
     public void doUpdate() {}
 
     public void markForUpdate() {
-        if ( getWorld() == null ) {
+        if ( getLevel() == null ) {
             setNeedsUpdate();
             return;
         }
 
         if ( --this.needsUpdate == 0 ) {
-            BlockState state = getWorld().getBlockState(getPos());
-            getWorld().notifyBlockUpdate(getPos(), state, state, 3);
+            BlockState state = getLevel().getBlockState(getBlockPos());
+            getLevel().sendBlockUpdated(getBlockPos(), state, state, 3);
             doUpdate();
-            markDirty();
+            setChanged();
         }
     }
 
@@ -142,7 +142,7 @@ public abstract class AbstractTankTile extends TileEntity implements ITickableTi
 
     @Override
     public int hashCode() {
-        return getPos().hashCode();
+        return getBlockPos().hashCode();
     }
 
 }

@@ -26,14 +26,14 @@ import javax.annotation.Nullable;
 public abstract class AbstractBlockValve extends Block {
 
     protected AbstractBlockValve() {
-        super(Block.Properties.create(Material.IRON).hardnessAndResistance(5.0f, 10.0f));
+        super(Block.Properties.of(Material.METAL).strength(5.0f, 10.0f));
     }
 
     @Override
-    public float getPlayerRelativeBlockHardness(BlockState state, PlayerEntity player, IBlockReader worldIn, BlockPos pos) {
-        float delta = super.getPlayerRelativeBlockHardness(state, player, worldIn, pos);
+    public float getDestroyProgress(BlockState state, PlayerEntity player, IBlockReader worldIn, BlockPos pos) {
+        float delta = super.getDestroyProgress(state, player, worldIn, pos);
 
-        TileEntity tile = worldIn.getTileEntity(pos);
+        TileEntity tile = worldIn.getBlockEntity(pos);
         if ( tile instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) tile;
             if ( valve.isValid() && !valve.getTankConfig().isEmpty() ) {
@@ -52,34 +52,34 @@ public abstract class AbstractBlockValve extends Block {
     public abstract TileEntity createTileEntity(BlockState state, IBlockReader world);
 
     @Override
-    public void onBlockExploded(BlockState state, World world, BlockPos pos, Explosion explosion) {
-        TileEntity tile = world.getTileEntity(pos);
+    public void wasExploded(World world, BlockPos pos, Explosion explosion) {
+        TileEntity tile = world.getBlockEntity(pos);
         if ( tile instanceof AbstractTankValve ) {
-            AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
+            AbstractTankValve valve = (AbstractTankValve) world.getBlockEntity(pos);
             if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
 
-        super.onExplosionDestroy(world, pos, explosion);
+        super.wasExploded(world, pos, explosion);
     }
 
     @Override
-    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if ( !worldIn.isRemote && newState.isAir(worldIn, pos) ) {
-            AbstractTankValve valve = (AbstractTankValve) worldIn.getTileEntity(pos);
+    public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+        if ( !worldIn.isClientSide && newState.isAir(worldIn, pos) ) {
+            AbstractTankValve valve = (AbstractTankValve) worldIn.getBlockEntity(pos);
             if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
         }
 
-        super.onReplaced(state, worldIn, pos, newState, isMoving);
+        super.onRemove(state, worldIn, pos, newState, isMoving);
     }
 
     @Override
     public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity player, boolean willHarvest, FluidState fluid) {
-        if ( !world.isRemote ) {
-            AbstractTankValve valve = (AbstractTankValve) world.getTileEntity(pos);
+        if ( !world.isClientSide ) {
+            AbstractTankValve valve = (AbstractTankValve) world.getBlockEntity(pos);
             if ( valve != null && valve.isValid() ) {
                 valve.breakTank();
             }
@@ -89,18 +89,18 @@ public abstract class AbstractBlockValve extends Block {
     }
 
     @Override
-    public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
-        if (worldIn.isRemote) return ActionResultType.SUCCESS;
+    public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+        if (worldIn.isClientSide) return ActionResultType.SUCCESS;
 
-        if ( player.isSneaking() ) return ActionResultType.PASS;
+        if ( player.isCrouching() ) return ActionResultType.PASS;
 
-        AbstractTankValve valve = (AbstractTankValve) worldIn.getTileEntity(pos);
+        AbstractTankValve valve = (AbstractTankValve) worldIn.getBlockEntity(pos);
         if ( valve == null ) {
             return ActionResultType.PASS;
         }
 
         if ( valve.isValid() ) {
-            if ( GenericUtil.isFluidContainer(player.getHeldItemMainhand()) ) {
+            if ( GenericUtil.isFluidContainer(player.getMainHandItem()) ) {
                 if ( GenericUtil.fluidContainerHandler(worldIn, valve, player) ) {
                     valve.markForUpdateNow();
                     return ActionResultType.CONSUME;
@@ -109,19 +109,19 @@ public abstract class AbstractBlockValve extends Block {
 
             NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OpenGUI(valve, false), (ServerPlayerEntity) player);
         } else {
-            valve.buildTank_player(player, hit.getFace().getOpposite());
+            valve.buildTank_player(player, hit.getDirection().getOpposite());
         }
         return ActionResultType.CONSUME;
     }
 
     @Override
-    public boolean hasComparatorInputOverride(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    public int getComparatorInputOverride(BlockState state, World world, BlockPos pos) {
-        TileEntity te = world.getTileEntity(pos);
+    public int getAnalogOutputSignal(BlockState state, World world, BlockPos pos) {
+        TileEntity te = world.getBlockEntity(pos);
         if ( te instanceof AbstractTankValve ) {
             AbstractTankValve valve = (AbstractTankValve) te;
             return valve.getComparatorOutput();

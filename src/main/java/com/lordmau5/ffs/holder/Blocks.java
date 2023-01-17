@@ -8,7 +8,7 @@ import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.function.Supplier;
 
-@ObjectHolder(FancyFluidStorage.MODID)
+@ObjectHolder(FancyFluidStorage.MOD_ID)
 public class Blocks {
 
 //    @ObjectHolder("fluid_valve")

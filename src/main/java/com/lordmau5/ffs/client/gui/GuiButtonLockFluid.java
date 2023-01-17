@@ -8,7 +8,7 @@ import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.util.ResourceLocation;
 
 public class GuiButtonLockFluid extends ImageButton {
-    private static final ResourceLocation toggleTexture = new ResourceLocation(FancyFluidStorage.MODID, "textures/gui/gui_tank_no_valve.png");
+    private static final ResourceLocation toggleTexture = new ResourceLocation(FancyFluidStorage.MOD_ID, "textures/gui/gui_tank_no_valve.png");
     private boolean state;
 
     GuiButtonLockFluid(int x, int y, boolean state, IPressable onPress) {
@@ -31,7 +31,7 @@ public class GuiButtonLockFluid extends ImageButton {
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getTextureManager().bindTexture(toggleTexture);
+        minecraft.getTextureManager().bind(toggleTexture);
 
         RenderSystem.disableDepthTest();
 

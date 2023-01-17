@@ -18,18 +18,20 @@ public class ClientRenderHelper {
     public static final ResourceLocation MC_BLOCK_SHEET = new ResourceLocation("textures/atlas/blocks.png");
 
     public static void setBlockTextureSheet() {
-        Minecraft.getInstance().getTextureManager().bindTexture(MC_BLOCK_SHEET);
+        Minecraft.getInstance().getTextureManager().bind(MC_BLOCK_SHEET);
     }
 
     public static void setGLColorFromInt(int color) {
-        float red = (float) (color >> 16 & 255) / 255.0F;
-        float green = (float) (color >> 8 & 255) / 255.0F;
-        float blue = (float) (color & 255) / 255.0F;
-        GlStateManager.color4f(red, green, blue, 1.0F);
+        float alpha = (float) (color >> 24 & 0xFF) / 255.0F;
+        float red = (float) (color >> 16 & 0xFF) / 255.0F;
+        float green = (float) (color >> 8 & 0xFF) / 255.0F;
+        float blue = (float) (color & 0xFF) / 255.0F;
+
+        GlStateManager._color4f(red, green, blue, alpha);
     }
 
     public static TextureAtlasSprite getTexture(ResourceLocation location) {
-        return Minecraft.getInstance().getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE).apply(location);
+        return Minecraft.getInstance().getTextureAtlas(PlayerContainer.BLOCK_ATLAS).apply(location);
     }
 
     public static void putTexturedQuad(IRenderTypeBuffer renderer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int color, int brightness, boolean flowing) {
@@ -76,69 +78,69 @@ public class ClientRenderHelper {
         switch (direction) {
             case DOWN:
             case UP:
-                minU = sprite.getInterpolatedU(xt1 * size);
-                maxU = sprite.getInterpolatedU(xt2 * size);
-                minV = sprite.getInterpolatedV(zt1 * size);
-                maxV = sprite.getInterpolatedV(zt2 * size);
+                minU = sprite.getU(xt1 * size);
+                maxU = sprite.getU(xt2 * size);
+                minV = sprite.getV(zt1 * size);
+                maxV = sprite.getV(zt2 * size);
                 break;
             case NORTH:
             case SOUTH:
-                minU = sprite.getInterpolatedU(xt2 * size);
-                maxU = sprite.getInterpolatedU(xt1 * size);
-                minV = sprite.getInterpolatedV(yt1 * size);
-                maxV = sprite.getInterpolatedV(yt2 * size);
+                minU = sprite.getU(xt2 * size);
+                maxU = sprite.getU(xt1 * size);
+                minV = sprite.getV(yt1 * size);
+                maxV = sprite.getV(yt2 * size);
                 break;
             case WEST:
             case EAST:
-                minU = sprite.getInterpolatedU(zt2 * size);
-                maxU = sprite.getInterpolatedU(zt1 * size);
-                minV = sprite.getInterpolatedV(yt1 * size);
-                maxV = sprite.getInterpolatedV(yt2 * size);
+                minU = sprite.getU(zt2 * size);
+                maxU = sprite.getU(zt1 * size);
+                minV = sprite.getV(yt1 * size);
+                maxV = sprite.getV(yt2 * size);
                 break;
             default:
-                minU = sprite.getMinU();
-                maxU = sprite.getMaxU();
-                minV = sprite.getMinV();
-                maxV = sprite.getMaxV();
+                minU = sprite.getU0();
+                maxU = sprite.getU1();
+                minV = sprite.getV0();
+                maxV = sprite.getV1();
         }
 
-        IVertexBuilder renderer = renderTypeBuffer.getBuffer(RenderType.getText(sprite.getAtlasTexture().getTextureLocation()));
+        IVertexBuilder renderer = renderTypeBuffer.getBuffer(RenderType.text(sprite.atlas().location()));
         switch (direction) {
             case DOWN:
-                renderer.pos(matrix, x, y, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
                 break;
             case UP:
-                renderer.pos(matrix, x, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x, y2, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y2, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
                 break;
             case NORTH:
-                renderer.pos(matrix, x, y, z).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y, z).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
                 break;
             case SOUTH:
-                renderer.pos(matrix, x, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y2, z2).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x, y2, z2).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
                 break;
             case WEST:
-                renderer.pos(matrix, x, y, z).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x, y, z2).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x, y2, z2).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x, y2, z).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
                 break;
             case EAST:
-                renderer.pos(matrix, x2, y, z).color(r, g, b, a).tex(minU, maxV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y2, z).color(r, g, b, a).tex(minU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y2, z2).color(r, g, b, a).tex(maxU, minV).lightmap(light1, light2).endVertex();
-                renderer.pos(matrix, x2, y, z2).color(r, g, b, a).tex(maxU, maxV).lightmap(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
+                renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
                 break;
         }
     }

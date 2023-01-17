@@ -25,7 +25,7 @@ public class ClientProxy extends CommonProxy {
     private void clientSetup(final FMLClientSetupEvent event) {
         Compatibility.initClient();
 
-        RenderTypeLookup.setRenderLayer(Blocks.fluidValve, RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(Blocks.fluidValve, RenderType.cutout());
 
         ClientRegistry.bindTileEntityRenderer(TileEntities.tileEntityFluidValve, ValveRenderer::new);
     }

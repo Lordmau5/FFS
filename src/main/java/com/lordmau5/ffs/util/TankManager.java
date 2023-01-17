@@ -1,5 +1,6 @@
 package com.lordmau5.ffs.util;
 
+import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
@@ -18,12 +19,14 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
@@ -31,52 +34,54 @@ import java.util.*;
 
 public class TankManager {
 
+    public static TankManager INSTANCE = new TankManager();
+
     private static class HashMapCache {
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new WeakHashMap<>();
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new WeakHashMap<>();
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, BlockPos>> frameBlockToValve = new WeakHashMap<>();
-        private final WeakHashMap<RegistryKey<World>, WeakHashMap<BlockPos, BlockPos>> airBlockToValve = new WeakHashMap<>();
+        private final HashMap<RegistryKey<World>, HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new HashMap<>();
+        private final HashMap<RegistryKey<World>, HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new HashMap<>();
+        private final HashMap<RegistryKey<World>, HashMap<BlockPos, BlockPos>> frameBlockToValve = new HashMap<>();
+        private final HashMap<RegistryKey<World>, HashMap<BlockPos, BlockPos>> airBlockToValve = new HashMap<>();
 
-        private final WeakHashMap<RegistryKey<World>, List<BlockPos>> blocksToCheck = new WeakHashMap<>();
+        private final HashMap<RegistryKey<World>, List<BlockPos>> blocksToCheck = new HashMap<>();
 
-        private WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToFrameBlocks(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+        private HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToFrameBlocks(World world) {
+            RegistryKey<World> dimension = world.dimension();
 
-            valveToFrameBlocks.putIfAbsent(dimensionType, new WeakHashMap<>());
+            valveToFrameBlocks.putIfAbsent(dimension, new HashMap<>());
 
-            return valveToFrameBlocks.get(dimensionType);
+            return valveToFrameBlocks.get(dimension);
         }
 
-        private WeakHashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToAirBlocks(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+        private HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToAirBlocks(World world) {
+            RegistryKey<World> dimension = world.dimension();
 
-            valveToAirBlocks.putIfAbsent(dimensionType, new WeakHashMap<>());
+            valveToAirBlocks.putIfAbsent(dimension, new HashMap<>());
 
-            return valveToAirBlocks.get(dimensionType);
+            return valveToAirBlocks.get(dimension);
         }
 
-        private WeakHashMap<BlockPos, BlockPos> getFrameBlockToValve(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+        private HashMap<BlockPos, BlockPos> getFrameBlockToValve(World world) {
+            RegistryKey<World> dimension = world.dimension();
 
-            frameBlockToValve.putIfAbsent(dimensionType, new WeakHashMap<>());
+            frameBlockToValve.putIfAbsent(dimension, new HashMap<>());
 
-            return frameBlockToValve.get(dimensionType);
+            return frameBlockToValve.get(dimension);
         }
 
-        private WeakHashMap<BlockPos, BlockPos> getAirBlockToValve(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+        private HashMap<BlockPos, BlockPos> getAirBlockToValve(World world) {
+            RegistryKey<World> dimension = world.dimension();
 
-            airBlockToValve.putIfAbsent(dimensionType, new WeakHashMap<>());
+            airBlockToValve.putIfAbsent(dimension, new HashMap<>());
 
-            return airBlockToValve.get(dimensionType);
+            return airBlockToValve.get(dimension);
         }
 
         private List<BlockPos> getBlocksToCheck(World world) {
-            RegistryKey<World> dimensionType = world.getDimensionKey();
+            RegistryKey<World> dimension = world.dimension();
 
-            blocksToCheck.putIfAbsent(dimensionType, new ArrayList<>());
+            blocksToCheck.putIfAbsent(dimension, new ArrayList<>());
 
-            return blocksToCheck.get(dimensionType);
+            return blocksToCheck.get(dimension);
         }
 
         private void clear() {
@@ -89,17 +94,18 @@ public class TankManager {
     }
 
     public TankManager() {
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private static final HashMapCache CLIENT = new HashMapCache();
-    private static final HashMapCache SERVER = new HashMapCache();
+    private final HashMapCache CLIENT = new HashMapCache();
+    private final HashMapCache SERVER = new HashMapCache();
 
-    public static HashMapCache get(@Nullable World world) {
-        return (world != null && world.isRemote) ? CLIENT : SERVER;
+    public HashMapCache get(@Nullable World world) {
+        return (world != null && world.isClientSide()) ? CLIENT : SERVER;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void clear() {
+    public void clear() {
         CLIENT.clear();
     }
 
@@ -108,7 +114,7 @@ public class TankManager {
             return;
         }
 
-        TileEntity tile = world.getTileEntity(valvePos);
+        TileEntity tile = world.getBlockEntity(valvePos);
         if ( !(tile instanceof AbstractTankValve) ) {
             return;
         }
@@ -159,21 +165,21 @@ public class TankManager {
 
         TileEntity tile = null;
         if ( get(world).getFrameBlockToValve(world).containsKey(pos) ) {
-            tile = world.getTileEntity(get(world).getFrameBlockToValve(world).get(pos));
+            tile = world.getBlockEntity(get(world).getFrameBlockToValve(world).get(pos));
         } else if ( get(world).getAirBlockToValve(world).containsKey(pos) ) {
-            tile = world.getTileEntity(get(world).getAirBlockToValve(world).get(pos));
+            tile = world.getBlockEntity(get(world).getAirBlockToValve(world).get(pos));
         }
 
         return tile instanceof AbstractTankValve ? (AbstractTankValve) tile : null;
     }
 
     public List<BlockPos> getFrameBlocksForValve(AbstractTankValve valve) {
-        World world = valve.getWorld();
+        World world = valve.getLevel();
 
         List<BlockPos> blocks = new ArrayList<>();
-        if ( get(world).getValveToFrameBlocks(world).containsKey(valve.getPos()) ) {
-            for (int layer : get(world).getValveToFrameBlocks(world).get(valve.getPos()).keySet()) {
-                blocks.addAll(get(world).getValveToFrameBlocks(world).get(valve.getPos()).get(layer));
+        if ( get(world).getValveToFrameBlocks(world).containsKey(valve.getBlockPos()) ) {
+            for (int layer : get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).keySet()) {
+                blocks.addAll(get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).get(layer));
             }
         }
 
@@ -181,25 +187,37 @@ public class TankManager {
     }
 
     public TreeMap<Integer, List<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
-        World world = valve.getWorld();
+        World world = valve.getLevel();
 
-        if ( get(world).getValveToAirBlocks(world).containsKey(valve.getPos()) ) {
-            return get(world).getValveToAirBlocks(world).get(valve.getPos());
+        if ( get(world).getValveToAirBlocks(world).containsKey(valve.getBlockPos()) ) {
+            return get(world).getValveToAirBlocks(world).get(valve.getBlockPos());
         }
 
         return null;
     }
 
     public boolean isValveInLists(World world, AbstractTankValve valve) {
-        return get(world).getValveToAirBlocks(world).containsKey(valve.getPos());
+        return get(world).getValveToAirBlocks(world).containsKey(valve.getBlockPos());
     }
 
     public boolean isPartOfTank(World world, BlockPos pos) {
-        boolean ret = get(world).getFrameBlockToValve(world).containsKey(pos)
+        return  get(world).getFrameBlockToValve(world).containsKey(pos)
                 || get(world).getAirBlockToValve(world).containsKey(pos);
-
-        return ret;
     }
+
+    private void addBlockForCheck(World world, BlockPos pos) {
+        if ( world.isClientSide() ) {
+            return;
+        }
+
+        if ( !isPartOfTank(world, pos) ) {
+            return;
+        }
+
+        get(world).getBlocksToCheck(world).add(pos);
+    }
+
+    // --- Events ---
 
     @SubscribeEvent
     public void entityJoinWorld(EntityJoinWorldEvent event) {
@@ -211,14 +229,14 @@ public class TankManager {
             return;
         }
 
-        if ( isPartOfTank(event.getWorld(), event.getEntity().getPosition()) ) {
+        if ( isPartOfTank(event.getWorld(), event.getEntity().blockPosition()) ) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onServerTick(TickEvent.WorldTickEvent event) {
-        if ( event.world.isRemote ) {
+        if ( event.world.isClientSide() ) {
             return;
         }
 
@@ -247,44 +265,14 @@ public class TankManager {
         get(world).getBlocksToCheck(world).clear();
     }
 
-    private void addBlockForCheck(World world, BlockPos pos) {
-        get(world).getBlocksToCheck(world).add(pos);
-    }
-
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event) {
-        IWorld world = event.getWorld();
-        BlockPos pos = event.getPos();
-
-        if ( world.isRemote() || !(world instanceof World) ) {
-            return;
-        }
-
-        World wWorld = (World) world;
-
-        if ( !isPartOfTank(wWorld, pos) ) {
-            return;
-        }
-
-        addBlockForCheck(wWorld, pos);
+        addBlockForCheck((World) event.getWorld(), event.getPos());
     }
 
     @SubscribeEvent
     public void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
-        IWorld world = event.getWorld();
-        BlockPos pos = event.getPos();
-
-        if ( world.isRemote() || !(world instanceof World) ) {
-            return;
-        }
-
-        World wWorld = (World) world;
-
-        if ( !isPartOfTank(wWorld, pos) ) {
-            return;
-        }
-
-        addBlockForCheck(wWorld, pos);
+        addBlockForCheck((World) event.getWorld(), event.getPos());
     }
 
     @SubscribeEvent
@@ -306,16 +294,16 @@ public class TankManager {
             return;
         }
 
-        if ( world.isRemote ) {
-            player.swingArm(Hand.MAIN_HAND);
+        if ( world.isClientSide() ) {
+            player.swing(Hand.MAIN_HAND);
         }
 
         if ( world.getBlockState(pos).getBlock() instanceof AbstractBlockValve ) {
             return;
         }
 
-        if ( player.isSneaking() ) {
-            ItemStack mainHand = player.getHeldItemMainhand();
+        if ( player.isCrouching() ) {
+            ItemStack mainHand = player.getMainHandItem();
             if ( mainHand != ItemStack.EMPTY ) {
                 if ( player.isCreative() ) {
                     mainHand = mainHand.copy();
@@ -336,7 +324,7 @@ public class TankManager {
                         valve.markForUpdateNow();
                     }
                 } else {
-                    if (!world.isRemote) {
+                    if (!world.isClientSide()) {
                         NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OpenGUI(tile, false), (ServerPlayerEntity) player);
                     }
                 }
@@ -346,7 +334,7 @@ public class TankManager {
 
     @SubscribeEvent
     public void onFillBucket(FillBucketEvent event) {
-        if ( event.getEntity().isSneaking() ) {
+        if ( event.getEntity().isCrouching() ) {
             return;
         }
 
@@ -360,7 +348,7 @@ public class TankManager {
 
         BlockRayTraceResult rayTraceResult = (BlockRayTraceResult) event.getTarget();
 
-        BlockPos pos = rayTraceResult.getPos();
+        BlockPos pos = rayTraceResult.getBlockPos();
 
         if ( !isPartOfTank(event.getWorld(), pos) ) {
             return;
@@ -376,6 +364,19 @@ public class TankManager {
         }
 
         NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.ClearTanks(), (ServerPlayerEntity) event.getPlayer());
+    }
+
+    @SubscribeEvent
+    public void onWorldUnload(WorldEvent.Unload event) {
+        IWorld iWorld = event.getWorld();
+
+        if (iWorld.isClientSide() || !(iWorld instanceof World) ) {
+            return;
+        }
+
+        World world = (World) iWorld;
+
+        INSTANCE.removeAllForDimension(world);
     }
 
 }

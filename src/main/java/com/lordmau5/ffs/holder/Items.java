@@ -10,7 +10,7 @@ import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.function.Supplier;
 
-@ObjectHolder(FancyFluidStorage.MODID)
+@ObjectHolder(FancyFluidStorage.MOD_ID)
 public class Items {
 
     @ObjectHolder("tit")
@@ -24,7 +24,7 @@ public class Items {
         register("tit", () -> new ItemTit(new Item.Properties()));
         register("tit_egg", () -> new ItemTitEgg(new Item.Properties()));
 
-        register("fluid_valve", () -> new BlockItem(Blocks.fluidValve, new Item.Properties().group(FancyFluidStorage.ITEM_GROUP)));
+        register("fluid_valve", () -> new BlockItem(Blocks.fluidValve, new Item.Properties().tab(FancyFluidStorage.ITEM_GROUP)));
     }
 
     public static RegistryObject<Item> register(final String name, final Supplier<Item> supplier) {

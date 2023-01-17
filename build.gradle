@@ -1,14 +1,16 @@
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
-        jcenter()
+        maven { url = 'https://maven.parchmentmc.org' }
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.parchmentmc:librarian:1.+'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
@@ -18,11 +20,11 @@ group = 'com.lordmau5.ffs'
 version = "$minecraft_version-$mod_version"
 archivesBaseName = 'Fancy Fluid Storage'
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-    mappings channel: 'snapshot', version: "$forge_mappings"
+    mappings channel: 'parchment', version: "$parchment_version"
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -98,15 +100,15 @@ dependencies {
 }
 
 processResources {
-    inputs.property 'mod_version', project.mod_version
-
-    from(sourceSets.main.resources.srcDirs) {
-        include 'META-INF/mods.toml'
-
-        expand 'mod_version':project.mod_version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'META-INF/mods.toml'
-    }
+//    inputs.property 'mod_version', project.mod_version
+//
+//    from(sourceSets.main.resources.srcDirs) {
+//        include 'META-INF/mods.toml'
+//
+//        expand 'mod_version':project.mod_version
+//    }
+//
+//    from(sourceSets.main.resources.srcDirs) {
+//        exclude 'META-INF/mods.toml'
+//    }
 }

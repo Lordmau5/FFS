@@ -14,14 +14,14 @@ import java.util.Random;
 
 public class ItemTit extends Item {
     public ItemTit(final Item.Properties properties) {
-        super(properties.group(FancyFluidStorage.ITEM_GROUP));
+        super(properties.tab(FancyFluidStorage.ITEM_GROUP));
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
+    public ActionResult<ItemStack> use(World worldIn, PlayerEntity playerIn, Hand handIn) {
         float randomPitch = 0.75f + (new Random().nextFloat() * 0.5f);
-        worldIn.playSound(playerIn, playerIn.getPosX(), playerIn.getPosY(), playerIn.getPosZ(), Sounds.birdSounds, SoundCategory.AMBIENT, 1.0f, randomPitch);
+        worldIn.playSound(playerIn, playerIn.getX(), playerIn.getY(), playerIn.getZ(), Sounds.birdSounds, SoundCategory.AMBIENT, 1.0f, randomPitch);
 
-        return super.onItemRightClick(worldIn, playerIn, handIn);
+        return super.use(worldIn, playerIn, handIn);
     }
 }

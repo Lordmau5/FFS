@@ -28,7 +28,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
     public void tick() {
         super.tick();
 
-        if ( getWorld().isRemote ) {
+        if ( getLevel().isClientSide ) {
             return;
         }
 
@@ -37,7 +37,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
         }
 
         FluidStack fluidStack = getTankConfig().getFluidStack();
-        if ( fluidStack == FluidStack.EMPTY ) {
+        if ( fluidStack.isEmpty() ) {
             return;
         }
 
@@ -47,9 +47,9 @@ public class TileEntityFluidValve extends AbstractTankValve {
         }
 
         if ( fluid == Fluids.WATER ) {
-            if ( getWorld().isRaining() ) {
-                int rate = (int) Math.floor(getWorld().rainingStrength * 5 * getWorld().getBiome(getPos()).getDownfall());
-                if ( getPos().getY() == getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, getPos()).getY() - 1 ) {
+            if ( getLevel().isRaining() ) {
+                int rate = (int) Math.floor(getLevel().rainLevel * 5 * getLevel().getBiome(getBlockPos()).getDownfall());
+                if ( getBlockPos().getY() == getLevel().getHeightmapPos(Heightmap.Type.WORLD_SURFACE, getBlockPos()).getY() - 1 ) {
                     FluidStack waterStack = fluidStack.copy();
                     waterStack.setAmount(rate * 10);
                     getTankConfig().getFluidTank().fill(waterStack, IFluidHandler.FluidAction.EXECUTE);

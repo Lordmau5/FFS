@@ -15,7 +15,7 @@ public class NetworkHandler {
 
     private static final String PROTOCOL_VERSION = "1";
     private static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(FancyFluidStorage.MODID, "main"),
+            new ResourceLocation(FancyFluidStorage.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals

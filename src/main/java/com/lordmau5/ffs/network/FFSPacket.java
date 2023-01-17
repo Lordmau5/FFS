@@ -5,6 +5,7 @@ import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.LayerBlockPos;
+import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -27,7 +28,7 @@ public abstract class FFSPacket {
             }
 
             public OpenGUI(AbstractTankTile tile, boolean isValve) {
-                this.pos = tile.getPos();
+                this.pos = tile.getBlockPos();
                 this.isValve = isValve;
             }
 
@@ -71,20 +72,20 @@ public abstract class FFSPacket {
             }
 
             public OnTankBuild(AbstractTankValve valve) {
-                this.valvePos = valve.getPos();
+                this.valvePos = valve.getBlockPos();
                 this.airBlocks = valve.getAirBlocks();
                 this.frameBlocks = valve.getFrameBlocks();
             }
 
             public void encode(PacketBuffer buffer) {
-                buffer.writeLong(this.valvePos.toLong());
+                buffer.writeLong(this.valvePos.asLong());
 
                 buffer.writeInt(this.airBlocks.size());
                 for (int layer : this.airBlocks.keySet()) {
                     buffer.writeInt(layer);
                     buffer.writeInt(this.airBlocks.get(layer).size());
                     for (LayerBlockPos pos : this.airBlocks.get(layer)) {
-                        buffer.writeLong(pos.toLong());
+                        buffer.writeLong(pos.asLong());
                         buffer.writeInt(pos.getLayer());
                     }
                 }
@@ -94,7 +95,7 @@ public abstract class FFSPacket {
                     buffer.writeInt(layer);
                     buffer.writeInt(this.frameBlocks.get(layer).size());
                     for (LayerBlockPos pos : this.frameBlocks.get(layer)) {
-                        buffer.writeLong(pos.toLong());
+                        buffer.writeLong(pos.asLong());
                         buffer.writeInt(pos.getLayer());
                     }
                 }
@@ -103,7 +104,7 @@ public abstract class FFSPacket {
             public static OnTankBuild decode(PacketBuffer buffer) {
                 OnTankBuild packet = new OnTankBuild();
 
-                packet.valvePos = BlockPos.fromLong(buffer.readLong());
+                packet.valvePos = BlockPos.of(buffer.readLong());
 
                 packet.airBlocks = new TreeMap<>();
                 int layerSize = buffer.readInt();
@@ -112,7 +113,7 @@ public abstract class FFSPacket {
                     int airBlockSize = buffer.readInt();
                     List<LayerBlockPos> layerBlocks = new ArrayList<>();
                     for (int j = 0; j < airBlockSize; j++) {
-                        layerBlocks.add(new LayerBlockPos(BlockPos.fromLong(buffer.readLong()), buffer.readInt()));
+                        layerBlocks.add(new LayerBlockPos(BlockPos.of(buffer.readLong()), buffer.readInt()));
                     }
                     packet.airBlocks.put(layer, layerBlocks);
                 }
@@ -124,7 +125,7 @@ public abstract class FFSPacket {
                     int frameBlockSize = buffer.readInt();
                     List<LayerBlockPos> layerBlocks = new ArrayList<>();
                     for (int j = 0; j < frameBlockSize; j++) {
-                        layerBlocks.add(new LayerBlockPos(BlockPos.fromLong(buffer.readLong()), buffer.readInt()));
+                        layerBlocks.add(new LayerBlockPos(BlockPos.of(buffer.readLong()), buffer.readInt()));
                     }
                     packet.frameBlocks.put(layer, layerBlocks);
                 }
@@ -160,7 +161,7 @@ public abstract class FFSPacket {
             }
 
             public OnTankBreak(AbstractTankValve valve) {
-                this.valvePos = valve.getPos();
+                this.valvePos = valve.getBlockPos();
             }
 
             public void encode(PacketBuffer buffer) {
@@ -202,7 +203,7 @@ public abstract class FFSPacket {
             public static void onReceived(ClearTanks msg, Supplier<NetworkEvent.Context> ctxSupplier) {
                 NetworkEvent.Context ctx = ctxSupplier.get();
 
-                ctx.enqueueWork(() -> FancyFluidStorage.TANK_MANAGER.clear());
+                ctx.enqueueWork(() -> TankManager.INSTANCE.clear());
 
                 ctx.setPacketHandled(true);
             }
@@ -218,20 +219,20 @@ public abstract class FFSPacket {
             }
 
             public UpdateTileName(AbstractTankTile tankTile, String name) {
-                this.pos = tankTile.getPos();
+                this.pos = tankTile.getBlockPos();
                 this.name = name;
             }
 
             public void encode(PacketBuffer buffer) {
                 buffer.writeBlockPos(this.pos);
-                buffer.writeString(this.name);
+                buffer.writeUtf(this.name);
             }
 
             public static UpdateTileName decode(PacketBuffer buffer) {
                 UpdateTileName packet = new UpdateTileName();
 
                 packet.pos = buffer.readBlockPos();
-                packet.name = buffer.readString();
+                packet.name = buffer.readUtf();
 
                 return packet;
             }
@@ -249,10 +250,10 @@ public abstract class FFSPacket {
 
                 ctx.enqueueWork(() -> {
                     ServerPlayerEntity playerEntity = ctx.getSender();
-                    World world = playerEntity != null ? playerEntity.world : null;
+                    World world = playerEntity != null ? playerEntity.getLevel() : null;
 
                     if (world != null) {
-                        TileEntity tile = world.getTileEntity(msg.getPos());
+                        TileEntity tile = world.getBlockEntity(msg.getPos());
                         if (tile instanceof AbstractTankTile && tile instanceof INameableTile) {
                             AbstractTankTile abstractTankTile = (AbstractTankTile) tile;
                             ((INameableTile) abstractTankTile).setTileName(msg.getName());
@@ -273,7 +274,7 @@ public abstract class FFSPacket {
             }
 
             public UpdateFluidLock(AbstractTankValve valve) {
-                this.pos = valve.getPos();
+                this.pos = valve.getBlockPos();
                 this.fluidLock = valve.getTankConfig().isFluidLocked();
             }
 
@@ -304,10 +305,10 @@ public abstract class FFSPacket {
 
                 ctx.enqueueWork(() -> {
                     ServerPlayerEntity playerEntity = ctx.getSender();
-                    World world = playerEntity != null ? playerEntity.world : null;
+                    World world = playerEntity != null ? playerEntity.getLevel() : null;
 
                     if (world != null) {
-                        TileEntity tile = world.getTileEntity(msg.getPos());
+                        TileEntity tile = world.getBlockEntity(msg.getPos());
                         if (tile instanceof AbstractTankValve) {
                             AbstractTankValve valve = (AbstractTankValve) tile;
                             valve.setFluidLock(msg.isFluidLock());
@@ -326,7 +327,7 @@ public abstract class FFSPacket {
             }
 
             public OnTankRequest(AbstractTankValve valve) {
-                this.pos = valve.getPos();
+                this.pos = valve.getBlockPos();
             }
 
             public void encode(PacketBuffer buffer) {
@@ -350,10 +351,10 @@ public abstract class FFSPacket {
 
                 ctx.enqueueWork(() -> {
                     ServerPlayerEntity playerEntity = ctx.getSender();
-                    World world = playerEntity != null ? playerEntity.world : null;
+                    World world = playerEntity != null ? playerEntity.getLevel() : null;
 
                     if (world != null) {
-                        TileEntity tile = world.getTileEntity(msg.getPos());
+                        TileEntity tile = world.getBlockEntity(msg.getPos());
                         if (tile instanceof AbstractTankValve) {
                             NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OnTankBuild((AbstractTankValve) tile), playerEntity);
                         }

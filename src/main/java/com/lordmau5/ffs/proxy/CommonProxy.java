@@ -10,7 +10,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 public class CommonProxy {
     public void registerEvents(final IEventBus modBus) {
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(FancyFluidStorage.TANK_MANAGER);
 
         modBus.addListener(this::commonSetup);
     }
