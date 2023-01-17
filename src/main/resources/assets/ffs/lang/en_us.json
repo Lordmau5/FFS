@@ -17,6 +17,7 @@
   "description.ffs.fluid_valve.fluid": "Fluid: %s",
   "description.ffs.fluid_valve.amount": "Amount: %s",
 
+  "gui.ffs.fluid_valve": "Tank Valve",
   "gui.ffs.fluid_valve.empty": "Empty",
   "gui.ffs.fluid_valve.fluid_base": "Fluid",
   "gui.ffs.fluid_valve.fluid_locked": "Locked",

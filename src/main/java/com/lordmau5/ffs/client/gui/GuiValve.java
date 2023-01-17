@@ -49,7 +49,7 @@ public class GuiValve extends Screen {
     private int mouseX, mouseY;
 
     public GuiValve(AbstractTankTile tile, boolean isValve) {
-        super(Component.literal("ffs.gui.valve"));
+        super(Component.translatable("gui.ffs.fluid_valve"));
 
         this.isValve = isValve;
 
@@ -74,7 +74,7 @@ public class GuiValve extends Screen {
 //            this.tileName.setText(this.valve.getTileName());
 //            this.tileName.setMaxStringLength(32);
         }
-        this.addWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 62, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
+        this.addRenderableWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 62, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
             this.lockFluidButton.toggleState();
 
             this.mainValve.setFluidLock(this.lockFluidButton.getState());
@@ -95,7 +95,7 @@ public class GuiValve extends Screen {
         } else {
             this.left = (this.width - this.xSize_NoValve) / 2;
             this.top = (this.height - this.ySize_NoValve) / 2;
-            this.addWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 65, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
+            this.addRenderableWidget(this.lockFluidButton = new GuiButtonLockFluid(this.left + 65, this.top + 26, this.mainValve.getTankConfig().isFluidLocked(), (button) -> {
                 this.lockFluidButton.toggleState();
 
                 this.mainValve.setFluidLock(this.lockFluidButton.getState());
