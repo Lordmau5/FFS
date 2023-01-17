@@ -300,13 +300,10 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     }
                 } else {
                     if (isBlockBlacklisted(_pos)) {
-                        BlockState state = getLevel().getBlockState(_pos);
-
                         GenericUtil.sendMessageToClient(
                                 buildPlayer,
                                 "chat.ffs.valve_blacklisted_block_found",
                                 false,
-                                state.getBlock().getName(),
                                 _pos.getX(),
                                 _pos.getY(),
                                 _pos.getZ()
@@ -415,7 +412,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                             buildPlayer,
                             "chat.ffs.valve_falling_block_found",
                             false,
-                            checkState.getBlock().getName(),
                             pos.getX(),
                             pos.getY(),
                             pos.getZ()
@@ -428,7 +424,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                             buildPlayer,
                             "chat.ffs.valve_invalid_block_found",
                             false,
-                            checkState.getBlock().getName(),
                             pos.getX(),
                             pos.getY(),
                             pos.getZ()
