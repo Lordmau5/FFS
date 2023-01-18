@@ -19,10 +19,10 @@ public class ServerConfig {
         @Config.Name("Maximum Air Blocks")
         @Config.Comment({
                 "Define the maximum number of air blocks a tank can have.",
-                "2197 have been tested to not cause any noticeable lag."
+                "8192 have been tested to not cause any noticeable lag."
         })
-        @Config.RangeInt(min = 3, max = 8192)
-        public int maxAirBlocks = 2197;
+        @Config.RangeInt(min = 3, max = 65536)
+        public int maxAirBlocks = 8192;
 
         @Config.Name("Block Blacklist Invert")
         @Config.Comment({

@@ -5,6 +5,9 @@ import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -16,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public abstract class FFSPacket {
     public static abstract class Client {
@@ -82,21 +86,17 @@ public abstract class FFSPacket {
                 buffer.writeInt(this.airBlocks.size());
                 for (int layer : this.airBlocks.keySet()) {
                     buffer.writeInt(layer);
-                    buffer.writeInt(this.airBlocks.get(layer).size());
-                    for (LayerBlockPos pos : this.airBlocks.get(layer)) {
-                        buffer.writeLong(pos.asLong());
-                        buffer.writeInt(pos.getLayer());
-                    }
+
+                    var layerAirBlocks = this.airBlocks.get(layer);
+                    buffer.writeCollection(layerAirBlocks, FriendlyByteBuf::writeBlockPos);
                 }
 
                 buffer.writeInt(this.frameBlocks.size());
                 for (int layer : this.frameBlocks.keySet()) {
                     buffer.writeInt(layer);
-                    buffer.writeInt(this.frameBlocks.get(layer).size());
-                    for (LayerBlockPos pos : this.frameBlocks.get(layer)) {
-                        buffer.writeLong(pos.asLong());
-                        buffer.writeInt(pos.getLayer());
-                    }
+
+                    var layerFrameBlocks = this.frameBlocks.get(layer);
+                    buffer.writeCollection(layerFrameBlocks, FriendlyByteBuf::writeBlockPos);
                 }
             }
 
@@ -109,11 +109,9 @@ public abstract class FFSPacket {
                 int layerSize = buffer.readInt();
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
-                    int airBlockSize = buffer.readInt();
-                    List<LayerBlockPos> layerBlocks = new ArrayList<>();
-                    for (int j = 0; j < airBlockSize; j++) {
-                        layerBlocks.add(new LayerBlockPos(BlockPos.of(buffer.readLong()), buffer.readInt()));
-                    }
+
+                    List<LayerBlockPos> layerBlocks = buffer.readCollection(NonNullList::createWithCapacity, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
+
                     packet.airBlocks.put(layer, layerBlocks);
                 }
 
@@ -121,11 +119,9 @@ public abstract class FFSPacket {
                 layerSize = buffer.readInt();
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
-                    int frameBlockSize = buffer.readInt();
-                    List<LayerBlockPos> layerBlocks = new ArrayList<>();
-                    for (int j = 0; j < frameBlockSize; j++) {
-                        layerBlocks.add(new LayerBlockPos(BlockPos.of(buffer.readLong()), buffer.readInt()));
-                    }
+
+                    List<LayerBlockPos> layerBlocks = buffer.readCollection(NonNullList::createWithCapacity, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
+
                     packet.frameBlocks.put(layer, layerBlocks);
                 }
 
