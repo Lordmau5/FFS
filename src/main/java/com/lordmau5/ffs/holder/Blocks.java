@@ -17,10 +17,8 @@ public class Blocks {
 
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, FancyFluidStorage.MOD_ID);
 
-//    @ObjectHolder("fluid_valve")
     public static final RegistryObject<Block> fluidValve = register("fluid_valve", BlockFluidValve::new);
 
-//    @ObjectHolder("tank_computer")
 //    public static final BlockTankComputer tankComputer = null;
 
     private static <T extends Block> RegistryObject<T> register(final String name, final Supplier<T> block) {

@@ -304,13 +304,6 @@ public class TankManager {
         }
 
         if ( player.isShiftKeyDown() ) {
-            ItemStack mainHand = player.getMainHandItem();
-            if ( mainHand != ItemStack.EMPTY ) {
-                if ( player.isCreative() ) {
-                    mainHand = mainHand.copy();
-                }
-//                mainHand.onItemUse(player, world, pos, Hand.MAIN_HAND, event.getFace(), (float) event.getHitVec().x, (float) event.getHitVec().y, (float) event.getHitVec().z);
-            }
             return;
         }
 

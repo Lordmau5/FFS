@@ -52,7 +52,6 @@
          } else {
              probeInfo.text(
                  (ElementProgress.format(contents, Config.tankFormat.get(), Component.literal("mB")))
-//                 .withStyle(ChatFormatting.GREEN)
              );
          }
      }

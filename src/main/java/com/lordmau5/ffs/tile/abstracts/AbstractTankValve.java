@@ -69,13 +69,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         initialWaitTick = 20;
     }
 
-//    @Override
-//    public void setRemoved() {
-//        super.setRemoved();
-//
-//        breakTank();
-//    }
-
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {
         AbstractTankTile.tick(level, pos, state, be);
 
@@ -290,7 +283,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                 }
 
                 if (!frame_blocks.containsKey(layer)) {
-                    frame_blocks.putIfAbsent(layer, new HashSet<>());// Lists.newArrayList());
+                    frame_blocks.putIfAbsent(layer, new HashSet<>());
                 }
 
                 if ( checked_blocks.contains(offsetPos) ) {
@@ -361,12 +354,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     private boolean setupTank() {
-        long start = System.nanoTime();
-        boolean algo = searchAlgorithm();
-        long difference = (System.nanoTime() - start) / 1000000;
-        System.out.println("Diff: " + difference);
-
-        if ( !algo ) {
+        if ( !searchAlgorithm() ) {
             return false;
         }
 

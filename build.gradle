@@ -14,8 +14,6 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-// if (System.env.BUILD_NUMBER != null) mod_version = "$mod_version"
-
 group = 'com.lordmau5.ffs'
 version = "$minecraft_version-$mod_version"
 archivesBaseName = 'Fancy Fluid Storage'
