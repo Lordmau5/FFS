@@ -87,10 +87,6 @@ public class GuiValve extends Screen {
     protected void init() {
         super.init();
 
-//        if (this.mainValve == null) {
-//            return;
-//        }
-
         if ( isValve ) {
             initGuiValve();
         } else {

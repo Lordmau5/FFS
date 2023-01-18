@@ -96,17 +96,6 @@ public class TankManager {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-//    public static void initialize() {
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::entityJoinWorld);
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::onServerTick);
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::onBlockBreak);
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::onBlockPlace);
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::onRightClick);
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::onFillBucket);
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::onDimensionChange);
-//        MinecraftForge.EVENT_BUS.addListener(TankManager::onWorldUnload);
-//    }
-
     private final HashMapCache CLIENT = new HashMapCache();
     private final HashMapCache SERVER = new HashMapCache();
 
@@ -120,7 +109,7 @@ public class TankManager {
     }
 
     public void add(Level world, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
-        if ( airBlocks.isEmpty() ) {
+        if ( airBlocks.isEmpty() || frameBlocks.isEmpty() ) {
             return;
         }
 
@@ -315,13 +304,6 @@ public class TankManager {
         }
 
         if ( player.isShiftKeyDown() ) {
-            ItemStack mainHand = player.getMainHandItem();
-            if ( mainHand != ItemStack.EMPTY ) {
-                if ( player.isCreative() ) {
-                    mainHand = mainHand.copy();
-                }
-//                mainHand.onItemUse(player, world, pos, Hand.MAIN_HAND, event.getFace(), (float) event.getHitVec().x, (float) event.getHitVec().y, (float) event.getHitVec().z);
-            }
             return;
         }
 
