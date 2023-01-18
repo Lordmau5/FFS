@@ -1,6 +1,5 @@
 package com.lordmau5.ffs.proxy;
 
-import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.network.NetworkHandler;
 import net.minecraftforge.common.MinecraftForge;

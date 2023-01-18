@@ -1,6 +1,5 @@
 package com.lordmau5.ffs.client;
 
-import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.config.ServerConfig;
 import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.ClientRenderHelper;

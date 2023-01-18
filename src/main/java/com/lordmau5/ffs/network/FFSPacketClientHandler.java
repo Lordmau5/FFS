@@ -1,6 +1,5 @@
 package com.lordmau5.ffs.network;
 
-import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.client.gui.GuiValve;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;

@@ -67,13 +67,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         initialWaitTick = 20;
     }
 
-//    @Override
-//    public void invalidate() {
-//        super.invalidate();
-//
-//        breakTank();
-//    }
-
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
