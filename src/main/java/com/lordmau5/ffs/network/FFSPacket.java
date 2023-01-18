@@ -1,19 +1,19 @@
 package com.lordmau5.ffs.network;
 
+import com.google.common.collect.Sets;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
@@ -64,8 +64,8 @@ public abstract class FFSPacket {
 
         public static class OnTankBuild {
             private BlockPos valvePos;
-            private TreeMap<Integer, List<LayerBlockPos>> airBlocks;
-            private TreeMap<Integer, List<LayerBlockPos>> frameBlocks;
+            private TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks;
+            private TreeMap<Integer, HashSet<LayerBlockPos>> frameBlocks;
 
             public OnTankBuild() {
             }
@@ -105,7 +105,7 @@ public abstract class FFSPacket {
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
 
-                    List<LayerBlockPos> layerBlocks = buffer.readCollection(NonNullList::createWithCapacity, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
+                    HashSet<LayerBlockPos> layerBlocks = buffer.readCollection(Sets::newHashSetWithExpectedSize, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
 
                     packet.airBlocks.put(layer, layerBlocks);
                 }
@@ -115,7 +115,7 @@ public abstract class FFSPacket {
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
 
-                    List<LayerBlockPos> layerBlocks = buffer.readCollection(NonNullList::createWithCapacity, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
+                    HashSet<LayerBlockPos> layerBlocks = buffer.readCollection(Sets::newHashSetWithExpectedSize, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
 
                     packet.frameBlocks.put(layer, layerBlocks);
                 }
@@ -127,11 +127,11 @@ public abstract class FFSPacket {
                 return valvePos;
             }
 
-            public TreeMap<Integer, List<LayerBlockPos>> getAirBlocks() {
+            public TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocks() {
                 return airBlocks;
             }
 
-            public TreeMap<Integer, List<LayerBlockPos>> getFrameBlocks() {
+            public TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocks() {
                 return frameBlocks;
             }
 
@@ -184,7 +184,8 @@ public abstract class FFSPacket {
             public ClearTanks() {
             }
 
-            public void encode(FriendlyByteBuf buffer) {}
+            public void encode(FriendlyByteBuf buffer) {
+            }
 
             public static ClearTanks decode(FriendlyByteBuf buffer) {
                 return new ClearTanks();

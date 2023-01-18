@@ -34,11 +34,11 @@ public class GenericUtil {
     }
 
     public static boolean isBlockGlass(BlockState blockState) {
-        if ( blockState == null || blockState.getMaterial() == Material.AIR ) {
+        if (blockState == null || blockState.getMaterial() == Material.AIR) {
             return false;
         }
 
-        if ( blockState.getBlock() instanceof GlassBlock ) {
+        if (blockState.getBlock() instanceof GlassBlock) {
             return true;
         }
 
@@ -46,10 +46,10 @@ public class GenericUtil {
         return blockState.getMaterial() == Material.GLASS && !is.getDescriptionId().contains("pane");
     }
 
-    public static Direction getInsideForTankFrame(TreeMap<Integer, List<LayerBlockPos>> airBlocks, BlockPos frame) {
+    public static Direction getInsideForTankFrame(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockPos frame) {
         for (Direction direction : Direction.values()) {
             for (int layer : airBlocks.keySet()) {
-                if ( airBlocks.get(layer).contains(frame.relative(direction)) ) {
+                if (airBlocks.get(layer).contains(frame.relative(direction))) {
                     return direction;
                 }
             }
@@ -62,15 +62,15 @@ public class GenericUtil {
     }
 
     public static boolean isValidTankBlock(Level world, BlockPos pos, BlockState state, Direction direction) {
-        if ( state == null ) {
+        if (state == null) {
             return false;
         }
 
-        if ( world.isEmptyBlock(pos) ) {
+        if (world.isEmptyBlock(pos)) {
             return false;
         }
 
-        if ( isBlockFallingBlock(state)) {
+        if (isBlockFallingBlock(state)) {
             return false;
         }
 
@@ -88,14 +88,14 @@ public class GenericUtil {
     }
 
     public static boolean fluidContainerHandler(Level world, AbstractTankValve valve, Player player) {
-        if ( world.isClientSide ) {
+        if (world.isClientSide) {
             return true;
         }
 
         ItemStack current = player.getMainHandItem();
 
-        if ( current != ItemStack.EMPTY ) {
-            if ( !isFluidContainer(current) ) {
+        if (current != ItemStack.EMPTY) {
+            if (!isFluidContainer(current)) {
                 return false;
             }
 
@@ -114,7 +114,7 @@ public class GenericUtil {
     }
 
     public static void sendMessageToClient(Player player, String key, boolean actionBar) {
-        if ( player == null ) {
+        if (player == null) {
             return;
         }
 
@@ -122,7 +122,7 @@ public class GenericUtil {
     }
 
     public static void sendMessageToClient(Player player, String key, boolean actionBar, Object... args) {
-        if ( player == null ) {
+        if (player == null) {
             return;
         }
 
@@ -134,7 +134,7 @@ public class GenericUtil {
     }
 
     public static ChunkMap getChunkLoadTicket(Level world) {
-        if ( chunkloadTicketMap.containsKey(world) ) {
+        if (chunkloadTicketMap.containsKey(world)) {
             return chunkloadTicketMap.get(world);
         }
 

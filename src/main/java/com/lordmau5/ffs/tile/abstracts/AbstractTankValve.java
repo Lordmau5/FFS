@@ -1,6 +1,5 @@
 package com.lordmau5.ffs.tile.abstracts;
 
-import com.google.common.collect.Lists;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.config.ServerConfig;
 import com.lordmau5.ffs.network.FFSPacket;
@@ -34,8 +33,8 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractTankValve extends AbstractTankTile implements IFacingTile, INameableTile {
 
-    public final HashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
-    private final List<AbstractTankTile> tankTiles;
+    public final HashMap<Integer, TreeMap<Integer, HashSet<LayerBlockPos>>> maps;
+    private final HashSet<AbstractTankTile> tankTiles;
     private int initialWaitTick = 20;
     private TankConfig tankConfig;
     private boolean isValid;
@@ -50,7 +49,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     public AbstractTankValve(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state) {
         super(tileEntityTypeIn, pos, state);
 
-        tankTiles = new ArrayList<>();
+        tankTiles = new HashSet<>();
 
         maps = new HashMap<>();
         maps.put(0, new TreeMap<>());
@@ -79,17 +78,17 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         AbstractTankValve valve = (AbstractTankValve) be;
 
-        if ( valve.needsUpdate > 0 ) {
+        if (valve.needsUpdate > 0) {
             valve.markForUpdate();
         }
 
-        if ( level.isClientSide ) {
+        if (level.isClientSide) {
             return;
         }
 
-        if ( valve.initiated ) {
-            if ( valve.isMain() ) {
-                if ( valve.initialWaitTick-- <= 0 ) {
+        if (valve.initiated) {
+            if (valve.isMain()) {
+                if (valve.initialWaitTick-- <= 0) {
                     valve.initiated = false;
                     valve.buildTank(valve.getTileFacing());
                     return;
@@ -97,29 +96,29 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
             }
         }
 
-        if ( !valve.isValid() )
+        if (!valve.isValid())
             return;
 
-        if ( !valve.isMain() && valve.getMainValve() == null ) {
+        if (!valve.isMain() && valve.getMainValve() == null) {
             valve.setValid(false);
             valve.updateBlockAndNeighbors();
         }
     }
 
-    public TreeMap<Integer, List<LayerBlockPos>> getFrameBlocks() {
+    public TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocks() {
         return maps.get(0);
     }
 
-    public TreeMap<Integer, List<LayerBlockPos>> getAirBlocks() {
+    public TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocks() {
         return maps.get(1);
     }
 
     public TankConfig getTankConfig() {
-        if ( !isMain() && getMainValve() != null && getMainValve() != this ) {
+        if (!isMain() && getMainValve() != null && getMainValve() != this) {
             return getMainValve().getTankConfig();
         }
 
-        if ( this.tankConfig == null ) {
+        if (this.tankConfig == null) {
             this.tankConfig = new TankConfig(this);
         }
 
@@ -131,10 +130,10 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     public void setFluidLock(boolean state) {
-        if ( !state ) {
+        if (!state) {
             getTankConfig().unlockFluid();
         } else {
-            if ( getTankConfig().getFluidStack().isEmpty() ) {
+            if (getTankConfig().getFluidStack().isEmpty()) {
                 return;
             }
 
@@ -146,7 +145,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     @SuppressWarnings("unchecked")
     public <T> List<T> getTankTiles(Class<T> type) {
         List<T> tiles = tankTiles.stream().filter(p -> type.isAssignableFrom(p.getClass())).map(p -> (T) p).collect(Collectors.toList());
-        if ( this.getClass().isAssignableFrom(type) ) {
+        if (this.getClass().isAssignableFrom(type)) {
             tiles.add((T) this);
         }
 
@@ -154,12 +153,12 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     public List<AbstractTankValve> getAllValves(boolean include) {
-        if ( !isMain() && getMainValve() != null && getMainValve() != this ) {
+        if (!isMain() && getMainValve() != null && getMainValve() != this) {
             return getMainValve().getAllValves(include);
         }
 
         List<AbstractTankValve> valves = getTankTiles(AbstractTankValve.class);
-        if ( include ) valves.add(this);
+        if (include) valves.add(this);
         return valves;
     }
 
@@ -170,7 +169,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
      * @param inside - The direction of the inside of the tank
      */
     public void buildTank(Player player, Direction inside) {
-        if ( getLevel().isClientSide ) {
+        if (getLevel().isClientSide) {
             return;
         }
 
@@ -187,7 +186,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         /**
          * Don't build if it's on the client!
          */
-        if ( getLevel().isClientSide ) {
+        if (getLevel().isClientSide) {
             return;
         }
 
@@ -205,14 +204,14 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         /**
          * Now, set the inside direction according to the variable.
          */
-        if ( inside != null ) {
+        if (inside != null) {
             setTileFacing(inside);
         }
 
         /**
          * Actually setup the tank here
          */
-        if ( !setupTank() ) {
+        if (!setupTank()) {
             return;
         }
 
@@ -229,8 +228,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return GenericUtil.isAirOrWaterloggable(world, pos);
     }
 
-    private void setTankTileFacing(TreeMap<Integer, List<LayerBlockPos>> airBlocks, BlockEntity tankTile) {
-        List<BlockPos> possibleAirBlocks = new ArrayList<>();
+    private void setTankTileFacing(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockEntity tankTile) {
+        HashSet<BlockPos> possibleAirBlocks = new HashSet<>();
         for (Direction dr : Direction.values()) {
             if (isAirOrWaterloggable(getLevel(), tankTile.getBlockPos().relative(dr))) {
                 possibleAirBlocks.add(tankTile.getBlockPos().relative(dr));
@@ -240,20 +239,20 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         BlockPos insideAir = null;
         for (int layer : airBlocks.keySet()) {
             for (BlockPos pos : possibleAirBlocks) {
-                if ( airBlocks.get(layer).contains(pos) ) {
+                if (airBlocks.get(layer).contains(pos)) {
                     insideAir = pos;
                     break;
                 }
             }
         }
 
-        if ( insideAir == null ) {
+        if (insideAir == null) {
             return;
         }
 
         BlockPos dist = insideAir.subtract(tankTile.getBlockPos());
         for (Direction dr : Direction.values()) {
-            if ( dist.equals(new BlockPos(dr.getStepX(), dr.getStepY(), dr.getStepZ())) ) {
+            if (dist.equals(new BlockPos(dr.getStepX(), dr.getStepY(), dr.getStepZ()))) {
                 ((IFacingTile) tankTile).setTileFacing(dr);
                 break;
             }
@@ -277,7 +276,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         to_check.add(insidePos);
 
-        while ( !to_check.isEmpty() ) {
+        while (!to_check.isEmpty()) {
             BlockPos nextCheck = to_check.remove();
             for (Direction facing : Direction.values()) {
                 BlockPos offsetPos = nextCheck.relative(facing);
@@ -291,14 +290,14 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     frame_blocks.putIfAbsent(layer, new HashSet<>());
                 }
 
-                if ( checked_blocks.contains(offsetPos) ) {
+                if (checked_blocks.contains(offsetPos)) {
                     continue;
                 }
                 checked_blocks.add(offsetPos);
 
                 LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
                 if (isAirOrWaterloggable(getLevel(), offsetPos)) {
-                    if ( !air_blocks.get(layer).contains(_pos) ) {
+                    if (!air_blocks.get(layer).contains(_pos)) {
                         air_blocks.get(layer).add(_pos);
                         to_check.add(offsetPos);
                         currentAirBlocks++;
@@ -321,29 +320,19 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     frame_blocks.get(layer).add(_pos);
                 }
             }
-            if ( currentAirBlocks > maxAirBlocks ) {
+            if (currentAirBlocks > maxAirBlocks) {
                 GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
                 return false;
             }
         }
 
-        if ( currentAirBlocks == 0 ) {
+        if (currentAirBlocks == 0) {
             return false;
         }
 
-        maps.put(0, convertHashSetBlocks(frame_blocks));
-        maps.put(1, convertHashSetBlocks(air_blocks));
+        maps.put(0, frame_blocks);
+        maps.put(1, air_blocks);
         return true;
-    }
-
-    private TreeMap<Integer, List<LayerBlockPos>> convertHashSetBlocks(TreeMap<Integer, HashSet<LayerBlockPos>> hashSetBlocks) {
-        TreeMap<Integer, List<LayerBlockPos>> converted = new TreeMap<>();
-
-        for (int layer : hashSetBlocks.keySet()) {
-            converted.put(layer, Lists.newArrayList(hashSetBlocks.get(layer)));
-        }
-
-        return converted;
     }
 
     private boolean isBlockBlacklisted(BlockPos pos, BlockState state) {
@@ -359,7 +348,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     private boolean setupTank() {
-        if ( !searchAlgorithm() ) {
+        if (!searchAlgorithm()) {
             return false;
         }
 
@@ -379,13 +368,13 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         FluidStack tempNewFluidStack = getTankConfig().getFluidStack();
 
-        List<BlockEntity> facingTiles = new ArrayList<>();
+        HashSet<BlockEntity> facingTiles = new HashSet<>();
         for (int layer : getFrameBlocks().keySet()) {
             for (BlockPos pos : getFrameBlocks().get(layer)) {
                 BlockState checkState = getLevel().getBlockState(pos);
-                if ( TankManager.INSTANCE.isPartOfTank(getLevel(), pos) ) {
+                if (TankManager.INSTANCE.isPartOfTank(getLevel(), pos)) {
                     AbstractTankValve valve = TankManager.INSTANCE.getValveForBlock(getLevel(), pos);
-                    if ( valve != null && valve != this ) {
+                    if (valve != null && valve != this) {
                         GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_other_tank", false);
                         return false;
                     }
@@ -393,22 +382,22 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                 }
 
                 BlockEntity tile = getLevel().getBlockEntity(pos);
-                if ( tile != null ) {
-                    if ( tile instanceof IFacingTile ) {
+                if (tile != null) {
+                    if (tile instanceof IFacingTile) {
                         facingTiles.add(tile);
                     }
 
                     if (tile instanceof AbstractTankValve valve) {
-                        if ( valve == this ) {
+                        if (valve == this) {
                             continue;
                         }
 
-                        if ( !valve.getTankConfig().getFluidStack().isEmpty() ) {
-                            if ( getTankConfig() != null && !getTankConfig().getFluidStack().isEmpty() ) {
+                        if (!valve.getTankConfig().getFluidStack().isEmpty()) {
+                            if (getTankConfig() != null && !getTankConfig().getFluidStack().isEmpty()) {
                                 FluidStack myFS = getTankConfig().getFluidStack();
                                 FluidStack otherFS = valve.getTankConfig().getFluidStack();
 
-                                if ( !myFS.isFluidEqual(otherFS) ) {
+                                if (!myFS.isFluidEqual(otherFS)) {
                                     GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_different_fluids", false);
                                     return false;
                                 }
@@ -432,7 +421,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     return false;
                 }
 
-                if ( !GenericUtil.isValidTankBlock(getLevel(), pos, checkState, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos)) ) {
+                if (!GenericUtil.isValidTankBlock(getLevel(), pos, checkState, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos))) {
                     GenericUtil.sendMessageToClient(
                             buildPlayer,
                             "chat.ffs.valve_invalid_block_found",
@@ -449,7 +438,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         getTankConfig().setFluidStack(tempNewFluidStack);
         // Make sure we don't overfill a tank. If the new tank is smaller than the old one, excess liquid disappear.
-        if ( !getTankConfig().getFluidStack().isEmpty() && getTankConfig().getFluidStack().getRawFluid() != Fluids.EMPTY ) {
+        if (!getTankConfig().getFluidStack().isEmpty() && getTankConfig().getFluidStack().getRawFluid() != Fluids.EMPTY) {
             getTankConfig().getFluidStack().setAmount(Math.min(getTankConfig().getFluidStack().getAmount(), getTankConfig().getFluidCapacity()));
         }
 
@@ -461,11 +450,11 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         for (int layer : getFrameBlocks().keySet()) {
             for (BlockPos pos : getFrameBlocks().get(layer)) {
                 BlockEntity tile = getLevel().getBlockEntity(pos);
-                if ( tile == this ) {
+                if (tile == this) {
                     continue;
                 }
 
-                if ( tile != null ) {
+                if (tile != null) {
                     if (tile instanceof AbstractTankValve valve) {
 
                         valve.setValid(true);
@@ -489,11 +478,11 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     public void breakTank() {
-        if ( hasLevel() && getLevel().isClientSide || isRemoved() ) {
+        if (hasLevel() && getLevel().isClientSide || isRemoved()) {
             return;
         }
 
-        if ( !isMain() && getMainValve() != null && getMainValve() != this ) {
+        if (!isMain() && getMainValve() != null && getMainValve() != this) {
             getMainValve().breakTank();
             return;
         }
@@ -502,7 +491,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBreak(this));
 
         for (AbstractTankValve valve : getAllValves(false)) {
-            if ( valve == this || valve.isRemoved() ) {
+            if (valve == this || valve.isRemoved()) {
                 continue;
             }
 
@@ -526,7 +515,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
     @Override
     public boolean isValid() {
-        if ( getMainValve() == null || getMainValve() == this )
+        if (getMainValve() == null || getMainValve() == this)
             return this.isValid;
 
         return getMainValve().isValid;
@@ -537,8 +526,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         if (getLevel() != null) {
             getLevel().setBlockAndUpdate(getBlockPos(), getBlockState().setValue(FFSStateProps.TILE_VALID, isValid));
-        }
-        else {
+        } else {
             markForUpdate();
         }
     }
@@ -548,14 +536,14 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     private void updateBlockAndNeighbors(boolean onlyThis) {
-        if ( getLevel().isClientSide )
+        if (getLevel().isClientSide)
             return;
 
         markForUpdateNow();
 
-        if ( !tankTiles.isEmpty() && !onlyThis ) {
+        if (!tankTiles.isEmpty() && !onlyThis) {
             for (AbstractTankTile tile : tankTiles) {
-                if ( tile == this ) {
+                if (tile == this) {
                     continue;
                 }
 
@@ -565,9 +553,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     private void updateComparatorOutput() {
-        if ( this.lastComparatorOut != getComparatorOutput() ) {
+        if (this.lastComparatorOut != getComparatorOutput()) {
             this.lastComparatorOut = getComparatorOutput();
-            if ( isMain() ) {
+            if (isMain()) {
                 for (AbstractTankValve otherValve : getTankTiles(AbstractTankValve.class)) {
                     getLevel().updateNeighbourForOutputSignal(otherValve.getBlockPos(), otherValve.getBlockState().getBlock());
                 }
@@ -588,8 +576,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         if (getLevel() != null) {
             getLevel().setBlockAndUpdate(getBlockPos(), getBlockState().setValue(FFSStateProps.TILE_MAIN, isMain));
-        }
-        else {
+        } else {
             markForUpdate();
         }
     }
@@ -617,7 +604,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
     @Override
     public String getTileName() {
-        if ( this.tile_name.isEmpty() ) {
+        if (this.tile_name.isEmpty()) {
             setTileName(GenericUtil.getUniquePositionName(this));
         }
 
@@ -644,13 +631,13 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         super.load(nbt);
 
         isMain = nbt.getBoolean("IsMain");
-        if ( isMain() ) {
+        if (isMain()) {
             isValid = nbt.getBoolean("IsValid");
             getTankConfig().readFromNBT(nbt);
 
-            if ( getLevel() != null && getLevel().isClientSide ) {
-                if ( isValid() ) {
-                    if ( !TankManager.INSTANCE.isValveInLists(getLevel(), this) ) {
+            if (getLevel() != null && getLevel().isClientSide) {
+                if (isValid()) {
+                    if (!TankManager.INSTANCE.isValveInLists(getLevel(), this)) {
                         NetworkHandler.sendPacketToServer(new FFSPacket.Server.OnTankRequest(this));
                     }
                 }
@@ -666,7 +653,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         super.saveAdditional(nbt);
 
         nbt.putBoolean("IsMain", isMain());
-        if ( isMain() ) {
+        if (isMain()) {
             nbt.putBoolean("IsValid", isValid());
             getTankConfig().writeToNBT(nbt);
         }
@@ -681,7 +668,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     public int getComparatorOutput() {
-        if ( !isValid() ) {
+        if (!isValid()) {
             return 0;
         }
 

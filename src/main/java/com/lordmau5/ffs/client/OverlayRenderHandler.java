@@ -102,7 +102,7 @@
 //
 //        BlockPos valvePos = valve.getPos();
 //
-//        List<BlockPos> tankBlocks = FancyFluidStorage.TANK_MANAGER.getFrameBlocksForValve(valve);
+//        HashSet<BlockPos> tankBlocks = FancyFluidStorage.TANK_MANAGER.getFrameBlocksForValve(valve);
 //        tankBlocks.add(valvePos);
 //
 //        Tessellator tess = Tessellator.getInstance();

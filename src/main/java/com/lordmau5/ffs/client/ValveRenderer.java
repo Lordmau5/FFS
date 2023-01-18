@@ -21,6 +21,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -44,11 +45,11 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
 
     @Override
     public void render(@Nonnull TileEntityFluidValve valve, float partialTicks, PoseStack ms, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
-        if ( !valve.isValid() || !valve.isMain() ) {
+        if (!valve.isValid() || !valve.isMain()) {
             return;
         }
 
-        if ( valve.getTankConfig().getFluidCapacity() == 0 || valve.getTankConfig().getFluidAmount() == 0 ) {
+        if (valve.getTankConfig().getFluidCapacity() == 0 || valve.getTankConfig().getFluidAmount() == 0) {
             return;
         }
 
@@ -56,11 +57,11 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
 
         float fillPercentage = (float) valve.getTankConfig().getFluidAmount() / (float) valve.getTankConfig().getFluidCapacity();
 
-        if ( fillPercentage > 0 && !valve.getTankConfig().getFluidStack().isEmpty() ) {
+        if (fillPercentage > 0 && !valve.getTankConfig().getFluidStack().isEmpty()) {
             FluidStack fluid = valve.getTankConfig().getFluidStack();
 
-            TreeMap<Integer, List<LayerBlockPos>> airBlocks = TankManager.INSTANCE.getAirBlocksForValve(valve);
-            if ( airBlocks == null || airBlocks.isEmpty() ) {
+            TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks = TankManager.INSTANCE.getAirBlocksForValve(valve);
+            if (airBlocks == null || airBlocks.isEmpty()) {
                 return;
             }
 
@@ -71,7 +72,7 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
 
             Matrix4f matrix = ms.last().pose();
 
-            if ( fluid.getFluid().getAttributes().isGaseous() ) {
+            if (fluid.getFluid().getAttributes().isGaseous()) {
                 renderGasTank(still, flowing, airBlocks, valve, valvePos, bufferIn, matrix, fluid, fillPercentage);
             } else {
                 renderFluidTank(still, flowing, airBlocks, valve, valvePos, bufferIn, matrix, fluid);
@@ -81,7 +82,7 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         }
     }
 
-    private void renderGasTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, MultiBufferSource vb, Matrix4f matrix, FluidStack fluid, float fillPercentage) {
+    private void renderGasTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, MultiBufferSource vb, Matrix4f matrix, FluidStack fluid, float fillPercentage) {
         int color = ClientRenderHelper.changeAlpha(fluid.getFluid().getAttributes().getColor(), (int) (fillPercentage * 255));
 
         List<Integer> layers = new ArrayList<>(airBlocks.keySet());
@@ -95,16 +96,16 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         }
     }
 
-    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, MultiBufferSource vb, Matrix4f matrix, FluidStack fluid) {
+    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, MultiBufferSource vb, Matrix4f matrix, FluidStack fluid) {
         List<Integer> layers = new ArrayList<>(airBlocks.keySet());
         List<Float> fillLevels = new ArrayList<>();
         double fluidLeft = valve.getTankConfig().getFluidAmount();
         for (Integer layer : layers) {
-            if ( fluidLeft <= 0 ) {
+            if (fluidLeft <= 0) {
                 continue;
             }
             int layerBlockSize = airBlocks.get(layer).size();
-            if ( layerBlockSize == 0 ) {
+            if (layerBlockSize == 0) {
                 continue;
             }
 
@@ -133,7 +134,7 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         BlockPos currentOffset;
         for (Direction facing : Direction.values()) {
             currentOffset = pos.relative(facing);
-            if ( facing == Direction.UP && isTop || !world.getBlockState(currentOffset).isSolidRender(world, currentOffset) && !world.isEmptyBlock(currentOffset) ) {
+            if (facing == Direction.UP && isTop || !world.getBlockState(currentOffset).isSolidRender(world, currentOffset) && !world.isEmptyBlock(currentOffset)) {
                 ClientRenderHelper.putTexturedQuad(vb, (facing != Direction.DOWN && facing != Direction.UP) ? flowing : still, matrix, x1, y1, z1, x2 - x1, y2 - y1, z2 - z1, facing, color, brightness, facing != Direction.DOWN && facing != Direction.UP);
             }
         }
