@@ -1,14 +1,13 @@
 package com.lordmau5.ffs.item;
 
-import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.holder.ModCreativeTab;
 import com.lordmau5.ffs.holder.Sounds;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 
 import java.util.Random;

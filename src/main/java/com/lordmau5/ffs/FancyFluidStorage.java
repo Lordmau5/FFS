@@ -1,22 +1,15 @@
 package com.lordmau5.ffs;
 
-import com.lordmau5.ffs.client.ValveRenderer;
 import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.config.ServerConfig;
-import com.lordmau5.ffs.holder.*;
+import com.lordmau5.ffs.holder.BlockEntities;
+import com.lordmau5.ffs.holder.Blocks;
+import com.lordmau5.ffs.holder.Items;
+import com.lordmau5.ffs.holder.Sounds;
 import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.util.Config;
 import com.lordmau5.ffs.util.GenericUtil;
-import com.lordmau5.ffs.util.TankManager;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;

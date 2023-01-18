@@ -10,12 +10,12 @@
  import mcjty.theoneprobe.apiimpl.ProbeConfig;
  import mcjty.theoneprobe.apiimpl.elements.ElementProgress;
  import mcjty.theoneprobe.config.Config;
+ import net.minecraft.ChatFormatting;
  import net.minecraft.network.chat.Component;
  import net.minecraft.resources.ResourceLocation;
- import net.minecraft.world.level.block.state.BlockState;
  import net.minecraft.world.entity.player.Player;
- import net.minecraft.ChatFormatting;
  import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.block.state.BlockState;
  import net.minecraftforge.fluids.FluidStack;
 
  public class TankInfoProvider implements IProbeInfoProvider {

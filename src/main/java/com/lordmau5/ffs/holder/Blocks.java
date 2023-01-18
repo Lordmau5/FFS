@@ -8,7 +8,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.*;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 

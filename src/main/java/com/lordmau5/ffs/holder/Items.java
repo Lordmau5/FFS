@@ -5,7 +5,9 @@ import com.lordmau5.ffs.item.ItemTit;
 import com.lordmau5.ffs.item.ItemTitEgg;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.*;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 

@@ -5,21 +5,17 @@ import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public abstract class FFSPacket {
     public static abstract class Client {

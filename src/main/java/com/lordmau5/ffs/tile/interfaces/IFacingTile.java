@@ -1,7 +1,7 @@
 package com.lordmau5.ffs.tile.interfaces;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 
 public interface IFacingTile {
 
