@@ -46,7 +46,7 @@ public class GenericUtil {
         return blockState.getMaterial() == Material.GLASS && !is.getDescriptionId().contains("pane");
     }
 
-    public static Direction getInsideForTankFrame(TreeMap<Integer, List<LayerBlockPos>> airBlocks, BlockPos frame) {
+    public static Direction getInsideForTankFrame(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockPos frame) {
         for (Direction direction : Direction.values()) {
             for (int layer : airBlocks.keySet()) {
                 if (airBlocks.get(layer).contains(frame.relative(direction))) {

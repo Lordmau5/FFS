@@ -1,6 +1,5 @@
 package com.lordmau5.ffs.tile.abstracts;
 
-import com.google.common.collect.Lists;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.config.ServerConfig;
 import com.lordmau5.ffs.network.FFSPacket;
@@ -34,8 +33,8 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractTankValve extends AbstractTankTile implements IFacingTile, INameableTile {
 
-    public final HashMap<Integer, TreeMap<Integer, List<LayerBlockPos>>> maps;
-    private final List<AbstractTankTile> tankTiles;
+    public final HashMap<Integer, TreeMap<Integer, HashSet<LayerBlockPos>>> maps;
+    private final HashSet<AbstractTankTile> tankTiles;
     private int initialWaitTick = 20;
     private TankConfig tankConfig;
     private boolean isValid;
@@ -50,7 +49,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     public AbstractTankValve(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state) {
         super(tileEntityTypeIn, pos, state);
 
-        tankTiles = new ArrayList<>();
+        tankTiles = new HashSet<>();
 
         maps = new HashMap<>();
         maps.put(0, new TreeMap<>());
@@ -99,11 +98,11 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         }
     }
 
-    public TreeMap<Integer, List<LayerBlockPos>> getFrameBlocks() {
+    public TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocks() {
         return maps.get(0);
     }
 
-    public TreeMap<Integer, List<LayerBlockPos>> getAirBlocks() {
+    public TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocks() {
         return maps.get(1);
     }
 
@@ -222,8 +221,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return GenericUtil.isAirOrWaterloggable(world, pos);
     }
 
-    private void setTankTileFacing(TreeMap<Integer, List<LayerBlockPos>> airBlocks, BlockEntity tankTile) {
-        List<BlockPos> possibleAirBlocks = new ArrayList<>();
+    private void setTankTileFacing(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockEntity tankTile) {
+        HashSet<BlockPos> possibleAirBlocks = new HashSet<>();
         for (Direction dr : Direction.values()) {
             if (isAirOrWaterloggable(getLevel(), tankTile.getBlockPos().relative(dr))) {
                 possibleAirBlocks.add(tankTile.getBlockPos().relative(dr));
@@ -324,19 +323,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
             return false;
         }
 
-        maps.put(0, convertHashSetBlocks(frame_blocks));
-        maps.put(1, convertHashSetBlocks(air_blocks));
+        maps.put(0, frame_blocks);
+        maps.put(1, air_blocks);
         return true;
-    }
-
-    private TreeMap<Integer, List<LayerBlockPos>> convertHashSetBlocks(TreeMap<Integer, HashSet<LayerBlockPos>> hashSetBlocks) {
-        TreeMap<Integer, List<LayerBlockPos>> converted = new TreeMap<>();
-
-        for (int layer : hashSetBlocks.keySet()) {
-            converted.put(layer, Lists.newArrayList(hashSetBlocks.get(layer)));
-        }
-
-        return converted;
     }
 
     private boolean isBlockBlacklisted(BlockPos pos, BlockState state) {
@@ -372,7 +361,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         FluidStack tempNewFluidStack = getTankConfig().getFluidStack();
 
-        List<BlockEntity> facingTiles = new ArrayList<>();
+        HashSet<BlockEntity> facingTiles = new HashSet<>();
         for (int layer : getFrameBlocks().keySet()) {
             for (BlockPos pos : getFrameBlocks().get(layer)) {
                 BlockState checkState = getLevel().getBlockState(pos);
@@ -641,7 +630,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
             if (getLevel() != null && getLevel().isClientSide()) {
                 if (isValid()) {
-                    if (!TankManager.INSTANCE.isValveInLists(getLevel(), this)) {
+                    if (!TankManager.INSTANCE.isValveInHashSets(getLevel(), this)) {
                         NetworkHandler.sendPacketToServer(new FFSPacket.Server.OnTankRequest(this));
                     }
                 }
