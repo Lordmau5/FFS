@@ -267,13 +267,15 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         int maxAirBlocks = ServerConfig.general.maxAirBlocks;
         BlockPos insidePos = getBlockPos().relative(getTileFacing());
 
-        Queue<BlockPos> to_check = new LinkedList<>();
-        List<BlockPos> checked_blocks = new ArrayList<>();
-        TreeMap<Integer, List<LayerBlockPos>> air_blocks = new TreeMap<>();
-        TreeMap<Integer, List<LayerBlockPos>> frame_blocks = new TreeMap<>();
+        Deque<BlockPos> to_check = new ArrayDeque<>();
+        HashSet<BlockPos> checked_blocks = new HashSet<>();
+        TreeMap<Integer, HashSet<LayerBlockPos>> air_blocks = new TreeMap<>();
+        TreeMap<Integer, HashSet<LayerBlockPos>> frame_blocks = new TreeMap<>();
 
         LayerBlockPos pos = new LayerBlockPos(insidePos, 0);
-        air_blocks.put(0, Lists.newArrayList(pos));
+        HashSet<LayerBlockPos> zeroLayer = new HashSet<>();
+        zeroLayer.add(pos);
+        air_blocks.put(0, zeroLayer);
 
         to_check.add(insidePos);
 
@@ -283,8 +285,13 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                 BlockPos offsetPos = nextCheck.relative(facing);
                 int layer = offsetPos.getY() - insidePos.getY();
 
-                air_blocks.putIfAbsent(layer, Lists.newArrayList());
-                frame_blocks.putIfAbsent(layer, Lists.newArrayList());
+                if (!air_blocks.containsKey(layer)) {
+                    air_blocks.putIfAbsent(layer, new HashSet<>());
+                }
+
+                if (!frame_blocks.containsKey(layer)) {
+                    frame_blocks.putIfAbsent(layer, new HashSet<>());
+                }
 
                 if ( checked_blocks.contains(offsetPos) ) {
                     continue;
@@ -323,9 +330,19 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
             return false;
         }
 
-        maps.put(0, frame_blocks);
-        maps.put(1, air_blocks);
+        maps.put(0, convertHashSetBlocks(frame_blocks));
+        maps.put(1, convertHashSetBlocks(air_blocks));
         return true;
+    }
+
+    private TreeMap<Integer, List<LayerBlockPos>> convertHashSetBlocks(TreeMap<Integer, HashSet<LayerBlockPos>> hashSetBlocks) {
+        TreeMap<Integer, List<LayerBlockPos>> converted = new TreeMap<>();
+
+        for (int layer : hashSetBlocks.keySet()) {
+            converted.put(layer, Lists.newArrayList(hashSetBlocks.get(layer)));
+        }
+
+        return converted;
     }
 
     private boolean isBlockBlacklisted(BlockPos pos) {

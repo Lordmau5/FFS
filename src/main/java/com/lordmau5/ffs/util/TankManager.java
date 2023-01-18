@@ -110,7 +110,7 @@ public class TankManager {
     }
 
     public void add(World world, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
-        if ( airBlocks.isEmpty() ) {
+        if ( airBlocks.isEmpty() || frameBlocks.isEmpty() ) {
             return;
         }
 
