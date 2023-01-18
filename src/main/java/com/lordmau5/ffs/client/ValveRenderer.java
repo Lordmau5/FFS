@@ -21,6 +21,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -52,7 +53,7 @@ public class ValveRenderer extends TileEntityRenderer<TileEntityFluidValve> {
         if ( fillPercentage > 0 && !valve.getTankConfig().getFluidStack().isEmpty() ) {
             FluidStack fluid = valve.getTankConfig().getFluidStack();
 
-            TreeMap<Integer, List<LayerBlockPos>> airBlocks = TankManager.INSTANCE.getAirBlocksForValve(valve);
+            TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks = TankManager.INSTANCE.getAirBlocksForValve(valve);
             if ( airBlocks == null || airBlocks.isEmpty() ) {
                 return;
             }
@@ -74,7 +75,7 @@ public class ValveRenderer extends TileEntityRenderer<TileEntityFluidValve> {
         }
     }
 
-    private void renderGasTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, IRenderTypeBuffer vb, Matrix4f matrix, FluidStack fluid, float fillPercentage) {
+    private void renderGasTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, IRenderTypeBuffer vb, Matrix4f matrix, FluidStack fluid, float fillPercentage) {
         int color = ClientRenderHelper.changeAlpha(fluid.getFluid().getAttributes().getColor(), (int) (fillPercentage * 255));
 
         List<Integer> layers = new ArrayList<>(airBlocks.keySet());
@@ -88,7 +89,7 @@ public class ValveRenderer extends TileEntityRenderer<TileEntityFluidValve> {
         }
     }
 
-    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, IRenderTypeBuffer vb, Matrix4f matrix, FluidStack fluid) {
+    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TileEntityFluidValve valve, BlockPos valvePos, IRenderTypeBuffer vb, Matrix4f matrix, FluidStack fluid) {
         List<Integer> layers = new ArrayList<>(airBlocks.keySet());
         List<Float> fillLevels = new ArrayList<>();
         double fluidLeft = valve.getTankConfig().getFluidAmount();

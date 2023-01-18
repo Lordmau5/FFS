@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.function.Supplier;
@@ -64,8 +65,8 @@ public abstract class FFSPacket {
 
         public static class OnTankBuild {
             private BlockPos valvePos;
-            private TreeMap<Integer, List<LayerBlockPos>> airBlocks;
-            private TreeMap<Integer, List<LayerBlockPos>> frameBlocks;
+            private TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks;
+            private TreeMap<Integer, HashSet<LayerBlockPos>> frameBlocks;
 
             public OnTankBuild() {
             }
@@ -110,7 +111,7 @@ public abstract class FFSPacket {
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
                     int airBlockSize = buffer.readInt();
-                    List<LayerBlockPos> layerBlocks = new ArrayList<>();
+                    HashSet<LayerBlockPos> layerBlocks = new HashSet<>();
                     for (int j = 0; j < airBlockSize; j++) {
                         layerBlocks.add(new LayerBlockPos(BlockPos.of(buffer.readLong()), buffer.readInt()));
                     }
@@ -122,7 +123,7 @@ public abstract class FFSPacket {
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
                     int frameBlockSize = buffer.readInt();
-                    List<LayerBlockPos> layerBlocks = new ArrayList<>();
+                    HashSet<LayerBlockPos> layerBlocks = new HashSet<>();
                     for (int j = 0; j < frameBlockSize; j++) {
                         layerBlocks.add(new LayerBlockPos(BlockPos.of(buffer.readLong()), buffer.readInt()));
                     }
@@ -136,11 +137,11 @@ public abstract class FFSPacket {
                 return valvePos;
             }
 
-            public TreeMap<Integer, List<LayerBlockPos>> getAirBlocks() {
+            public TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocks() {
                 return airBlocks;
             }
 
-            public TreeMap<Integer, List<LayerBlockPos>> getFrameBlocks() {
+            public TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocks() {
                 return frameBlocks;
             }
 

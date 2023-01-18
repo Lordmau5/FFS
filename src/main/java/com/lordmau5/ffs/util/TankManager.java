@@ -36,14 +36,14 @@ public class TankManager {
     public static TankManager INSTANCE = new TankManager();
 
     private static class HashMapCache {
-        private final HashMap<RegistryKey<World>, HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToFrameBlocks = new HashMap<>();
-        private final HashMap<RegistryKey<World>, HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>>> valveToAirBlocks = new HashMap<>();
+        private final HashMap<RegistryKey<World>, HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>>> valveToFrameBlocks = new HashMap<>();
+        private final HashMap<RegistryKey<World>, HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>>> valveToAirBlocks = new HashMap<>();
         private final HashMap<RegistryKey<World>, HashMap<BlockPos, BlockPos>> frameBlockToValve = new HashMap<>();
         private final HashMap<RegistryKey<World>, HashMap<BlockPos, BlockPos>> airBlockToValve = new HashMap<>();
 
-        private final HashMap<RegistryKey<World>, List<BlockPos>> blocksToCheck = new HashMap<>();
+        private final HashMap<RegistryKey<World>, HashSet<BlockPos>> blocksToCheck = new HashMap<>();
 
-        private HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToFrameBlocks(World world) {
+        private HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>> getValveToFrameBlocks(World world) {
             RegistryKey<World> dimension = world.dimension();
 
             valveToFrameBlocks.putIfAbsent(dimension, new HashMap<>());
@@ -51,7 +51,7 @@ public class TankManager {
             return valveToFrameBlocks.get(dimension);
         }
 
-        private HashMap<BlockPos, TreeMap<Integer, List<LayerBlockPos>>> getValveToAirBlocks(World world) {
+        private HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>> getValveToAirBlocks(World world) {
             RegistryKey<World> dimension = world.dimension();
 
             valveToAirBlocks.putIfAbsent(dimension, new HashMap<>());
@@ -75,10 +75,10 @@ public class TankManager {
             return airBlockToValve.get(dimension);
         }
 
-        private List<BlockPos> getBlocksToCheck(World world) {
+        private HashSet<BlockPos> getBlocksToCheck(World world) {
             RegistryKey<World> dimension = world.dimension();
 
-            blocksToCheck.putIfAbsent(dimension, new ArrayList<>());
+            blocksToCheck.putIfAbsent(dimension, new HashSet<>());
 
             return blocksToCheck.get(dimension);
         }
@@ -108,7 +108,7 @@ public class TankManager {
         CLIENT.clear();
     }
 
-    public void add(World world, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
+    public void add(World world, BlockPos valvePos, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TreeMap<Integer, HashSet<LayerBlockPos>> frameBlocks) {
         if ( airBlocks.isEmpty() || frameBlocks.isEmpty() ) {
             return;
         }
@@ -125,7 +125,7 @@ public class TankManager {
         addIgnore(world, valvePos, airBlocks, frameBlocks);
     }
 
-    public void addIgnore(World world, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
+    public void addIgnore(World world, BlockPos valvePos, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TreeMap<Integer, HashSet<LayerBlockPos>> frameBlocks) {
         get(world).getValveToAirBlocks(world).put(valvePos, airBlocks);
         for (int layer : airBlocks.keySet()) {
             for (LayerBlockPos pos : airBlocks.get(layer)) {
@@ -172,20 +172,20 @@ public class TankManager {
         return tile instanceof AbstractTankValve ? (AbstractTankValve) tile : null;
     }
 
-    public List<BlockPos> getFrameBlocksForValve(AbstractTankValve valve) {
-        World world = valve.getLevel();
+//    public HashSet<BlockPos> getFrameBlocksForValve(AbstractTankValve valve) {
+//        World world = valve.getLevel();
+//
+//        HashSet<BlockPos> blocks = new HashSet<>();
+//        if ( get(world).getValveToFrameBlocks(world).containsKey(valve.getBlockPos()) ) {
+//            for (int layer : get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).keySet()) {
+//                blocks.addAll(get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).get(layer));
+//            }
+//        }
+//
+//        return blocks;
+//    }
 
-        List<BlockPos> blocks = new ArrayList<>();
-        if ( get(world).getValveToFrameBlocks(world).containsKey(valve.getBlockPos()) ) {
-            for (int layer : get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).keySet()) {
-                blocks.addAll(get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).get(layer));
-            }
-        }
-
-        return blocks;
-    }
-
-    public TreeMap<Integer, List<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
+    public TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
         World world = valve.getLevel();
 
         if ( get(world).getValveToAirBlocks(world).containsKey(valve.getBlockPos()) ) {
