@@ -33,28 +33,28 @@ public class TileEntityFluidValve extends AbstractTankValve {
 
         TileEntityFluidValve valve = (TileEntityFluidValve) be;
 
-        if ( level.isClientSide ) {
+        if (level.isClientSide()) {
             return;
         }
 
-        if ( !valve.isValid() ) {
+        if (!valve.isValid()) {
             return;
         }
 
         FluidStack fluidStack = valve.getTankConfig().getFluidStack();
-        if ( fluidStack.isEmpty() ) {
+        if (fluidStack.isEmpty()) {
             return;
         }
 
         Fluid fluid = fluidStack.getFluid();
-        if ( fluid == null ) {
+        if (fluid == null) {
             return;
         }
 
-        if ( fluid == Fluids.WATER ) {
-            if ( level.isRaining() ) {
+        if (fluid == Fluids.WATER) {
+            if (level.isRaining()) {
                 int rate = (int) Math.floor(level.rainLevel * 5 * level.getBiome(pos).value().getDownfall());
-                if ( pos.getY() == level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, pos).getY() - 1 ) {
+                if (pos.getY() == level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, pos).getY() - 1) {
                     FluidStack waterStack = fluidStack.copy();
                     waterStack.setAmount(rate * 10);
                     valve.getTankConfig().getFluidTank().fill(waterStack, IFluidHandler.FluidAction.EXECUTE);
@@ -65,8 +65,7 @@ public class TileEntityFluidValve extends AbstractTankValve {
 
     @Override
     @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
-    {
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.FLUID_HANDLER)
             return holder.cast();
         return super.getCapability(cap, side);

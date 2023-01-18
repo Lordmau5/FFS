@@ -26,9 +26,9 @@ public class FFSPacketClientHandler {
     public static void handleOnTankBuild(FFSPacket.Client.OnTankBuild msg) {
         ClientLevel world = Minecraft.getInstance().level;
 
-        if ( world != null ) {
+        if (world != null) {
             BlockEntity tile = world.getBlockEntity(msg.getValvePos());
-            if ( tile instanceof AbstractTankValve) {
+            if (tile instanceof AbstractTankValve) {
                 TankManager.INSTANCE.add(world, msg.getValvePos(), msg.getAirBlocks(), msg.getFrameBlocks());
             }
         }

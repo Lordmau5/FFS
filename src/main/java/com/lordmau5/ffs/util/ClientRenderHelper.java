@@ -44,103 +44,103 @@ public class ClientRenderHelper {
     }
 
     private static void putTexturedQuad(MultiBufferSource renderTypeBuffer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
-        if ( sprite == null ) {
+        if (sprite == null) {
             return;
         }
+
         float minU;
         float maxU;
         float minV;
         float maxV;
         double size = 16f;
-        if ( flowing ) {
+        if (flowing) {
             size = 8f;
         }
+
         float x2 = x + w;
         float y2 = y + h;
         float z2 = z + d;
         double xt1 = x % 1d;
         double xt2 = xt1 + w;
-        while ( xt2 > 1f ) xt2 -= 1f;
+        while (xt2 > 1f) xt2 -= 1f;
         double yt1 = y % 1d;
         double yt2 = yt1 + h;
-        while ( yt2 > 1f ) yt2 -= 1f;
+        while (yt2 > 1f) yt2 -= 1f;
         double zt1 = z % 1d;
         double zt2 = zt1 + d;
-        while ( zt2 > 1f ) zt2 -= 1f;
+        while (zt2 > 1f) zt2 -= 1f;
 
-        if ( flowing ) {
+        if (flowing) {
             double tmp = 1d - yt1;
             yt1 = 1d - yt2;
             yt2 = tmp;
         }
 
         switch (direction) {
-            case DOWN:
-            case UP:
+            case DOWN, UP -> {
                 minU = sprite.getU(xt1 * size);
                 maxU = sprite.getU(xt2 * size);
                 minV = sprite.getV(zt1 * size);
                 maxV = sprite.getV(zt2 * size);
-                break;
-            case NORTH:
-            case SOUTH:
+            }
+            case NORTH, SOUTH -> {
                 minU = sprite.getU(xt2 * size);
                 maxU = sprite.getU(xt1 * size);
                 minV = sprite.getV(yt1 * size);
                 maxV = sprite.getV(yt2 * size);
-                break;
-            case WEST:
-            case EAST:
+            }
+            case WEST, EAST -> {
                 minU = sprite.getU(zt2 * size);
                 maxU = sprite.getU(zt1 * size);
                 minV = sprite.getV(yt1 * size);
                 maxV = sprite.getV(yt2 * size);
-                break;
-            default:
+            }
+            default -> {
                 minU = sprite.getU0();
                 maxU = sprite.getU1();
                 minV = sprite.getV0();
                 maxV = sprite.getV1();
+            }
         }
 
         VertexConsumer renderer = renderTypeBuffer.getBuffer(RenderType.text(sprite.atlas().location()));
         switch (direction) {
-            case DOWN:
+            case DOWN -> {
                 renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
-                break;
-            case UP:
+            }
+            case UP -> {
                 renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
-                break;
-            case NORTH:
+            }
+            case NORTH -> {
                 renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
-                break;
-            case SOUTH:
+            }
+            case SOUTH -> {
                 renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
-                break;
-            case WEST:
+            }
+            case WEST -> {
                 renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
-                break;
-            case EAST:
+            }
+            case EAST -> {
                 renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
                 renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
-                break;
+            }
         }
     }
 

@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fluids.FluidStack;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class BlockFluidValve extends AbstractBlockValve {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-            BlockEntityType<T> type) {
+                                                                  BlockEntityType<T> type) {
         return type == BlockEntities.tileEntityFluidValve.get() ? TileEntityFluidValve::tick : null;
     }
 
@@ -67,22 +68,27 @@ public class BlockFluidValve extends AbstractBlockValve {
         return stack;
     }
 
-    @Override
-    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(worldIn, pos, state, placer, stack);
-
+    private @Nonnull
+    FluidStack loadFluidStackFromTankConfig(ItemStack stack) {
         if (!stack.hasTag()) {
-            return;
+            return FluidStack.EMPTY;
         }
 
         CompoundTag tag = stack.getOrCreateTag();
         if (!tag.contains("TankConfig")) {
-            return;
+            return FluidStack.EMPTY;
         }
 
         CompoundTag tankConfig = tag.getCompound("TankConfig");
 
-        FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(tankConfig);
+        return FluidStack.loadFluidStackFromNBT(tankConfig);
+    }
+
+    @Override
+    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(worldIn, pos, state, placer, stack);
+
+        FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
 
         BlockEntity tile = worldIn.getBlockEntity(pos);
         if (tile instanceof TileEntityFluidValve) {
@@ -94,26 +100,15 @@ public class BlockFluidValve extends AbstractBlockValve {
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
 
-        if (!stack.hasTag()) {
-            return;
-        }
-
-        CompoundTag tag = stack.getOrCreateTag();
-        if (!tag.contains("TankConfig")) {
-            return;
-        }
-
-        CompoundTag tankConfig = tag.getCompound("TankConfig");
-
-        FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(tankConfig);
+        FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
 
         tooltip.add(
                 Component.translatable("description.ffs.fluid_valve.fluid", fluidStack.getDisplayName().getString())
-                .withStyle(ChatFormatting.GRAY)
+                        .withStyle(ChatFormatting.GRAY)
         );
         tooltip.add(
                 Component.translatable("description.ffs.fluid_valve.amount", GenericUtil.intToFancyNumber(fluidStack.getAmount()) + "mB")
-                .withStyle(ChatFormatting.GRAY)
+                        .withStyle(ChatFormatting.GRAY)
         );
     }
 }

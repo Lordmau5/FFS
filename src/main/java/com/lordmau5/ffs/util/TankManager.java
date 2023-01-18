@@ -99,7 +99,7 @@ public class TankManager {
     private final HashMapCache SERVER = new HashMapCache();
 
     public HashMapCache get(@Nullable Level world) {
-        return (world != null && world.isClientSide) ? CLIENT : SERVER;
+        return (world != null && world.isClientSide()) ? CLIENT : SERVER;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -108,16 +108,16 @@ public class TankManager {
     }
 
     public void add(Level world, BlockPos valvePos, TreeMap<Integer, List<LayerBlockPos>> airBlocks, TreeMap<Integer, List<LayerBlockPos>> frameBlocks) {
-        if ( airBlocks.isEmpty() || frameBlocks.isEmpty() ) {
+        if (airBlocks.isEmpty() || frameBlocks.isEmpty()) {
             return;
         }
 
         BlockEntity tile = world.getBlockEntity(valvePos);
-        if ( !(tile instanceof AbstractTankValve) ) {
+        if (!(tile instanceof AbstractTankValve)) {
             return;
         }
 
-        if ( !((AbstractTankValve) tile).isMain() ) {
+        if (!((AbstractTankValve) tile).isMain()) {
             return;
         }
 
@@ -157,39 +157,31 @@ public class TankManager {
     }
 
     public AbstractTankValve getValveForBlock(Level world, BlockPos pos) {
-        if ( !isPartOfTank(world, pos) ) {
+        if (!isPartOfTank(world, pos)) {
             return null;
         }
 
         BlockEntity tile = null;
-        if ( get(world).getFrameBlockToValve(world).containsKey(pos) ) {
+        if (get(world).getFrameBlockToValve(world).containsKey(pos)) {
             tile = world.getBlockEntity(get(world).getFrameBlockToValve(world).get(pos));
-        } else if ( get(world).getAirBlockToValve(world).containsKey(pos) ) {
+        } else if (get(world).getAirBlockToValve(world).containsKey(pos)) {
             tile = world.getBlockEntity(get(world).getAirBlockToValve(world).get(pos));
         }
 
         return tile instanceof AbstractTankValve ? (AbstractTankValve) tile : null;
     }
 
-    public List<BlockPos> getFrameBlocksForValve(AbstractTankValve valve) {
+    public @Nullable
+    TreeMap<Integer, List<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
         Level world = valve.getLevel();
 
-        List<BlockPos> blocks = new ArrayList<>();
-        if ( get(world).getValveToFrameBlocks(world).containsKey(valve.getBlockPos()) ) {
-            for (int layer : get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).keySet()) {
-                blocks.addAll(get(world).getValveToFrameBlocks(world).get(valve.getBlockPos()).get(layer));
-            }
+        if (world == null) {
+            return null;
         }
-
-        return blocks;
-    }
-
-    public TreeMap<Integer, List<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
-        Level world = valve.getLevel();
 
         var valveToAirBlocks = get(world).getValveToAirBlocks(world);
 
-        if ( valveToAirBlocks.containsKey(valve.getBlockPos()) ) {
+        if (valveToAirBlocks.containsKey(valve.getBlockPos())) {
             return valveToAirBlocks.get(valve.getBlockPos());
         }
 
@@ -206,11 +198,11 @@ public class TankManager {
     }
 
     private void addBlockForCheck(LevelAccessor accessor, BlockPos pos) {
-        if ( accessor.isClientSide() || !(accessor instanceof Level world) ) {
+        if (accessor.isClientSide() || !(accessor instanceof Level world)) {
             return;
         }
 
-        if ( !isPartOfTank(world, pos) ) {
+        if (!isPartOfTank(world, pos)) {
             return;
         }
 
@@ -221,41 +213,41 @@ public class TankManager {
 
     @SubscribeEvent
     public void entityJoinWorld(EntityJoinLevelEvent event) {
-        if ( event.getLevel() == null || event.getEntity() == null ) {
+        if (event.getLevel() == null || event.getEntity() == null) {
             return;
         }
 
-        if ( !(event.getEntity() instanceof PathfinderMob) ) {
+        if (!(event.getEntity() instanceof PathfinderMob)) {
             return;
         }
 
-        if ( isPartOfTank(event.getLevel(), event.getEntity().blockPosition()) ) {
+        if (isPartOfTank(event.getLevel(), event.getEntity().blockPosition())) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public void onServerTick(final TickEvent.LevelTickEvent event) {
-        if ( event.level.isClientSide ) {
+        if (event.level.isClientSide()) {
             return;
         }
 
-        if ( event.phase != TickEvent.Phase.END ) {
+        if (event.phase != TickEvent.Phase.END) {
             return;
         }
 
         Level level = event.level;
 
-        if (get(level).getBlocksToCheck(level).isEmpty() ) {
+        if (get(level).getBlocksToCheck(level).isEmpty()) {
             return;
         }
 
         AbstractTankValve valve;
         for (BlockPos pos : get(level).getBlocksToCheck(level)) {
-            if ( isPartOfTank(level, pos) ) {
+            if (isPartOfTank(level, pos)) {
                 valve = getValveForBlock(level, pos);
-                if ( valve != null ) {
-                    if ( !GenericUtil.isValidTankBlock(level, pos, level.getBlockState(pos), GenericUtil.getInsideForTankFrame(valve.getAirBlocks(), pos)) ) {
+                if (valve != null) {
+                    if (!GenericUtil.isValidTankBlock(level, pos, level.getBlockState(pos), GenericUtil.getInsideForTankFrame(valve.getAirBlocks(), pos))) {
                         valve.breakTank();
                         break;
                     }
@@ -281,45 +273,45 @@ public class TankManager {
         Level world = event.getLevel();
         Player player = event.getEntity();
 
-        if ( player == null ) {
+        if (world.isClientSide()) {
             return;
         }
 
-        if ( !isPartOfTank(world, pos) ) {
+        if (player == null) {
             return;
         }
 
-        if ( event.getHand() == InteractionHand.OFF_HAND ) {
+        if (!isPartOfTank(world, pos)) {
+            return;
+        }
+
+        if (event.getHand() == InteractionHand.OFF_HAND) {
             event.setCanceled(true);
             return;
         }
 
-        if ( world.isClientSide ) {
-            player.swing(InteractionHand.MAIN_HAND);
-        }
+        player.swing(InteractionHand.MAIN_HAND, true);
 
-        if ( world.getBlockState(pos).getBlock() instanceof AbstractBlockValve ) {
+        if (world.getBlockState(pos).getBlock() instanceof AbstractBlockValve) {
             return;
         }
 
-        if ( player.isShiftKeyDown() ) {
+        if (player.isShiftKeyDown()) {
             return;
         }
 
         event.setCanceled(true);
 
         AbstractTankValve tile = getValveForBlock(world, pos);
-        if ( tile != null && tile.getMainValve() != null ) {
+        if (tile != null && tile.getMainValve() != null) {
             AbstractTankValve valve = tile.getMainValve();
-            if ( valve.isValid() ) {
-                if ( GenericUtil.isFluidContainer(event.getItemStack()) ) {
-                    if ( GenericUtil.fluidContainerHandler(world, valve, player) ) {
+            if (valve.isValid()) {
+                if (GenericUtil.isFluidContainer(event.getItemStack())) {
+                    if (GenericUtil.fluidContainerHandler(world, valve, player)) {
                         valve.markForUpdateNow();
                     }
                 } else {
-                    if (!world.isClientSide) {
-                        NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OpenGUI(tile, false), (ServerPlayer) player);
-                    }
+                    NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OpenGUI(tile, false), (ServerPlayer) player);
                 }
             }
         }
@@ -327,11 +319,11 @@ public class TankManager {
 
     @SubscribeEvent
     public void onFillBucket(FillBucketEvent event) {
-        if ( event.getEntity().isShiftKeyDown() ) {
+        if (event.getEntity().isShiftKeyDown()) {
             return;
         }
 
-        if ( event.getTarget() == null ) {
+        if (event.getTarget() == null) {
             return;
         }
 
@@ -343,7 +335,7 @@ public class TankManager {
 
         BlockPos pos = rayTraceResult.getBlockPos();
 
-        if ( !isPartOfTank(event.getLevel(), pos) ) {
+        if (!isPartOfTank(event.getLevel(), pos)) {
             return;
         }
 
@@ -361,9 +353,9 @@ public class TankManager {
 
     @SubscribeEvent
     public void onWorldUnload(LevelEvent.Unload event) {
-        LevelAccessor iWorld = event.getLevel();
+        LevelAccessor iLevel = event.getLevel();
 
-        if (iWorld.isClientSide() || !(iWorld instanceof Level world) ) {
+        if (iLevel.isClientSide() || !(iLevel instanceof Level world)) {
             return;
         }
 

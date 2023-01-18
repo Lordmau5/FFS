@@ -12,13 +12,13 @@ public interface IFacingTile {
     void setTileFacing(Direction facing);
 
     default void saveTileFacingToNBT(CompoundTag tag) {
-        if ( getTileFacing() != null ) {
+        if (getTileFacing() != null) {
             tag.putInt("TileFacing", getTileFacing().get3DDataValue());
         }
     }
 
     default void readTileFacingFromNBT(CompoundTag tag) {
-        if ( tag.contains("TileFacing") ) {
+        if (tag.contains("TileFacing")) {
             setTileFacing(Direction.from3DDataValue(tag.getInt("TileFacing")));
         }
     }

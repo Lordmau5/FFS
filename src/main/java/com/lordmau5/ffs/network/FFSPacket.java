@@ -185,7 +185,8 @@ public abstract class FFSPacket {
             public ClearTanks() {
             }
 
-            public void encode(FriendlyByteBuf buffer) {}
+            public void encode(FriendlyByteBuf buffer) {
+            }
 
             public static ClearTanks decode(FriendlyByteBuf buffer) {
                 return new ClearTanks();

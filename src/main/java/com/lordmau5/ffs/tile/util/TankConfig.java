@@ -74,7 +74,7 @@ public class TankConfig {
     public void readFromNBT(CompoundTag mainTag) {
         resetVariables();
 
-        if ( !mainTag.contains("TankConfig") ) {
+        if (!mainTag.contains("TankConfig")) {
             return;
         }
 
@@ -82,7 +82,7 @@ public class TankConfig {
 
         getFluidTank().readFromNBT(tag);
 
-        if ( tag.contains("LockedFluid") ) {
+        if (tag.contains("LockedFluid")) {
             CompoundTag base = tag.getCompound("LockedFluid");
             lockFluid(FluidStack.loadFluidStackFromNBT(base));
         }
@@ -93,7 +93,7 @@ public class TankConfig {
     public void writeToNBT(CompoundTag mainTag) {
         CompoundTag tag = new CompoundTag();
 
-        if ( isFluidLocked() ) {
+        if (isFluidLocked()) {
             CompoundTag lockedFluidTag = new CompoundTag();
 
             getLockedFluid().writeToNBT(lockedFluidTag);

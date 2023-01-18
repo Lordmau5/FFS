@@ -37,9 +37,9 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
         float delta = super.getDestroyProgress(state, player, worldIn, pos);
 
         BlockEntity tile = worldIn.getBlockEntity(pos);
-        if ( tile instanceof AbstractTankValve ) {
+        if (tile instanceof AbstractTankValve) {
             AbstractTankValve valve = (AbstractTankValve) tile;
-            if ( valve.isValid() && !valve.getTankConfig().isEmpty() ) {
+            if (valve.isValid() && !valve.getTankConfig().isEmpty()) {
                 return delta / 4;
             }
         }
@@ -49,7 +49,7 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
     @Override
     @Nullable
     public abstract <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-            BlockEntityType<T> eb);
+                                                                           BlockEntityType<T> eb);
 
     @Override
     @Nullable
@@ -58,9 +58,9 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
     @Override
     public void wasExploded(Level level, BlockPos pos, Explosion explosion) {
         BlockEntity tile = level.getBlockEntity(pos);
-        if ( tile instanceof AbstractTankValve ) {
+        if (tile instanceof AbstractTankValve) {
             AbstractTankValve valve = (AbstractTankValve) level.getBlockEntity(pos);
-            if ( valve != null && valve.isValid() ) {
+            if (valve != null && valve.isValid()) {
                 valve.breakTank();
             }
         }
@@ -70,9 +70,9 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
 
     @Override
     public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if ( !worldIn.isClientSide && newState.isAir() ) {
+        if (!worldIn.isClientSide() && newState.isAir()) {
             AbstractTankValve valve = (AbstractTankValve) worldIn.getBlockEntity(pos);
-            if ( valve != null && valve.isValid() ) {
+            if (valve != null && valve.isValid()) {
                 valve.breakTank();
             }
         }
@@ -82,9 +82,9 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
 
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-        if ( !level.isClientSide ) {
+        if (!level.isClientSide()) {
             AbstractTankValve valve = (AbstractTankValve) level.getBlockEntity(pos);
-            if ( valve != null && valve.isValid() ) {
+            if (valve != null && valve.isValid()) {
                 valve.breakTank();
             }
         }
@@ -94,18 +94,18 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
-        if (worldIn.isClientSide) return InteractionResult.SUCCESS;
+        if (worldIn.isClientSide()) return InteractionResult.SUCCESS;
 
-        if ( player.isShiftKeyDown() ) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.PASS;
 
         AbstractTankValve valve = (AbstractTankValve) worldIn.getBlockEntity(pos);
-        if ( valve == null ) {
+        if (valve == null) {
             return InteractionResult.PASS;
         }
 
-        if ( valve.isValid() ) {
-            if ( GenericUtil.isFluidContainer(player.getMainHandItem()) ) {
-                if ( GenericUtil.fluidContainerHandler(worldIn, valve, player) ) {
+        if (valve.isValid()) {
+            if (GenericUtil.isFluidContainer(player.getMainHandItem())) {
+                if (GenericUtil.fluidContainerHandler(worldIn, valve, player)) {
                     valve.markForUpdateNow();
                     return InteractionResult.CONSUME;
                 }
@@ -126,7 +126,7 @@ public abstract class AbstractBlockValve extends Block implements EntityBlock {
     @Override
     public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
         BlockEntity te = world.getBlockEntity(pos);
-        if ( te instanceof AbstractTankValve ) {
+        if (te instanceof AbstractTankValve) {
             AbstractTankValve valve = (AbstractTankValve) te;
             return valve.getComparatorOutput();
         }

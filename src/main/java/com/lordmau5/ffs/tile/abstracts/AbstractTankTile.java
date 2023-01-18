@@ -33,7 +33,7 @@ public abstract class AbstractTankTile extends BlockEntity {
     }
 
     public void setNeedsUpdate() {
-        if ( this.needsUpdate == 0 ) {
+        if (this.needsUpdate == 0) {
             this.needsUpdate = 20;
         }
     }
@@ -54,7 +54,7 @@ public abstract class AbstractTankTile extends BlockEntity {
     }
 
     public AbstractTankValve getMainValve() {
-        if ( getLevel() != null && this.mainValvePos != null ) {
+        if (getLevel() != null && this.mainValvePos != null) {
             BlockEntity tile = getLevel().getBlockEntity(this.mainValvePos);
             return tile instanceof AbstractTankValve ? (AbstractTankValve) tile : null;
         }
@@ -73,7 +73,7 @@ public abstract class AbstractTankTile extends BlockEntity {
     public void saveAdditional(CompoundTag nbt) {
         super.saveAdditional(nbt);
 
-        if ( getMainValve() != null ) {
+        if (getMainValve() != null) {
             nbt.putLong("valvePos", getMainValve().getBlockPos().asLong());
         }
     }
@@ -88,7 +88,7 @@ public abstract class AbstractTankTile extends BlockEntity {
             load(pkt.getTag());
         }
 
-        if ( getLevel() != null && getLevel().isClientSide && oldIsValid != isValid() ) {
+        if (getLevel() != null && getLevel().isClientSide() && oldIsValid != isValid()) {
             markForUpdateNow();
         }
     }
@@ -116,15 +116,16 @@ public abstract class AbstractTankTile extends BlockEntity {
         load(tag);
     }
 
-    public void doUpdate() {}
+    public void doUpdate() {
+    }
 
     public void markForUpdate() {
-        if ( getLevel() == null ) {
+        if (getLevel() == null) {
             setNeedsUpdate();
             return;
         }
 
-        if ( --this.needsUpdate == 0 ) {
+        if (--this.needsUpdate == 0) {
             BlockState state = getLevel().getBlockState(getBlockPos());
             getLevel().sendBlockUpdated(getBlockPos(), state, state, 3);
             doUpdate();
@@ -145,7 +146,7 @@ public abstract class AbstractTankTile extends BlockEntity {
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {
         AbstractTankTile tile = (AbstractTankTile) be;
 
-        if ( tile.needsUpdate > 0 ) {
+        if (tile.needsUpdate > 0) {
             tile.markForUpdate();
         }
     }

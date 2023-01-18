@@ -11,13 +11,13 @@ public interface INameableTile {
     void setTileName(String name);
 
     default void saveTileNameToNBT(CompoundTag tag) {
-        if ( !getTileName().isEmpty() ) {
+        if (!getTileName().isEmpty()) {
             tag.putString("TileName", getTileName());
         }
     }
 
     default void readTileNameFromNBT(CompoundTag tag) {
-        if ( tag.contains("TileName") ) {
+        if (tag.contains("TileName")) {
             setTileName(tag.getString("TileName"));
         }
     }
