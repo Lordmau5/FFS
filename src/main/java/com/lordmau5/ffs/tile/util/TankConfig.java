@@ -1,9 +1,9 @@
 package com.lordmau5.ffs.tile.util;
 
 import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 

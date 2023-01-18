@@ -1,6 +1,5 @@
 package com.lordmau5.ffs.item;
 
-import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.holder.ModCreativeTab;
 import net.minecraft.world.item.Item;
 
