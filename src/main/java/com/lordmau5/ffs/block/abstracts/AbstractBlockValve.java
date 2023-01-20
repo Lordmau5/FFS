@@ -109,7 +109,7 @@ public abstract class AbstractBlockValve extends Block {
 
             NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OpenGUI(valve, false), (ServerPlayerEntity) player);
         } else {
-            valve.buildTank_player(player, hit.getDirection().getOpposite());
+            valve.buildTank(player, hit.getDirection().getOpposite());
         }
         return ActionResultType.CONSUME;
     }

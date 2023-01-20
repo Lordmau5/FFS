@@ -30,11 +30,11 @@ public class GenericUtil {
     }
 
     public static boolean isBlockGlass(BlockState blockState) {
-        if ( blockState == null || blockState.getMaterial() == Material.AIR ) {
+        if (blockState == null || blockState.getMaterial() == Material.AIR) {
             return false;
         }
 
-        if ( blockState.getBlock() instanceof GlassBlock ) {
+        if (blockState.getBlock() instanceof GlassBlock) {
             return true;
         }
 
@@ -45,7 +45,7 @@ public class GenericUtil {
     public static Direction getInsideForTankFrame(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockPos frame) {
         for (Direction direction : Direction.values()) {
             for (int layer : airBlocks.keySet()) {
-                if ( airBlocks.get(layer).contains(frame.relative(direction)) ) {
+                if (airBlocks.get(layer).contains(frame.relative(direction))) {
                     return direction;
                 }
             }
@@ -58,15 +58,15 @@ public class GenericUtil {
     }
 
     public static boolean isValidTankBlock(World world, BlockPos pos, BlockState state, Direction direction) {
-        if ( state == null ) {
+        if (state == null) {
             return false;
         }
 
-        if ( world.isEmptyBlock(pos) ) {
+        if (world.isEmptyBlock(pos)) {
             return false;
         }
 
-        if ( isBlockFallingBlock(state)) {
+        if (isBlockFallingBlock(state)) {
             return false;
         }
 
@@ -84,14 +84,14 @@ public class GenericUtil {
     }
 
     public static boolean fluidContainerHandler(World world, AbstractTankValve valve, PlayerEntity player) {
-        if ( world.isClientSide ) {
+        if (world.isClientSide) {
             return true;
         }
 
         ItemStack current = player.getMainHandItem();
 
-        if ( current != ItemStack.EMPTY ) {
-            if ( !isFluidContainer(current) ) {
+        if (current != ItemStack.EMPTY) {
+            if (!isFluidContainer(current)) {
                 return false;
             }
 
@@ -110,7 +110,7 @@ public class GenericUtil {
     }
 
     public static void sendMessageToClient(PlayerEntity player, String key, boolean actionBar) {
-        if ( player == null ) {
+        if (player == null) {
             return;
         }
 
@@ -118,7 +118,7 @@ public class GenericUtil {
     }
 
     public static void sendMessageToClient(PlayerEntity player, String key, boolean actionBar, Object... args) {
-        if ( player == null ) {
+        if (player == null) {
             return;
         }
 
@@ -130,7 +130,7 @@ public class GenericUtil {
     }
 
     public static ChunkManager getChunkLoadTicket(World world) {
-        if ( chunkloadTicketMap.containsKey(world) ) {
+        if (chunkloadTicketMap.containsKey(world)) {
             return chunkloadTicketMap.get(world);
         }
 
@@ -141,17 +141,19 @@ public class GenericUtil {
     }
 
     // Check if a block is either air or water-loggable
-    public static boolean isAirOrWaterloggable(World world, BlockPos pos) {
-        if (world.isEmptyBlock(pos)) {
-            return true;
-        }
+    public static boolean isAirOrWaterloggable(World level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
 
-        BlockState state = world.getBlockState(pos);
+        return isAirOrWaterLoggable(level, pos, state);
+    }
+
+    public static boolean isAirOrWaterLoggable(World level, BlockPos pos, BlockState state) {
+        if (state.isAir()) return true;
+
         Block block = state.getBlock();
 
-        // Comparing against ILiquidContainer instead of IWaterLoggable for better compatibility
         if (block instanceof ILiquidContainer) {
-            return ((ILiquidContainer) block).canPlaceLiquid(world, pos, state, Fluids.WATER);
+            return ((ILiquidContainer)block).canPlaceLiquid(level, pos, state, Fluids.WATER);
         }
 
         return false;
