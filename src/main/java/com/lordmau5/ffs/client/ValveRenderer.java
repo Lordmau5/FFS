@@ -166,8 +166,6 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         ValveCache cache = new ValveCache(valve);
         this.cache.put(valve, cache);
 
-        System.out.println("Initialized valve cache.");
-
         return cache;
     }
 
@@ -255,18 +253,14 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
 
         BlockPos playerPos = Minecraft.getInstance().player.blockPosition();
 
-        int rendered = 0;
-
         int topLayer = airBlocks.keySet().size() - 1;
         for (RenderBlock rb : cache.validRenderBlocks) {
             if (!playerPos.closerThan(rb.pos, 150)) continue;
 
             BlockPos offset = rb.pos.subtract(valvePos);
 
-            rendered += renderGasBlock(level, still, ps, vb, rb, offset, color, rb.layer == topLayer);
+            renderGasBlock(level, still, ps, vb, rb, offset, color, rb.layer == topLayer);
         }
-
-        System.out.println("Rendered " + rendered + " faces.");
     }
 
     private BlockState getBlockState(Level level, BlockPos pos) {
@@ -280,18 +274,14 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
 
         BlockPos playerPos = Minecraft.getInstance().player.blockPosition();
 
-        int rendered = 0;
-
         int topLayer = airBlocks.keySet().size() - 1;
         for (RenderBlock rb : cache.validRenderBlocks) {
             if (!playerPos.closerThan(rb.pos, 150)) continue;
 
             BlockPos offset = rb.pos.subtract(valvePos);
 
-            rendered += renderFluidBlock(level, still, flowing, ps, vb, rb, offset, color, rb.layer == topLayer);
+            renderFluidBlock(level, still, flowing, ps, vb, rb, offset, color, rb.layer == topLayer);
         }
-
-        System.out.println("Rendered " + rendered + " faces.");
     }
 
     private int getLightColor(Level level, BlockPos pos) {
