@@ -166,8 +166,6 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
         ValveCache cache = new ValveCache(valve);
         this.cache.put(valve, cache);
 
-        System.out.println("Initialized valve cache.");
-
         return cache;
     }
 
