@@ -1,12 +1,14 @@
 package com.lordmau5.ffs.util;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -33,31 +35,39 @@ public class ClientRenderHelper {
         return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(location);
     }
 
-    public static void putTexturedQuad(MultiBufferSource renderer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int color, int brightness, boolean flowing) {
+    public static void putTexturedQuad(PoseStack ps, MultiBufferSource renderer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, int color, int brightness, boolean flowing) {
         int l1 = brightness >> 0x10 & 0xFFFF;
         int l2 = brightness & 0xFFFF;
         int a = color >> 24 & 0xFF;
         int r = color >> 16 & 0xFF;
         int g = color >> 8 & 0xFF;
         int b = color & 0xFF;
-        putTexturedQuad(renderer, sprite, matrix, x, y, z, w, h, d, direction, r, g, b, a, l1, l2, flowing);
+        putTexturedQuad(ps, renderer, sprite, type, offset, height, direction, r, g, b, a, l1, l2, flowing);
     }
 
-    private static void putTexturedQuad(MultiBufferSource renderTypeBuffer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
+    private static void putTexturedQuad(PoseStack ps, MultiBufferSource renderTypeBuffer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
         if ( sprite == null ) {
             return;
         }
+
         float minU;
         float maxU;
         float minV;
         float maxV;
-        double size = 16f;
-        if ( flowing ) {
-            size = 8f;
-        }
-        float x2 = x + w;
-        float y2 = y + h;
-        float z2 = z + d;
+        double size = flowing ? 8f : 16f;
+
+        float x = 0.0f;
+        float y = 0.0f;
+        float z = 0.0f;
+
+        float x2 = 1.0f;
+        float y2 = height;
+        float z2 = 1.0f;
+
+        float w = 1.0f;
+        float h = height;
+        float d = 1.0f;
+
         double xt1 = x % 1d;
         double xt2 = xt1 + w;
         while ( xt2 > 1f ) xt2 -= 1f;
@@ -104,6 +114,13 @@ public class ClientRenderHelper {
         }
 
         VertexConsumer renderer = renderTypeBuffer.getBuffer(RenderType.text(sprite.atlas().location()));
+
+        ps.pushPose();
+
+        ps.translate(offset.getX(), offset.getY(), offset.getZ());
+
+        Matrix4f matrix = ps.last().pose();
+
         switch (direction) {
             case DOWN:
                 renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
@@ -142,6 +159,8 @@ public class ClientRenderHelper {
                 renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
                 break;
         }
+
+        ps.popPose();
     }
 
     public static int changeAlpha(int origColor, int userInputAlpha) {
