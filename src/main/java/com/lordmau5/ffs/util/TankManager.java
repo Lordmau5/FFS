@@ -1,9 +1,9 @@
 package com.lordmau5.ffs.util;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,6 +27,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -189,6 +190,35 @@ public class TankManager {
         }
 
         return null;
+    }
+
+    public @Nonnull
+    TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocksForValve(AbstractTankValve valve) {
+        Level world = valve.getLevel();
+
+        if (world == null) {
+            return new TreeMap<>();
+        }
+
+        var valveToAirBlocks = get(world).getValveToFrameBlocks(world);
+
+        if (valveToAirBlocks.containsKey(valve.getBlockPos())) {
+            return valveToAirBlocks.get(valve.getBlockPos());
+        }
+
+        return new TreeMap<>();
+    }
+
+    public @Nonnull
+    HashSet<BlockPos> getAllFrameBlocksForValve(AbstractTankValve valve) {
+        HashSet<BlockPos> allFrameBlocks = new HashSet<>();
+
+        var layerFrameBlocks = getFrameBlocksForValve(valve);
+        for (int layer : layerFrameBlocks.keySet()) {
+            allFrameBlocks.addAll(layerFrameBlocks.get(layer));
+        }
+
+        return allFrameBlocks;
     }
 
     public boolean isValveInHashSets(Level world, AbstractTankValve valve) {

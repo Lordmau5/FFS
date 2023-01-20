@@ -1,8 +1,8 @@
 package com.lordmau5.ffs.block.valves;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.blockentity.valves.BlockEntityFluidValve;
 import com.lordmau5.ffs.holder.BlockEntities;
-import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
 import net.minecraft.ChatFormatting;
@@ -51,7 +51,7 @@ public class BlockFluidValve extends AbstractBlockValve {
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                   BlockEntityType<T> type) {
-        return type == BlockEntities.tileEntityFluidValve.get() ? TileEntityFluidValve::tick : null;
+        return type == BlockEntities.tileEntityFluidValve.get() ? BlockEntityFluidValve::tick : null;
     }
 
     @Override
@@ -60,8 +60,8 @@ public class BlockFluidValve extends AbstractBlockValve {
 
         if (player.isShiftKeyDown()) {
             BlockEntity tile = level.getBlockEntity(pos);
-            if (tile instanceof TileEntityFluidValve) {
-                ((TileEntityFluidValve) tile).getTankConfig().writeToNBT(stack.getOrCreateTag());
+            if (tile instanceof BlockEntityFluidValve) {
+                ((BlockEntityFluidValve) tile).getTankConfig().writeToNBT(stack.getOrCreateTag());
             }
         }
 
@@ -91,8 +91,8 @@ public class BlockFluidValve extends AbstractBlockValve {
         FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
 
         BlockEntity tile = worldIn.getBlockEntity(pos);
-        if (tile instanceof TileEntityFluidValve) {
-            ((TileEntityFluidValve) tile).getTankConfig().setFluidStack(fluidStack);
+        if (tile instanceof BlockEntityFluidValve) {
+            ((BlockEntityFluidValve) tile).getTankConfig().setFluidStack(fluidStack);
         }
     }
 

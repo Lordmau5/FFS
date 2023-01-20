@@ -1,8 +1,8 @@
 package com.lordmau5.ffs.network;
 
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.client.gui.GuiValve;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,11 +15,11 @@ public class FFSPacketClientHandler {
 
         if (world != null) {
             BlockEntity tile = world.getBlockEntity(msg.pos);
-            if (!(tile instanceof AbstractTankTile)) {
+            if (!(tile instanceof AbstractTankEntity)) {
                 return;
             }
 
-            Minecraft.getInstance().setScreen(new GuiValve((AbstractTankTile) tile, msg.isValve));
+            Minecraft.getInstance().setScreen(new GuiValve((AbstractTankEntity) tile, msg.isValve));
         }
     }
 

@@ -1,8 +1,8 @@
-package com.lordmau5.ffs.tile.valves;
+package com.lordmau5.ffs.blockentity.valves;
 
 
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.holder.BlockEntities;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -20,18 +20,18 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class TileEntityFluidValve extends AbstractTankValve {
+public class BlockEntityFluidValve extends AbstractTankValve {
 
     private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> getTankConfig().getFluidTank());
 
-    public TileEntityFluidValve(BlockPos pos, BlockState state) {
+    public BlockEntityFluidValve(BlockPos pos, BlockState state) {
         super(BlockEntities.tileEntityFluidValve.get(), pos, state);
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {
         AbstractTankValve.tick(level, pos, state, be);
 
-        TileEntityFluidValve valve = (TileEntityFluidValve) be;
+        BlockEntityFluidValve valve = (BlockEntityFluidValve) be;
 
         if (level.isClientSide()) {
             return;

@@ -1,6 +1,6 @@
 package com.lordmau5.ffs.block.tanktiles;
 
-import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
 import com.lordmau5.ffs.util.FFSStateProps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Explosion;
@@ -27,8 +27,8 @@ public class BlockTankComputer extends Block {
     //    @Override
     public void onBlockExploded(BlockState state, Level world, BlockPos pos, Explosion explosion) {
         BlockEntity tile = world.getBlockEntity(pos);
-        if ( tile instanceof AbstractTankTile && ((AbstractTankTile) tile).getMainValve() != null ) {
-            ((AbstractTankTile) tile).getMainValve().breakTank();
+        if (tile instanceof AbstractTankEntity && ((AbstractTankEntity) tile).getMainValve() != null) {
+            ((AbstractTankEntity) tile).getMainValve().breakTank();
         }
         super.wasExploded(world, pos, explosion);
     }

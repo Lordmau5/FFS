@@ -1,6 +1,6 @@
-package com.lordmau5.ffs.tile.util;
+package com.lordmau5.ffs.blockentity.util;
 
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;

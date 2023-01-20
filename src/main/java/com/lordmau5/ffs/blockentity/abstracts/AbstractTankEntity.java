@@ -1,4 +1,4 @@
-package com.lordmau5.ffs.tile.abstracts;
+package com.lordmau5.ffs.blockentity.abstracts;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
-public abstract class AbstractTankTile extends BlockEntity {
+public abstract class AbstractTankEntity extends BlockEntity {
 
     /**
      * Necessary stuff for the interfaces.
@@ -28,7 +28,7 @@ public abstract class AbstractTankTile extends BlockEntity {
     protected int needsUpdate = 0;
     private BlockPos mainValvePos;
 
-    public AbstractTankTile(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state) {
+    public AbstractTankEntity(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state) {
         super(tileEntityTypeIn, pos, state);
     }
 
@@ -144,7 +144,7 @@ public abstract class AbstractTankTile extends BlockEntity {
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {
-        AbstractTankTile tile = (AbstractTankTile) be;
+        AbstractTankEntity tile = (AbstractTankEntity) be;
 
         if (tile.needsUpdate > 0) {
             tile.markForUpdate();

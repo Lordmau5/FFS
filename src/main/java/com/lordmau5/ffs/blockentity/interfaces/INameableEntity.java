@@ -1,8 +1,8 @@
-package com.lordmau5.ffs.tile.interfaces;
+package com.lordmau5.ffs.blockentity.interfaces;
 
 import net.minecraft.nbt.CompoundTag;
 
-public interface INameableTile {
+public interface INameableEntity {
 
     default String getTileName() {
         return "";

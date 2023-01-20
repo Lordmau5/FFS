@@ -1,12 +1,12 @@
-package com.lordmau5.ffs.tile.abstracts;
+package com.lordmau5.ffs.blockentity.abstracts;
 
 import com.lordmau5.ffs.FancyFluidStorage;
+import com.lordmau5.ffs.blockentity.interfaces.IFacingEntity;
+import com.lordmau5.ffs.blockentity.interfaces.INameableEntity;
+import com.lordmau5.ffs.blockentity.util.TankConfig;
 import com.lordmau5.ffs.config.ServerConfig;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
-import com.lordmau5.ffs.tile.interfaces.IFacingTile;
-import com.lordmau5.ffs.tile.interfaces.INameableTile;
-import com.lordmau5.ffs.tile.util.TankConfig;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.lordmau5.ffs.util.LayerBlockPos;
@@ -31,10 +31,10 @@ import net.minecraftforge.fluids.FluidStack;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AbstractTankValve extends AbstractTankTile implements IFacingTile, INameableTile {
+public abstract class AbstractTankValve extends AbstractTankEntity implements IFacingEntity, INameableEntity {
 
     public final HashMap<Integer, TreeMap<Integer, HashSet<LayerBlockPos>>> maps;
-    private final HashSet<AbstractTankTile> tankTiles;
+    private final HashSet<AbstractTankEntity> tankTiles;
     private int initialWaitTick = 20;
     private TankConfig tankConfig;
     private boolean isValid;
@@ -67,7 +67,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {
-        AbstractTankTile.tick(level, pos, state, be);
+        AbstractTankEntity.tick(level, pos, state, be);
 
         AbstractTankValve valve = (AbstractTankValve) be;
 
@@ -246,13 +246,16 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         BlockPos dist = insideAir.subtract(tankTile.getBlockPos());
         for (Direction dr : Direction.values()) {
             if (dist.equals(new BlockPos(dr.getStepX(), dr.getStepY(), dr.getStepZ()))) {
-                ((IFacingTile) tankTile).setTileFacing(dr);
+                ((IFacingEntity) tankTile).setTileFacing(dr);
                 break;
             }
         }
     }
 
     private boolean searchAlgorithm() {
+        getAirBlocks().clear();
+        getFrameBlocks().clear();
+
         int currentAirBlocks = 1;
         int maxAirBlocks = ServerConfig.general.maxAirBlocks;
         BlockPos insidePos = getBlockPos().relative(getTileFacing());
@@ -268,6 +271,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         air_blocks.put(0, zeroLayer);
 
         to_check.add(insidePos);
+
+        HashSet<BlockPos> blacklistedBlocks = new HashSet<>();
+        HashSet<BlockPos> fallingBlocks = new HashSet<>();
 
         while (!to_check.isEmpty()) {
             BlockPos nextCheck = to_check.remove();
@@ -299,24 +305,22 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     BlockState state = getLevel().getBlockState(_pos);
 
                     if (isBlockBlacklisted(_pos, state)) {
-                        GenericUtil.sendMessageToClient(
-                                buildPlayer,
-                                "chat.ffs.valve_blacklisted_block_found",
-                                false,
-                                state.getBlock().getName(),
-                                _pos.getX(),
-                                _pos.getY(),
-                                _pos.getZ()
-                        );
-                        return false;
+                        blacklistedBlocks.add(_pos);
+                    } else if (GenericUtil.isBlockFallingBlock(state)) {
+                        fallingBlocks.add(_pos);
+                    } else {
+                        frame_blocks.get(layer).add(_pos);
                     }
-                    frame_blocks.get(layer).add(_pos);
                 }
             }
+
             if (currentAirBlocks > maxAirBlocks) {
-                GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
-                return false;
+                break;
             }
+        }
+
+        if (checkInvalid(blacklistedBlocks, fallingBlocks, currentAirBlocks, maxAirBlocks)) {
+            return false;
         }
 
         if (currentAirBlocks == 0) {
@@ -328,8 +332,85 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return true;
     }
 
+    private boolean checkInvalid(HashSet<BlockPos> blacklistedBlocks, HashSet<BlockPos> fallingBlocks, int currentAirBlocks, int maxAirBlocks) {
+        boolean invalid = blacklistedBlocks.size() > 0 || fallingBlocks.size() > 0 || currentAirBlocks > maxAirBlocks;
+
+        if (currentAirBlocks > maxAirBlocks) {
+            GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
+        }
+
+        if (blacklistedBlocks.size() > 0) {
+            BlockPos firstPos = blacklistedBlocks.stream().findFirst().get();
+            BlockState state = getLevel().getBlockState(firstPos);
+
+            GenericUtil.sendMessageToClient(
+                    buildPlayer,
+                    "chat.ffs.valve_blacklisted_block_found",
+                    false,
+                    state.getBlock().getName(),
+                    firstPos.getX(),
+                    firstPos.getY(),
+                    firstPos.getZ(),
+                    blacklistedBlocks.size() - 1
+            );
+        }
+
+        if (fallingBlocks.size() > 0) {
+            BlockPos firstPos = fallingBlocks.stream().findFirst().get();
+            BlockState state = getLevel().getBlockState(firstPos);
+
+            GenericUtil.sendMessageToClient(
+                    buildPlayer,
+                    "chat.ffs.valve_falling_block_found",
+                    false,
+                    state.getBlock().getName(),
+                    firstPos.getX(),
+                    firstPos.getY(),
+                    firstPos.getZ(),
+                    fallingBlocks.size() - 1
+            );
+        }
+
+        HashSet<BlockPos> invalidBlocks = getInvalidFrameBlocks();
+        if (invalidBlocks.size() > 0) {
+            BlockPos firstPos = invalidBlocks.stream().findFirst().get();
+            BlockState state = getLevel().getBlockState(firstPos);
+
+            GenericUtil.sendMessageToClient(
+                    buildPlayer,
+                    "chat.ffs.valve_invalid_block_found",
+                    false,
+                    state.getBlock().getName(),
+                    firstPos.getX(),
+                    firstPos.getY(),
+                    firstPos.getZ(),
+                    invalidBlocks.size() - 1
+            );
+
+            invalid = true;
+        }
+
+        return invalid;
+    }
+
+    private HashSet<BlockPos> getInvalidFrameBlocks() {
+        HashSet<BlockPos> invalidBlocks = new HashSet<>();
+
+        for (int layer : getFrameBlocks().keySet()) {
+            for (BlockPos pos : getFrameBlocks().get(layer)) {
+                BlockState checkState = getLevel().getBlockState(pos);
+
+                if (!GenericUtil.isValidTankBlock(getLevel(), pos, checkState, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos))) {
+                    invalidBlocks.add(pos);
+                }
+            }
+        }
+
+        return invalidBlocks;
+    }
+
     private boolean isBlockBlacklisted(BlockPos pos, BlockState state) {
-        if (!hasLevel() || getLevel().getBlockEntity(pos) instanceof AbstractTankTile) return false;
+        if (!hasLevel() || getLevel().getBlockEntity(pos) instanceof AbstractTankEntity) return false;
 
         TagKey<Block> blacklist = BlockTags.create(new ResourceLocation(FancyFluidStorage.MOD_ID, "blacklist"));
 
@@ -364,7 +445,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         HashSet<BlockEntity> facingTiles = new HashSet<>();
         for (int layer : getFrameBlocks().keySet()) {
             for (BlockPos pos : getFrameBlocks().get(layer)) {
-                BlockState checkState = getLevel().getBlockState(pos);
                 if (TankManager.INSTANCE.isPartOfTank(getLevel(), pos)) {
                     AbstractTankValve valve = TankManager.INSTANCE.getValveForBlock(getLevel(), pos);
                     if (valve != null && valve != this) {
@@ -376,7 +456,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
                 BlockEntity tile = getLevel().getBlockEntity(pos);
                 if (tile != null) {
-                    if (tile instanceof IFacingTile) {
+                    if (tile instanceof IFacingEntity) {
                         facingTiles.add(tile);
                     }
 
@@ -399,32 +479,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                             }
                         }
                     }
-                }
-
-                if (GenericUtil.isBlockFallingBlock(checkState)) {
-                    GenericUtil.sendMessageToClient(
-                            buildPlayer,
-                            "chat.ffs.valve_falling_block_found",
-                            false,
-                            checkState.getBlock().getName(),
-                            pos.getX(),
-                            pos.getY(),
-                            pos.getZ()
-                    );
-                    return false;
-                }
-
-                if (!GenericUtil.isValidTankBlock(getLevel(), pos, checkState, GenericUtil.getInsideForTankFrame(getAirBlocks(), pos))) {
-                    GenericUtil.sendMessageToClient(
-                            buildPlayer,
-                            "chat.ffs.valve_invalid_block_found",
-                            false,
-                            checkState.getBlock().getName(),
-                            pos.getX(),
-                            pos.getY(),
-                            pos.getZ()
-                    );
-                    return false;
                 }
             }
         }
@@ -455,9 +509,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                         valve.setValvePos(getBlockPos());
                         valve.setTankConfig(getTankConfig());
                         tankTiles.add(valve);
-                    } else if (tile instanceof AbstractTankTile tankTile) {
+                    } else if (tile instanceof AbstractTankEntity tankTile) {
                         tankTile.setValvePos(getBlockPos());
-                        tankTiles.add((AbstractTankTile) tile);
+                        tankTiles.add((AbstractTankEntity) tile);
                     }
                 }
             }
@@ -497,7 +551,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         setValid(false);
 
         tankTiles.removeAll(getTankTiles(AbstractTankValve.class));
-        for (AbstractTankTile tankTile : tankTiles) {
+        for (AbstractTankEntity tankTile : tankTiles) {
             tankTile.setValvePos(null);
         }
 
@@ -535,7 +589,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         markForUpdateNow();
 
         if (!tankTiles.isEmpty() && !onlyThis) {
-            for (AbstractTankTile tile : tankTiles) {
+            for (AbstractTankEntity tile : tankTiles) {
                 if (tile == this) {
                     continue;
                 }

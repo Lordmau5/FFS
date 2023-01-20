@@ -1,20 +1,29 @@
 package com.lordmau5.ffs.util;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.pipeline.QuadBakingVertexConsumer;
+
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientRenderHelper {
+
+    // TODO: Since we have to draw in the translucent layer we get a nice see-through water effect... fixable?
 
     public static void setBlockTextureSheet() {
         RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
@@ -33,120 +42,102 @@ public class ClientRenderHelper {
         return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(location);
     }
 
-    public static void putTexturedQuad(MultiBufferSource renderer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int color, int brightness, boolean flowing) {
-        int l1 = brightness >> 0x10 & 0xFFFF;
-        int l2 = brightness & 0xFFFF;
-        int a = color >> 24 & 0xFF;
-        int r = color >> 16 & 0xFF;
-        int g = color >> 8 & 0xFF;
-        int b = color & 0xFF;
-        putTexturedQuad(renderer, sprite, matrix, x, y, z, w, h, d, direction, r, g, b, a, l1, l2, flowing);
+    private static BakedQuad createQuad(List<Vec3> vecs, float[] cols, TextureAtlasSprite sprite, Direction face, float u1, float u2, float v1, float v2) {
+        QuadBakingVertexConsumer.Buffered quadBaker = new QuadBakingVertexConsumer.Buffered();
+        Vec3 normal = Vec3.atLowerCornerOf(face.getNormal());
+
+        putVertex(quadBaker, normal, vecs.get(0).x, vecs.get(0).y, vecs.get(0).z, u1, v1, sprite, cols, face);
+        putVertex(quadBaker, normal, vecs.get(1).x, vecs.get(1).y, vecs.get(1).z, u1, v2, sprite, cols, face);
+        putVertex(quadBaker, normal, vecs.get(2).x, vecs.get(2).y, vecs.get(2).z, u2, v2, sprite, cols, face);
+        putVertex(quadBaker, normal, vecs.get(3).x, vecs.get(3).y, vecs.get(3).z, u2, v1, sprite, cols, face);
+
+        return quadBaker.getQuad();
     }
 
-    private static void putTexturedQuad(MultiBufferSource renderTypeBuffer, TextureAtlasSprite sprite, Matrix4f matrix, float x, float y, float z, float w, float h, float d, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
+    private static void putVertex(QuadBakingVertexConsumer quadBaker, Vec3 normal,
+                                  double x, double y, double z, float u, float v, TextureAtlasSprite sprite, float[] cols, Direction face) {
+        quadBaker.vertex(x, y, z);
+        quadBaker.normal((float) normal.x, (float) normal.y, (float) normal.z);
+        quadBaker.color(cols[0], cols[1], cols[2], cols[3]);
+        quadBaker.uv(sprite.getU(u), sprite.getV(v));
+        quadBaker.setSprite(sprite);
+        quadBaker.setDirection(face);
+        quadBaker.endVertex();
+    }
+
+    public static void putTexturedQuad(PoseStack ps, MultiBufferSource renderer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, int color, int brightness, boolean flowing) {
+        float a = (color >> 24 & 0xFF) / 255.0f;
+        float r = (color >> 16 & 0xFF) / 255.0f;
+        float g = (color >> 8 & 0xFF) / 255.0f;
+        float b = (color & 0xFF) / 255.0f;
+
+        putTexturedQuad(ps, renderer, sprite, type, offset, height, direction, r, g, b, a, brightness, flowing);
+    }
+
+    private static void putTexturedQuad(PoseStack ps, MultiBufferSource renderTypeBuffer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, float r, float g, float b, float a, int brightness, boolean flowing) {
         if (sprite == null) {
             return;
         }
 
-        float minU;
-        float maxU;
-        float minV;
-        float maxV;
-        double size = 16f;
-        if (flowing) {
-            size = 8f;
-        }
+        float size = flowing ? 8.0f : 16.0f;
 
-        float x2 = x + w;
-        float y2 = y + h;
-        float z2 = z + d;
-        double xt1 = x % 1d;
-        double xt2 = xt1 + w;
-        while (xt2 > 1f) xt2 -= 1f;
-        double yt1 = y % 1d;
-        double yt2 = yt1 + h;
-        while (yt2 > 1f) yt2 -= 1f;
-        double zt1 = z % 1d;
-        double zt2 = zt1 + d;
-        while (zt2 > 1f) zt2 -= 1f;
+        float minU = sprite.getU0();
+        float minV = flowing ? (size * (1.0f - height)) : sprite.getV0();
 
-        if (flowing) {
-            double tmp = 1d - yt1;
-            yt1 = 1d - yt2;
-            yt2 = tmp;
-        }
+        float x = 0.0f;
+        float y = 0.0f;
+        float z = 0.0f;
 
-        switch (direction) {
-            case DOWN, UP -> {
-                minU = sprite.getU(xt1 * size);
-                maxU = sprite.getU(xt2 * size);
-                minV = sprite.getV(zt1 * size);
-                maxV = sprite.getV(zt2 * size);
-            }
-            case NORTH, SOUTH -> {
-                minU = sprite.getU(xt2 * size);
-                maxU = sprite.getU(xt1 * size);
-                minV = sprite.getV(yt1 * size);
-                maxV = sprite.getV(yt2 * size);
-            }
-            case WEST, EAST -> {
-                minU = sprite.getU(zt2 * size);
-                maxU = sprite.getU(zt1 * size);
-                minV = sprite.getV(yt1 * size);
-                maxV = sprite.getV(yt2 * size);
-            }
-            default -> {
-                minU = sprite.getU0();
-                maxU = sprite.getU1();
-                minV = sprite.getV0();
-                maxV = sprite.getV1();
-            }
-        }
+        float x2 = 1.0f;
+        float z2 = 1.0f;
 
-        VertexConsumer renderer = renderTypeBuffer.getBuffer(RenderType.text(sprite.atlas().location()));
+        VertexConsumer renderer = renderTypeBuffer.getBuffer(type);
+
+        ps.pushPose();
+
+        ps.translate(offset.getX(), offset.getY(), offset.getZ());
+
+        float[] cols = new float[]{r, g, b, a};
+
         switch (direction) {
             case DOWN -> {
-                renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
+                BakedQuad quad = createQuad(ImmutableList.of(new Vec3(x, y, z2), new Vec3(x, y, z), new Vec3(x2, y, z), new Vec3(x2, y, z2)), cols, sprite, Direction.DOWN, minU, size, minV, size);
+
+                renderer.putBulkData(ps.last(), quad, r, g, b, a, brightness, 0, false);
             }
             case UP -> {
-                renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
+                BakedQuad quad = createQuad(ImmutableList.of(new Vec3(x, height, z), new Vec3(x, height, z2), new Vec3(x2, height, z2), new Vec3(x2, height, z)), cols, sprite, Direction.UP, minU, size, minV, size);
+
+                renderer.putBulkData(ps.last(), quad, r, g, b, a, brightness, 0, false);
             }
             case NORTH -> {
-                renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
+                BakedQuad quad = createQuad(ImmutableList.of(new Vec3(x2, height, z), new Vec3(x2, y, z), new Vec3(x, y, z), new Vec3(x, height, z)), cols, sprite, Direction.NORTH, minU, size, minV, size);
+
+                renderer.putBulkData(ps.last(), quad, r, g, b, a, brightness, 0, false);
             }
             case SOUTH -> {
-                renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
+                BakedQuad quad = createQuad(ImmutableList.of(new Vec3(x, height, z2), new Vec3(x, y, z2), new Vec3(x2, y, z2), new Vec3(x2, height, z2)), cols, sprite, Direction.SOUTH, minU, size, minV, size);
+
+                renderer.putBulkData(ps.last(), quad, r, g, b, a, brightness, 0, false);
             }
             case WEST -> {
-                renderer.vertex(matrix, x, y, z).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x, y, z2).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x, y2, z2).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x, y2, z).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
+                BakedQuad quad = createQuad(ImmutableList.of(new Vec3(x, height, z), new Vec3(x, y, z), new Vec3(x, y, z2), new Vec3(x, height, z2)), cols, sprite, Direction.WEST, minU, size, minV, size);
+
+                renderer.putBulkData(ps.last(), quad, r, g, b, a, brightness, 0, false);
             }
             case EAST -> {
-                renderer.vertex(matrix, x2, y, z).color(r, g, b, a).uv(minU, maxV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y2, z).color(r, g, b, a).uv(minU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y2, z2).color(r, g, b, a).uv(maxU, minV).uv2(light1, light2).endVertex();
-                renderer.vertex(matrix, x2, y, z2).color(r, g, b, a).uv(maxU, maxV).uv2(light1, light2).endVertex();
+                BakedQuad quad = createQuad(ImmutableList.of(new Vec3(x2, height, z2), new Vec3(x2, y, z2), new Vec3(x2, y, z), new Vec3(x2, height, z)), cols, sprite, Direction.EAST, minU, size, minV, size);
+
+                renderer.putBulkData(ps.last(), quad, r, g, b, a, brightness, 0, false);
             }
         }
+
+        ps.popPose();
     }
 
     public static int changeAlpha(int origColor, int userInputAlpha) {
         origColor = origColor & 0x00ffffff; //drop the previous alpha value
-        return (userInputAlpha << 24) | origColor; //add the one the user inputted
+        return (userInputAlpha << 24) | origColor; //add the one the user provided
     }
 
 }

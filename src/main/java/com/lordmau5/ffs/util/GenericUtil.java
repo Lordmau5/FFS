@@ -1,6 +1,6 @@
 package com.lordmau5.ffs.util;
 
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -145,17 +145,19 @@ public class GenericUtil {
     }
 
     // Check if a block is either air or water-loggable
-    public static boolean isAirOrWaterloggable(Level world, BlockPos pos) {
-        if (world.isEmptyBlock(pos)) {
-            return true;
-        }
+    public static boolean isAirOrWaterloggable(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
 
-        BlockState state = world.getBlockState(pos);
+        return isAirOrWaterLoggable(level, pos, state);
+    }
+
+    public static boolean isAirOrWaterLoggable(Level level, BlockPos pos, BlockState state) {
+        if (state.isAir()) return true;
+
         Block block = state.getBlock();
 
-        // Comparing against ILiquidContainer instead of IWaterLoggable for better compatibility
-        if (block instanceof LiquidBlockContainer) {
-            return ((LiquidBlockContainer) block).canPlaceLiquid(world, pos, state, Fluids.WATER);
+        if (block instanceof LiquidBlockContainer container) {
+            return container.canPlaceLiquid(level, pos, state, Fluids.WATER);
         }
 
         return false;

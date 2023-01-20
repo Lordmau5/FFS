@@ -1,9 +1,9 @@
-package com.lordmau5.ffs.tile.interfaces;
+package com.lordmau5.ffs.blockentity.interfaces;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 
-public interface IFacingTile {
+public interface IFacingEntity {
 
     default Direction getTileFacing() {
         return null;

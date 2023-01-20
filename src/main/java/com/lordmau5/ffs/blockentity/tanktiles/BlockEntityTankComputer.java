@@ -1,8 +1,8 @@
 //package com.lordmau5.ffs.tile.tanktiles;
 //
-//import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
-//import com.lordmau5.ffs.tile.interfaces.IFacingTile;
-//import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
+//import com.lordmau5.ffs.tile.abstracts.AbstractTankEntity;
+//import com.lordmau5.ffs.tile.interfaces.IFacingEntity;
+//import com.lordmau5.ffs.tile.valves.BlckEntityFluidValve;
 //import net.minecraft.nbt.NBTTagCompound;
 //import net.minecraft.util.EnumFacing;
 //import net.minecraftforge.fml.common.Optional;
@@ -12,7 +12,7 @@
 //import java.util.stream.Collectors;
 //
 //@Optional.Interface(iface = "dan200.computercraft.api.peripheral.IPeripheral", modid = "ComputerCraft")
-//public class TileEntityTankComputer extends AbstractTankTile implements IFacingTile { //}, IPeripheral {
+//public class BlockEntityTankComputer extends AbstractTankEntity implements IFacingEntity { //}, IPeripheral {
 //
 //    public List<TileEntityFluidValve> getValves() {
 //        return getMainValve().getAllValves(true).stream().filter(p -> p instanceof TileEntityFluidValve).map(p -> (TileEntityFluidValve) p).collect(Collectors.toList());

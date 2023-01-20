@@ -1,11 +1,11 @@
 package com.lordmau5.ffs.client.gui;
 
 import com.lordmau5.ffs.FancyFluidStorage;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.blockentity.interfaces.INameableEntity;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import com.lordmau5.ffs.tile.interfaces.INameableTile;
 import com.lordmau5.ffs.util.ClientRenderHelper;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -42,12 +42,12 @@ public class GuiValve extends Screen {
     private final int ySize_NoValve = 128;
     private GuiButtonLockFluid lockFluidButton;
     private final boolean isValve;
-    private AbstractTankTile tile;
+    private AbstractTankEntity tile;
     private EditBox tileName;
     private int left = 0, top = 0;
     private int mouseX, mouseY;
 
-    public GuiValve(AbstractTankTile tile, boolean isValve) {
+    public GuiValve(AbstractTankEntity tile, boolean isValve) {
         super(Component.translatable("gui.ffs.fluid_valve"));
 
         this.isValve = isValve;
@@ -68,7 +68,7 @@ public class GuiValve extends Screen {
     private void initGuiValve() {
         this.left = (this.width - this.xSize_Valve) / 2;
         this.top = (this.height - this.ySize_Valve) / 2;
-        if (this.tile instanceof INameableTile) {
+        if (this.tile instanceof INameableEntity) {
 //            this.tileName = new TextFieldWidget(this.font, this.left + 90, this.top + 102, 82, 10, new TranslationTextComponent("tileName"));
 //            this.tileName.setText(this.valve.getTileName());
 //            this.tileName.setMaxStringLength(32);
@@ -104,7 +104,7 @@ public class GuiValve extends Screen {
     public void removed() {
         super.removed();
 
-        if (this.tile instanceof INameableTile) {
+        if (this.tile instanceof INameableEntity) {
             if (!this.tileName.getValue().isEmpty()) {
                 NetworkHandler.sendPacketToServer(new FFSPacket.Server.UpdateTileName(this.tile, this.tileName.getValue()));
             }
@@ -125,7 +125,7 @@ public class GuiValve extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         super.mouseClicked(mouseX, mouseY, button);
 
-        if (this.tile instanceof INameableTile) {
+        if (this.tile instanceof INameableEntity) {
             this.tileName.mouseClicked(mouseX, mouseY, button);
         }
 
@@ -160,7 +160,7 @@ public class GuiValve extends Screen {
         // call to super to draw buttons and other such fancy things
         super.render(matrixStack, x, y, partialTicks);
 
-        if (this.tile instanceof INameableTile) {
+        if (this.tile instanceof INameableEntity) {
             drawTileName(matrixStack, this.left, this.top, partialTicks);
         }
 
