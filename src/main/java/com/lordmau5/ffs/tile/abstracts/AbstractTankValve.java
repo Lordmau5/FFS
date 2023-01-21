@@ -217,14 +217,10 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         updateBlockAndNeighbors();
     }
 
-    private boolean isAirOrWaterloggable(Level world, BlockPos pos) {
-        return GenericUtil.isAirOrWaterloggable(world, pos);
-    }
-
     private void setTankTileFacing(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockEntity tankTile) {
         HashSet<BlockPos> possibleAirBlocks = new HashSet<>();
         for (Direction dr : Direction.values()) {
-            if (isAirOrWaterloggable(getLevel(), tankTile.getBlockPos().relative(dr))) {
+            if (GenericUtil.isAirOrWaterLoggable(getLevel(), tankTile.getBlockPos().relative(dr))) {
                 possibleAirBlocks.add(tankTile.getBlockPos().relative(dr));
             }
         }
@@ -252,6 +248,26 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         }
     }
 
+    private boolean checkBlock(BlockPos pos) {
+        if (GenericUtil.isAirOrWaterLoggable(getLevel(), pos)) return true;
+
+        HashSet<BlockPos> blacklistedBlocks = new HashSet<>();
+        HashSet<BlockPos> fallingBlocks = new HashSet<>();
+        HashSet<BlockPos> invalidBlocks = new HashSet<>();
+
+        BlockState state = getLevel().getBlockState(pos);
+
+        if (isBlockBlacklisted(pos, state)) {
+            blacklistedBlocks.add(pos);
+        } else if (GenericUtil.isBlockFallingBlock(state)) {
+            fallingBlocks.add(pos);
+        } else if (getLevel().getFluidState(pos) != Fluids.EMPTY.defaultFluidState()) {
+            invalidBlocks.add(pos);
+        }
+
+        return !checkInvalid(blacklistedBlocks, fallingBlocks, invalidBlocks, 0, 1);
+    }
+
     private boolean searchAlgorithm() {
         getAirBlocks().clear();
         getFrameBlocks().clear();
@@ -264,6 +280,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         HashSet<BlockPos> checked_blocks = new HashSet<>();
         TreeMap<Integer, HashSet<LayerBlockPos>> air_blocks = new TreeMap<>();
         TreeMap<Integer, HashSet<LayerBlockPos>> frame_blocks = new TreeMap<>();
+
+        if (!checkBlock(insidePos)) return false;
 
         LayerBlockPos pos = new LayerBlockPos(insidePos, 0);
         HashSet<LayerBlockPos> zeroLayer = new HashSet<>();
@@ -295,7 +313,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                 checked_blocks.add(offsetPos);
 
                 LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
-                if (isAirOrWaterloggable(getLevel(), offsetPos)) {
+                if (GenericUtil.isAirOrWaterLoggable(getLevel(), _pos)) {
                     if (!air_blocks.get(layer).contains(_pos)) {
                         air_blocks.get(layer).add(_pos);
                         to_check.add(offsetPos);
@@ -319,7 +337,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
             }
         }
 
-        if (checkInvalid(blacklistedBlocks, fallingBlocks, currentAirBlocks, maxAirBlocks)) {
+        if (checkInvalid(blacklistedBlocks, fallingBlocks, getInvalidFrameBlocks(), currentAirBlocks, maxAirBlocks)) {
             return false;
         }
 
@@ -332,14 +350,17 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         return true;
     }
 
-    private boolean checkInvalid(HashSet<BlockPos> blacklistedBlocks, HashSet<BlockPos> fallingBlocks, int currentAirBlocks, int maxAirBlocks) {
-        boolean invalid = blacklistedBlocks.size() > 0 || fallingBlocks.size() > 0 || currentAirBlocks > maxAirBlocks;
+    private boolean checkInvalid(HashSet<BlockPos> blacklistedBlocks, HashSet<BlockPos> fallingBlocks, HashSet<BlockPos> invalidBlocks, int currentAirBlocks, int maxAirBlocks) {
+        boolean invalid = false;
 
         if (currentAirBlocks > maxAirBlocks) {
+            invalid = true;
             GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
         }
 
         if (blacklistedBlocks.size() > 0) {
+            invalid = true;
+
             BlockPos firstPos = blacklistedBlocks.stream().findFirst().get();
             BlockState state = getLevel().getBlockState(firstPos);
 
@@ -356,6 +377,8 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
         }
 
         if (fallingBlocks.size() > 0) {
+            invalid = true;
+
             BlockPos firstPos = fallingBlocks.stream().findFirst().get();
             BlockState state = getLevel().getBlockState(firstPos);
 
@@ -371,8 +394,9 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
             );
         }
 
-        HashSet<BlockPos> invalidBlocks = getInvalidFrameBlocks();
         if (invalidBlocks.size() > 0) {
+            invalid = true;
+
             BlockPos firstPos = invalidBlocks.stream().findFirst().get();
             BlockState state = getLevel().getBlockState(firstPos);
 
@@ -386,8 +410,6 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
                     firstPos.getZ(),
                     invalidBlocks.size() - 1
             );
-
-            invalid = true;
         }
 
         return invalid;
@@ -434,7 +456,7 @@ public abstract class AbstractTankValve extends AbstractTankTile implements IFac
 
         for (int layer : getAirBlocks().keySet()) {
             for (BlockPos pos : getAirBlocks().get(layer)) {
-                if (!isAirOrWaterloggable(getLevel(), pos)) {
+                if (!GenericUtil.isAirOrWaterLoggable(getLevel(), pos)) {
                     return false;
                 }
             }
