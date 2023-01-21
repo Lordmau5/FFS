@@ -1,6 +1,8 @@
 package com.lordmau5.ffs.block.valves;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.blockentity.util.TankConfig;
 import com.lordmau5.ffs.blockentity.valves.BlockEntityFluidValve;
 import com.lordmau5.ffs.holder.BlockEntities;
 import com.lordmau5.ffs.util.FFSStateProps;
@@ -10,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -21,17 +24,21 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlockFluidValve extends AbstractBlockValve {
 
     public BlockFluidValve() {
-        super();
+        super(Block.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f));
 
         registerDefaultState(getStateDefinition().any().setValue(FFSStateProps.TILE_VALID, false).setValue(FFSStateProps.TILE_MAIN, false));
     }
@@ -52,6 +59,48 @@ public class BlockFluidValve extends AbstractBlockValve {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                   BlockEntityType<T> type) {
         return type == BlockEntities.tileEntityFluidValve.get() ? BlockEntityFluidValve::tick : null;
+    }
+
+    private void addTankConfigToStack(ItemStack stack, AbstractTankValve valve) {
+        TankConfig tankConfig = valve.getTankConfig();
+
+        if (tankConfig.isEmpty()) return;
+
+        tankConfig.writeToNBT(stack.getOrCreateTag());
+    }
+
+    @Override
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        BlockEntity tile = level.getBlockEntity(pos);
+        if (tile instanceof BlockEntityFluidValve valve) {
+            if (!level.isClientSide() && player.isCreative() && !valve.getTankConfig().isEmpty()) {
+                ItemStack stack = new ItemStack(this);
+
+                addTankConfigToStack(stack, valve);
+
+                ItemEntity itementity = new ItemEntity(level, (double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D, stack);
+                itementity.setDefaultPickUpDelay();
+                level.addFreshEntity(itementity);
+            }
+        }
+
+        super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState pState, LootContext.Builder pBuilder) {
+        List<ItemStack> drops = new ArrayList<>();
+
+        BlockEntity tile = pBuilder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if (tile instanceof BlockEntityFluidValve valve) {
+            ItemStack stack = new ItemStack(this);
+
+            addTankConfigToStack(stack, valve);
+
+            drops.add(stack);
+        }
+
+        return drops;
     }
 
     @Override
@@ -101,6 +150,8 @@ public class BlockFluidValve extends AbstractBlockValve {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
 
         FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
+
+        if (fluidStack.isEmpty()) return;
 
         tooltip.add(
                 Component.translatable("description.ffs.fluid_valve.fluid", fluidStack.getDisplayName().getString())
