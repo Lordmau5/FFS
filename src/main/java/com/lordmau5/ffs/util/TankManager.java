@@ -2,6 +2,7 @@ package com.lordmau5.ffs.util;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.holder.Items;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -323,15 +325,25 @@ public class TankManager {
             return;
         }
 
-        player.swing(InteractionHand.MAIN_HAND, true);
-
         if (world.getBlockState(pos).getBlock() instanceof AbstractBlockValve) {
             return;
         }
 
-        if (player.isShiftKeyDown()) {
-            return;
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+
+        if (blockEntity != null) {
+            ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+
+            if (heldItem.isEmpty() && heldItem.getItem() != Items.tit.get()) {
+                heldItem = player.getItemInHand(InteractionHand.OFF_HAND);
+
+                if (heldItem.isEmpty() && heldItem.getItem() != Items.tit.get()) {
+                    return;
+                }
+            }
         }
+
+        player.swing(InteractionHand.MAIN_HAND, true);
 
         event.setCanceled(true);
 
