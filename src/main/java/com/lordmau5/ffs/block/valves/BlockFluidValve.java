@@ -2,6 +2,8 @@ package com.lordmau5.ffs.block.valves;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
 import com.lordmau5.ffs.holder.BlockEntities;
+import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.tile.util.TankConfig;
 import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
@@ -11,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -22,16 +25,21 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fluids.FluidStack;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlockFluidValve extends AbstractBlockValve {
 
     public BlockFluidValve() {
-        super();
+        super(Block.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f));
 
         registerDefaultState(getStateDefinition().any().setValue(FFSStateProps.TILE_VALID, false).setValue(FFSStateProps.TILE_MAIN, false));
     }
@@ -50,8 +58,50 @@ public class BlockFluidValve extends AbstractBlockValve {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-            BlockEntityType<T> type) {
+                                                                  BlockEntityType<T> type) {
         return type == BlockEntities.tileEntityFluidValve.get() ? TileEntityFluidValve::tick : null;
+    }
+
+    private void addTankConfigToStack(ItemStack stack, AbstractTankValve valve) {
+        TankConfig tankConfig = valve.getTankConfig();
+
+        if (tankConfig.isEmpty()) return;
+
+        tankConfig.writeToNBT(stack.getOrCreateTag());
+    }
+
+    @Override
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        BlockEntity tile = level.getBlockEntity(pos);
+        if (tile instanceof TileEntityFluidValve valve) {
+            if (!level.isClientSide() && player.isCreative() && !valve.getTankConfig().isEmpty()) {
+                ItemStack stack = new ItemStack(this);
+
+                addTankConfigToStack(stack, valve);
+
+                ItemEntity itementity = new ItemEntity(level, (double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D, stack);
+                itementity.setDefaultPickUpDelay();
+                level.addFreshEntity(itementity);
+            }
+        }
+
+        super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState pState, LootContext.Builder pBuilder) {
+        List<ItemStack> drops = new ArrayList<>();
+
+        BlockEntity tile = pBuilder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if (tile instanceof TileEntityFluidValve valve) {
+            ItemStack stack = new ItemStack(this);
+
+            addTankConfigToStack(stack, valve);
+
+            drops.add(stack);
+        }
+
+        return drops;
     }
 
     @Override
@@ -60,30 +110,35 @@ public class BlockFluidValve extends AbstractBlockValve {
 
         if (player.isShiftKeyDown()) {
             BlockEntity tile = level.getBlockEntity(pos);
-            if (tile instanceof TileEntityFluidValve) {
-                ((TileEntityFluidValve) tile).getTankConfig().writeToNBT(stack.getOrCreateTag());
+            if (tile instanceof TileEntityFluidValve valve) {
+                addTankConfigToStack(stack, valve);
             }
         }
 
         return stack;
     }
 
-    @Override
-    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(worldIn, pos, state, placer, stack);
-
+    private @Nonnull
+    FluidStack loadFluidStackFromTankConfig(ItemStack stack) {
         if (!stack.hasTag()) {
-            return;
+            return FluidStack.EMPTY;
         }
 
         CompoundTag tag = stack.getOrCreateTag();
         if (!tag.contains("TankConfig")) {
-            return;
+            return FluidStack.EMPTY;
         }
 
         CompoundTag tankConfig = tag.getCompound("TankConfig");
 
-        FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(tankConfig);
+        return FluidStack.loadFluidStackFromNBT(tankConfig);
+    }
+
+    @Override
+    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(worldIn, pos, state, placer, stack);
+
+        FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
 
         BlockEntity tile = worldIn.getBlockEntity(pos);
         if (tile instanceof TileEntityFluidValve) {
@@ -95,26 +150,17 @@ public class BlockFluidValve extends AbstractBlockValve {
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
 
-        if (!stack.hasTag()) {
-            return;
-        }
+        FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
 
-        CompoundTag tag = stack.getOrCreateTag();
-        if (!tag.contains("TankConfig")) {
-            return;
-        }
-
-        CompoundTag tankConfig = tag.getCompound("TankConfig");
-
-        FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(tankConfig);
+        if (fluidStack.isEmpty()) return;
 
         tooltip.add(
                 new TranslatableComponent("description.ffs.fluid_valve.fluid", fluidStack.getDisplayName().getString())
-                .withStyle(ChatFormatting.GRAY)
+                        .withStyle(ChatFormatting.GRAY)
         );
         tooltip.add(
                 new TranslatableComponent("description.ffs.fluid_valve.amount", GenericUtil.intToFancyNumber(fluidStack.getAmount()) + "mB")
-                .withStyle(ChatFormatting.GRAY)
+                        .withStyle(ChatFormatting.GRAY)
         );
     }
 }

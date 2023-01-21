@@ -28,22 +28,8 @@ import javax.annotation.Nullable;
 
 public abstract class AbstractBlockValve extends Block implements EntityBlock {
 
-    protected AbstractBlockValve() {
-        super(Block.Properties.of(Material.METAL).strength(5.0f, 10.0f));
-    }
-
-    @Override
-    public float getDestroyProgress(BlockState state, Player player, BlockGetter worldIn, BlockPos pos) {
-        float delta = super.getDestroyProgress(state, player, worldIn, pos);
-
-        BlockEntity tile = worldIn.getBlockEntity(pos);
-        if ( tile instanceof AbstractTankValve ) {
-            AbstractTankValve valve = (AbstractTankValve) tile;
-            if ( valve.isValid() && !valve.getTankConfig().isEmpty() ) {
-                return delta / 4;
-            }
-        }
-        return delta;
+    protected AbstractBlockValve(Properties properties) {
+        super(properties);
     }
 
     @Override
