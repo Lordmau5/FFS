@@ -28,6 +28,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.fluids.FluidStack;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -106,6 +107,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         return maps.get(1);
     }
 
+    @Nonnull
     public TankConfig getTankConfig() {
         if (!isMain() && getMainValve() != null && getMainValve() != this) {
             return getMainValve().getTankConfig();
@@ -145,12 +147,12 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         return tiles;
     }
 
-    public List<AbstractTankValve> getAllValves(boolean include) {
+    public List<AbstractTankEntity> getAllTankTiles(boolean include) {
         if (!isMain() && getMainValve() != null && getMainValve() != this) {
-            return getMainValve().getAllValves(include);
+            return getMainValve().getAllTankTiles(include);
         }
 
-        List<AbstractTankValve> valves = getTankTiles(AbstractTankValve.class);
+        List<AbstractTankEntity> valves = getTankTiles(AbstractTankEntity.class);
         if (include) valves.add(this);
         return valves;
     }
@@ -521,7 +523,6 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
 
                 if (tile != null) {
                     if (tile instanceof AbstractTankValve valve) {
-
                         valve.setValid(true);
                         valve.setIsMain(false);
                         valve.setValvePos(getBlockPos());
@@ -555,23 +556,22 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         TankManager.INSTANCE.remove(getLevel(), getBlockPos());
         NetworkHandler.sendPacketToAllPlayers(new FFSPacket.Client.OnTankBreak(this));
 
-        for (AbstractTankValve valve : getAllValves(false)) {
-            if (valve == this || valve.isRemoved()) {
+        for (AbstractTankEntity tankEntity : getAllTankTiles(false)) {
+            if (tankEntity == this || tankEntity.isRemoved()) {
                 continue;
             }
 
-            valve.setTankConfig(null);
-            valve.setValvePos(null);
-            valve.setValid(false);
-            valve.updateBlockAndNeighbors(true);
+            if (tankEntity instanceof AbstractTankValve valve) {
+                valve.setTankConfig(null);
+                valve.setValid(false);
+                valve.updateBlockAndNeighbors(true);
+            }
+
+            tankEntity.setValvePos(null);
+            tankEntity.markForUpdateNow(2);
         }
 
         setValid(false);
-
-        tankTiles.removeAll(getTankTiles(AbstractTankValve.class));
-        for (AbstractTankEntity tankTile : tankTiles) {
-            tankTile.setValvePos(null);
-        }
 
         tankTiles.clear();
 

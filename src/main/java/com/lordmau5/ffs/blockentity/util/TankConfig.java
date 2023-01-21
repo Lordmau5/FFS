@@ -68,7 +68,7 @@ public class TankConfig {
     }
 
     public boolean isEmpty() {
-        return this.fluidTank.isEmpty();
+        return this.fluidTank.isEmpty() || this.fluidTank.getFluid() == FluidStack.EMPTY;
     }
 
     public void readFromNBT(CompoundTag mainTag) {

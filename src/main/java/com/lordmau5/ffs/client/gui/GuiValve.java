@@ -11,7 +11,6 @@ import com.lordmau5.ffs.util.GenericUtil;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix4f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
@@ -288,8 +288,8 @@ public class GuiValve extends Screen {
         int drawHeight;
         int drawWidth;
 
-        int iconWidth = icon.getWidth();
-        int iconHeight = icon.getHeight();
+        int iconWidth = icon.contents().width();
+        int iconHeight = icon.contents().height();
 
         for (i = 0; i < width; i += iconWidth) {
             for (j = 0; j < height; j += iconHeight) {
@@ -317,8 +317,8 @@ public class GuiValve extends Screen {
         float minV = icon.getV0();
         float maxV = icon.getV1();
 
-        float actualWidth = minU + (maxU - minU) * width / icon.getWidth();
-        float actualHeight = minV + (maxV - minV) * height / icon.getHeight();
+        float actualWidth = minU + (maxU - minU) * width / icon.contents().width();
+        float actualHeight = minV + (maxV - minV) * height / icon.contents().height();
 
         float zLevel = 1.0f;
 

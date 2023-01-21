@@ -34,6 +34,8 @@ minecraft {
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -50,6 +52,8 @@ minecraft {
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -66,6 +70,8 @@ minecraft {
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -90,14 +96,21 @@ repositories {
         url = "https://maven.k-4u.nl"
     }
     maven {
-        // location of the maven that hosts JEI files
-        name = "Progwml6 maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
         // location of a maven mirror for JEI files, as a fallback
         name = "ModMaven"
         url = "https://modmaven.dev"
+    }
+    maven {
+        // ComputerCraft
+        url "https://squiddev.cc/maven/"
+        content {
+            includeGroup("cc.tweaked")
+            includeModule("org.squiddev", "Cobalt")
+            includeModule("fuzs.forgeconfigapiport", "forgeconfigapiport-fabric")
+        }
+    }
+    flatDir {
+        dir 'libs'
     }
 }
 
@@ -113,6 +126,11 @@ dependencies {
     implementation fg.deobf(project.dependencies.create("mcjty.theoneprobe:theoneprobe:${top_version}") {
         transitive = false
     })
+
+//    implementation fg.deobf('blank:buildinggadgets:3.16.1')
+
+    // Forge Gradle
+    implementation fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cctVersion}")
 }
 
 processResources {

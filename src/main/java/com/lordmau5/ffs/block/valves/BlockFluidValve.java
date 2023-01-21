@@ -1,6 +1,6 @@
 package com.lordmau5.ffs.block.valves;
 
-import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.block.abstracts.AbstractBlock;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.blockentity.util.TankConfig;
 import com.lordmau5.ffs.blockentity.valves.BlockEntityFluidValve;
@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockFluidValve extends AbstractBlockValve {
+public class BlockFluidValve extends AbstractBlock {
 
     public BlockFluidValve() {
         super(Block.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f));

@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.holder;
 
 import com.lordmau5.ffs.FancyFluidStorage;
+import com.lordmau5.ffs.block.tanktiles.BlockTankComputer;
 import com.lordmau5.ffs.block.valves.BlockFluidValve;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -22,7 +23,7 @@ public class Blocks {
 
     public static final RegistryObject<Block> fluidValve = register("fluid_valve", BlockFluidValve::new);
 
-//    public static final BlockTankComputer tankComputer = null;
+    public static final RegistryObject<Block> tankComputer = register("tank_computer", BlockTankComputer::new);
 
     private static <T extends Block> RegistryObject<T> register(final String name, final Supplier<T> block) {
         return BLOCKS.register(name, block);
@@ -38,7 +39,7 @@ public class Blocks {
 
         BLOCKS.getEntries().forEach((blockRegistryObject) -> {
             Block block = blockRegistryObject.get();
-            Item.Properties properties = new Item.Properties().tab(ModCreativeTab.instance);
+            Item.Properties properties = new Item.Properties(); //.tab(ModCreativeTab.instance);
             Supplier<Item> blockItemFactory = () -> new BlockItem(block, properties);
             event.register(ForgeRegistries.Keys.ITEMS, blockRegistryObject.getId(), blockItemFactory);
         });

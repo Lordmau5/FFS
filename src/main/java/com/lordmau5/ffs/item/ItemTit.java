@@ -1,6 +1,5 @@
 package com.lordmau5.ffs.item;
 
-import com.lordmau5.ffs.holder.ModCreativeTab;
 import com.lordmau5.ffs.holder.Sounds;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +15,7 @@ import java.util.Random;
 
 public class ItemTit extends Item {
     public ItemTit(final Item.Properties properties) {
-        super(properties.tab(ModCreativeTab.instance));
+        super(properties);
     }
 
     private void playSound(Level level, Player player) {
