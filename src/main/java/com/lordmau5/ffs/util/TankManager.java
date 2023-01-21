@@ -343,6 +343,10 @@ public class TankManager {
             }
         }
 
+        if (player.isShiftKeyDown()) {
+            return;
+        }
+
         player.swing(InteractionHand.MAIN_HAND, true);
 
         event.setCanceled(true);
