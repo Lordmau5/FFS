@@ -217,14 +217,10 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         updateBlockAndNeighbors();
     }
 
-    private boolean isAirOrWaterloggable(Level world, BlockPos pos) {
-        return GenericUtil.isAirOrWaterloggable(world, pos);
-    }
-
     private void setTankTileFacing(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockEntity tankTile) {
         HashSet<BlockPos> possibleAirBlocks = new HashSet<>();
         for (Direction dr : Direction.values()) {
-            if (isAirOrWaterloggable(getLevel(), tankTile.getBlockPos().relative(dr))) {
+            if (GenericUtil.isAirOrWaterLoggable(getLevel(), tankTile.getBlockPos().relative(dr))) {
                 possibleAirBlocks.add(tankTile.getBlockPos().relative(dr));
             }
         }
@@ -252,6 +248,26 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         }
     }
 
+    private boolean checkBlock(BlockPos pos) {
+        if (GenericUtil.isAirOrWaterLoggable(getLevel(), pos)) return true;
+
+        HashSet<BlockPos> blacklistedBlocks = new HashSet<>();
+        HashSet<BlockPos> fallingBlocks = new HashSet<>();
+        HashSet<BlockPos> invalidBlocks = new HashSet<>();
+
+        BlockState state = getLevel().getBlockState(pos);
+
+        if (isBlockBlacklisted(pos, state)) {
+            blacklistedBlocks.add(pos);
+        } else if (GenericUtil.isBlockFallingBlock(state)) {
+            fallingBlocks.add(pos);
+        } else if (getLevel().getFluidState(pos) != Fluids.EMPTY.defaultFluidState()) {
+            invalidBlocks.add(pos);
+        }
+
+        return !checkInvalid(blacklistedBlocks, fallingBlocks, invalidBlocks, 0, 1);
+    }
+
     private boolean searchAlgorithm() {
         getAirBlocks().clear();
         getFrameBlocks().clear();
@@ -265,6 +281,8 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         TreeMap<Integer, HashSet<LayerBlockPos>> air_blocks = new TreeMap<>();
         TreeMap<Integer, HashSet<LayerBlockPos>> frame_blocks = new TreeMap<>();
 
+        if (!checkBlock(insidePos)) return false;
+
         LayerBlockPos pos = new LayerBlockPos(insidePos, 0);
         HashSet<LayerBlockPos> zeroLayer = new HashSet<>();
         zeroLayer.add(pos);
@@ -277,6 +295,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
 
         while (!to_check.isEmpty()) {
             BlockPos nextCheck = to_check.remove();
+
             for (Direction facing : Direction.values()) {
                 BlockPos offsetPos = nextCheck.relative(facing);
                 int layer = offsetPos.getY() - insidePos.getY();
@@ -295,7 +314,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
                 checked_blocks.add(offsetPos);
 
                 LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
-                if (isAirOrWaterloggable(getLevel(), offsetPos)) {
+                if (GenericUtil.isAirOrWaterLoggable(getLevel(), _pos)) {
                     if (!air_blocks.get(layer).contains(_pos)) {
                         air_blocks.get(layer).add(_pos);
                         to_check.add(offsetPos);
@@ -319,7 +338,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
             }
         }
 
-        if (checkInvalid(blacklistedBlocks, fallingBlocks, currentAirBlocks, maxAirBlocks)) {
+        if (checkInvalid(blacklistedBlocks, fallingBlocks, getInvalidFrameBlocks(), currentAirBlocks, maxAirBlocks)) {
             return false;
         }
 
@@ -332,7 +351,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         return true;
     }
 
-    private boolean checkInvalid(HashSet<BlockPos> blacklistedBlocks, HashSet<BlockPos> fallingBlocks, int currentAirBlocks, int maxAirBlocks) {
+    private boolean checkInvalid(HashSet<BlockPos> blacklistedBlocks, HashSet<BlockPos> fallingBlocks, HashSet<BlockPos> invalidBlocks, int currentAirBlocks, int maxAirBlocks) {
         boolean invalid = blacklistedBlocks.size() > 0 || fallingBlocks.size() > 0 || currentAirBlocks > maxAirBlocks;
 
         if (currentAirBlocks > maxAirBlocks) {
@@ -371,7 +390,6 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
             );
         }
 
-        HashSet<BlockPos> invalidBlocks = getInvalidFrameBlocks();
         if (invalidBlocks.size() > 0) {
             BlockPos firstPos = invalidBlocks.stream().findFirst().get();
             BlockState state = getLevel().getBlockState(firstPos);
@@ -434,7 +452,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
 
         for (int layer : getAirBlocks().keySet()) {
             for (BlockPos pos : getAirBlocks().get(layer)) {
-                if (!isAirOrWaterloggable(getLevel(), pos)) {
+                if (!GenericUtil.isAirOrWaterLoggable(getLevel(), pos)) {
                     return false;
                 }
             }
