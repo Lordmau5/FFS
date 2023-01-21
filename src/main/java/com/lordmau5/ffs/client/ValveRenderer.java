@@ -10,7 +10,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -322,11 +321,11 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
             renderedFaces++;
 
             if (facing == Direction.UP && isTop) {
-                ClientRenderHelper.putTexturedQuad(ps, vb, still, RenderType.translucent(), offset, rb.height, facing, color, brightness, false);
+                ClientRenderHelper.putTexturedQuad(ps, vb, still, offset, rb.height, facing, color, brightness, false);
                 continue;
             }
 
-            ClientRenderHelper.putTexturedQuad(ps, vb, still, RenderType.translucent(), offset, rb.height, facing, color, brightness, false);
+            ClientRenderHelper.putTexturedQuad(ps, vb, still, offset, rb.height, facing, color, brightness, false);
         }
 
         return renderedFaces;
@@ -372,11 +371,11 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
             renderedFaces++;
 
             if (facing == Direction.UP && isTop) {
-                ClientRenderHelper.putTexturedQuad(ps, vb, still, RenderType.translucent(), offset, rb.height, facing, color, brightness, false);
+                ClientRenderHelper.putTexturedQuad(ps, vb, still, offset, rb.height, facing, color, brightness, false);
                 continue;
             }
 
-            ClientRenderHelper.putTexturedQuad(ps, vb, isFlowing ? flowing : still, RenderType.translucent(), offset, rb.height, facing, color, brightness, isFlowing);
+            ClientRenderHelper.putTexturedQuad(ps, vb, isFlowing ? flowing : still, offset, rb.height, facing, color, brightness, isFlowing);
         }
 
         return renderedFaces;
