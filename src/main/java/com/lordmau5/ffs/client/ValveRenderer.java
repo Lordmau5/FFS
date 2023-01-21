@@ -317,11 +317,11 @@ public class ValveRenderer extends TileEntityRenderer<TileEntityFluidValve> {
             renderedFaces++;
 
             if (facing == Direction.UP && isTop) {
-                ClientRenderHelper.putTexturedQuad(ps, vb, still, RenderType.translucent(), offset, rb.height, facing, color, brightness, false);
+                ClientRenderHelper.putTexturedQuad(ps, vb, still, offset, rb.height, facing, color, brightness, false);
                 continue;
             }
 
-            ClientRenderHelper.putTexturedQuad(ps, vb, still, RenderType.translucent(), offset, rb.height, facing, color, brightness, false);
+            ClientRenderHelper.putTexturedQuad(ps, vb, still, offset, rb.height, facing, color, brightness, false);
         }
 
         return renderedFaces;
@@ -378,11 +378,11 @@ public class ValveRenderer extends TileEntityRenderer<TileEntityFluidValve> {
             renderedFaces++;
 
             if (facing == Direction.UP && isTop) {
-                ClientRenderHelper.putTexturedQuad(ps, vb, still, RenderType.translucent(), offset, rb.height, facing, color, brightness, false);
+                ClientRenderHelper.putTexturedQuad(ps, vb, still, offset, rb.height, facing, color, brightness, false);
                 continue;
             }
 
-            ClientRenderHelper.putTexturedQuad(ps, vb, isFlowing ? flowing : still, RenderType.translucent(), offset, rb.height, facing, color, brightness, isFlowing);
+            ClientRenderHelper.putTexturedQuad(ps, vb, isFlowing ? flowing : still, offset, rb.height, facing, color, brightness, isFlowing);
         }
 
         return renderedFaces;

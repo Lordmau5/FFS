@@ -36,17 +36,17 @@ public class ClientRenderHelper {
         return Minecraft.getInstance().getTextureAtlas(PlayerContainer.BLOCK_ATLAS).apply(location);
     }
 
-    public static void putTexturedQuad(MatrixStack ps, IRenderTypeBuffer renderer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, int color, int brightness, boolean flowing) {
+    public static void putTexturedQuad(MatrixStack ps, IRenderTypeBuffer renderer, TextureAtlasSprite sprite, BlockPos offset, float height, Direction direction, int color, int brightness, boolean flowing) {
         int l1 = brightness >> 0x10 & 0xFFFF;
         int l2 = brightness & 0xFFFF;
         int a = color >> 24 & 0xFF;
         int r = color >> 16 & 0xFF;
         int g = color >> 8 & 0xFF;
         int b = color & 0xFF;
-        putTexturedQuad(ps, renderer, sprite, type, offset, height, direction, r, g, b, a, l1, l2, flowing);
+        putTexturedQuad(ps, renderer, sprite, offset, height, direction, r, g, b, a, l1, l2, flowing);
     }
 
-    private static void putTexturedQuad(MatrixStack ps, IRenderTypeBuffer renderTypeBuffer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
+    private static void putTexturedQuad(MatrixStack ps, IRenderTypeBuffer renderTypeBuffer, TextureAtlasSprite sprite, BlockPos offset, float height, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
         if (sprite == null) {
             return;
         }
@@ -114,11 +114,13 @@ public class ClientRenderHelper {
                 maxV = sprite.getV1();
         }
 
-        IVertexBuilder renderer = renderTypeBuffer.getBuffer(RenderType.text(sprite.atlas().location()));
+        IVertexBuilder renderer = renderTypeBuffer.getBuffer(FFSRenderTypes.fluidRenderType);
 
         ps.pushPose();
 
         ps.translate(offset.getX(), offset.getY(), offset.getZ());
+
+        RenderSystem.depthMask(false);
 
         Matrix4f matrix = ps.last().pose();
 
