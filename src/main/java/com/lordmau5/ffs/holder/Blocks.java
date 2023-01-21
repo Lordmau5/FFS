@@ -36,7 +36,7 @@ public class Blocks {
     public static void onRegisterItems(final RegisterEvent event) {
         if (!event.getRegistryKey().equals(ForgeRegistries.Keys.ITEMS)) return;
 
-        BLOCKS.getEntries().forEach( (blockRegistryObject) -> {
+        BLOCKS.getEntries().forEach((blockRegistryObject) -> {
             Block block = blockRegistryObject.get();
             Item.Properties properties = new Item.Properties().tab(ModCreativeTab.instance);
             Supplier<Item> blockItemFactory = () -> new BlockItem(block, properties);

@@ -109,8 +109,8 @@ public class BlockFluidValve extends AbstractBlockValve {
 
         if (player.isShiftKeyDown()) {
             BlockEntity tile = level.getBlockEntity(pos);
-            if (tile instanceof BlockEntityFluidValve) {
-                ((BlockEntityFluidValve) tile).getTankConfig().writeToNBT(stack.getOrCreateTag());
+            if (tile instanceof BlockEntityFluidValve valve) {
+                addTankConfigToStack(stack, valve);
             }
         }
 
@@ -140,8 +140,8 @@ public class BlockFluidValve extends AbstractBlockValve {
         FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
 
         BlockEntity tile = worldIn.getBlockEntity(pos);
-        if (tile instanceof BlockEntityFluidValve) {
-            ((BlockEntityFluidValve) tile).getTankConfig().setFluidStack(fluidStack);
+        if (tile instanceof BlockEntityFluidValve valve) {
+            valve.getTankConfig().setFluidStack(fluidStack);
         }
     }
 
