@@ -141,7 +141,7 @@ public class GenericUtil {
     }
 
     // Check if a block is either air or water-loggable
-    public static boolean isAirOrWaterloggable(World level, BlockPos pos) {
+    public static boolean isAirOrWaterLoggable(World level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
 
         return isAirOrWaterLoggable(level, pos, state);
