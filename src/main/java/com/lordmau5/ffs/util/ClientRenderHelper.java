@@ -35,18 +35,18 @@ public class ClientRenderHelper {
         return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(location);
     }
 
-    public static void putTexturedQuad(PoseStack ps, MultiBufferSource renderer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, int color, int brightness, boolean flowing) {
+    public static void putTexturedQuad(PoseStack ps, MultiBufferSource renderer, TextureAtlasSprite sprite, BlockPos offset, float height, Direction direction, int color, int brightness, boolean flowing) {
         int l1 = brightness >> 0x10 & 0xFFFF;
         int l2 = brightness & 0xFFFF;
         int a = color >> 24 & 0xFF;
         int r = color >> 16 & 0xFF;
         int g = color >> 8 & 0xFF;
         int b = color & 0xFF;
-        putTexturedQuad(ps, renderer, sprite, type, offset, height, direction, r, g, b, a, l1, l2, flowing);
+        putTexturedQuad(ps, renderer, sprite, offset, height, direction, r, g, b, a, l1, l2, flowing);
     }
 
-    private static void putTexturedQuad(PoseStack ps, MultiBufferSource renderTypeBuffer, TextureAtlasSprite sprite, RenderType type, BlockPos offset, float height, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
-        if ( sprite == null ) {
+    private static void putTexturedQuad(PoseStack ps, MultiBufferSource renderTypeBuffer, TextureAtlasSprite sprite, BlockPos offset, float height, Direction direction, int r, int g, int b, int a, int light1, int light2, boolean flowing) {
+        if (sprite == null) {
             return;
         }
 
@@ -70,54 +70,54 @@ public class ClientRenderHelper {
 
         double xt1 = x % 1d;
         double xt2 = xt1 + w;
-        while ( xt2 > 1f ) xt2 -= 1f;
+        while (xt2 > 1f) xt2 -= 1f;
         double yt1 = y % 1d;
         double yt2 = yt1 + h;
-        while ( yt2 > 1f ) yt2 -= 1f;
+        while (yt2 > 1f) yt2 -= 1f;
         double zt1 = z % 1d;
         double zt2 = zt1 + d;
-        while ( zt2 > 1f ) zt2 -= 1f;
+        while (zt2 > 1f) zt2 -= 1f;
 
-        if ( flowing ) {
+        if (flowing) {
             double tmp = 1d - yt1;
             yt1 = 1d - yt2;
             yt2 = tmp;
         }
 
         switch (direction) {
-            case DOWN:
-            case UP:
+            case DOWN, UP -> {
                 minU = sprite.getU(xt1 * size);
                 maxU = sprite.getU(xt2 * size);
                 minV = sprite.getV(zt1 * size);
                 maxV = sprite.getV(zt2 * size);
-                break;
-            case NORTH:
-            case SOUTH:
+            }
+            case NORTH, SOUTH -> {
                 minU = sprite.getU(xt2 * size);
                 maxU = sprite.getU(xt1 * size);
                 minV = sprite.getV(yt1 * size);
                 maxV = sprite.getV(yt2 * size);
-                break;
-            case WEST:
-            case EAST:
+            }
+            case WEST, EAST -> {
                 minU = sprite.getU(zt2 * size);
                 maxU = sprite.getU(zt1 * size);
                 minV = sprite.getV(yt1 * size);
                 maxV = sprite.getV(yt2 * size);
-                break;
-            default:
+            }
+            default -> {
                 minU = sprite.getU0();
                 maxU = sprite.getU1();
                 minV = sprite.getV0();
                 maxV = sprite.getV1();
+            }
         }
 
-        VertexConsumer renderer = renderTypeBuffer.getBuffer(RenderType.text(sprite.atlas().location()));
+        VertexConsumer renderer = renderTypeBuffer.getBuffer(FFSRenderTypes.fluidRenderType);
 
         ps.pushPose();
 
         ps.translate(offset.getX(), offset.getY(), offset.getZ());
+
+        RenderSystem.depthMask(false);
 
         Matrix4f matrix = ps.last().pose();
 
