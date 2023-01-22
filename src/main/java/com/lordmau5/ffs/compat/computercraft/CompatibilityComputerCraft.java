@@ -11,7 +11,7 @@ public class CompatibilityComputerCraft {
     public static Capability<IPeripheral> CAPABILITY_PERIPHERAL;
 
     public static void initialize() {
-        CAPABILITY_PERIPHERAL =  CapabilityManager.get(new CapabilityToken<>() {
+        CAPABILITY_PERIPHERAL = CapabilityManager.get(new CapabilityToken<>() {
         });
     }
 

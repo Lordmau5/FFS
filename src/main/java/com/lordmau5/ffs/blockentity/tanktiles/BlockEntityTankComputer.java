@@ -35,7 +35,7 @@ public class BlockEntityTankComputer extends AbstractTankEntity {
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == CompatibilityComputerCraft.CAPABILITY_PERIPHERAL) {
+        if (Compatibility.isCCLoaded && cap == CompatibilityComputerCraft.CAPABILITY_PERIPHERAL) {
             if (peripheralCap == null) {
                 peripheralCap = LazyOptional.of(() -> CompatibilityComputerCraft.getPeripheral(this));
             }
