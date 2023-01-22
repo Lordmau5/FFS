@@ -23,3 +23,7 @@ run
 
 # Other
 logs
+libs
+
+# Generated assets
+src/generated

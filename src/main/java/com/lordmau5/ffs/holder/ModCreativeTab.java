@@ -13,6 +13,6 @@ public class ModCreativeTab extends CreativeModeTab {
 
     @Override
     public ItemStack makeIcon() {
-        return new ItemStack(Blocks.fluidValve.get());
+        return new ItemStack(FFSBlocks.fluidValve.get());
     }
 }

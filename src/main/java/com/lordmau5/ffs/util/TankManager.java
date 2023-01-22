@@ -2,7 +2,7 @@ package com.lordmau5.ffs.util;
 
 import com.lordmau5.ffs.block.abstracts.AbstractBlock;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
-import com.lordmau5.ffs.holder.Items;
+import com.lordmau5.ffs.holder.FFSItems;
 import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
 import net.minecraft.core.BlockPos;
@@ -334,10 +334,10 @@ public class TankManager {
         if (blockEntity != null) {
             ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-            if (heldItem.isEmpty() && heldItem.getItem() != Items.tit.get()) {
+            if (heldItem.isEmpty() && heldItem.getItem() != FFSItems.tit.get()) {
                 heldItem = player.getItemInHand(InteractionHand.OFF_HAND);
 
-                if (heldItem.isEmpty() && heldItem.getItem() != Items.tit.get()) {
+                if (heldItem.isEmpty() && heldItem.getItem() != FFSItems.tit.get()) {
                     return;
                 }
             }

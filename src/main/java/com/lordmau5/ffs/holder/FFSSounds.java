@@ -10,7 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 
-public class Sounds {
+public class FFSSounds {
 
     private static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FancyFluidStorage.MOD_ID);
 

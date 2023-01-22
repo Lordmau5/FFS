@@ -1,7 +1,7 @@
 package com.lordmau5.ffs.item;
 
+import com.lordmau5.ffs.holder.FFSSounds;
 import com.lordmau5.ffs.holder.ModCreativeTab;
-import com.lordmau5.ffs.holder.Sounds;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -21,7 +21,7 @@ public class ItemTit extends Item {
 
     private void playSound(Level level, Player player) {
         float randomPitch = 0.75f + (new Random().nextFloat() * 0.5f);
-        level.playSound(player, player.getX(), player.getY(), player.getZ(), Sounds.birdSounds.get(), SoundSource.AMBIENT, 1.0f, randomPitch);
+        level.playSound(player, player.getX(), player.getY(), player.getZ(), FFSSounds.birdSounds.get(), SoundSource.AMBIENT, 1.0f, randomPitch);
     }
 
     @Override

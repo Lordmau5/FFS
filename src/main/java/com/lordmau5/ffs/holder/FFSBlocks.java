@@ -1,6 +1,7 @@
 package com.lordmau5.ffs.holder;
 
 import com.lordmau5.ffs.FancyFluidStorage;
+import com.lordmau5.ffs.block.tanktiles.BlockTankComputer;
 import com.lordmau5.ffs.block.valves.BlockFluidValve;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -16,13 +17,13 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-public class Blocks {
+public class FFSBlocks {
 
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, FancyFluidStorage.MOD_ID);
 
     public static final RegistryObject<Block> fluidValve = register("fluid_valve", BlockFluidValve::new);
 
-//    public static final BlockTankComputer tankComputer = null;
+    public static final RegistryObject<Block> tankComputer = register("tank_computer", BlockTankComputer::new);
 
     private static <T extends Block> RegistryObject<T> register(final String name, final Supplier<T> block) {
         return BLOCKS.register(name, block);

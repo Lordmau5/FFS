@@ -2,7 +2,7 @@ package com.lordmau5.ffs.blockentity.valves;
 
 
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
-import com.lordmau5.ffs.holder.BlockEntities;
+import com.lordmau5.ffs.holder.FFSBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -25,7 +25,7 @@ public class BlockEntityFluidValve extends AbstractTankValve {
     private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> getTankConfig().getFluidTank());
 
     public BlockEntityFluidValve(BlockPos pos, BlockState state) {
-        super(BlockEntities.tileEntityFluidValve.get(), pos, state);
+        super(FFSBlockEntities.tileEntityFluidValve.get(), pos, state);
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T be) {

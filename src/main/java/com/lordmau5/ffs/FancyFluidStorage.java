@@ -2,10 +2,10 @@ package com.lordmau5.ffs;
 
 import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.config.ServerConfig;
-import com.lordmau5.ffs.holder.BlockEntities;
-import com.lordmau5.ffs.holder.Blocks;
-import com.lordmau5.ffs.holder.Items;
-import com.lordmau5.ffs.holder.Sounds;
+import com.lordmau5.ffs.holder.FFSBlockEntities;
+import com.lordmau5.ffs.holder.FFSBlocks;
+import com.lordmau5.ffs.holder.FFSItems;
+import com.lordmau5.ffs.holder.FFSSounds;
 import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.util.Config;
 import com.lordmau5.ffs.util.GenericUtil;
@@ -26,10 +26,10 @@ public class FancyFluidStorage {
         bus.addListener(this::setup);
         bus.addListener(this::setupClient);
 
-        Blocks.register();
-        Items.register();
-        BlockEntities.register();
-        Sounds.register();
+        FFSBlocks.register();
+        FFSItems.register();
+        FFSBlockEntities.register();
+        FFSSounds.register();
 
         GenericUtil.init();
 

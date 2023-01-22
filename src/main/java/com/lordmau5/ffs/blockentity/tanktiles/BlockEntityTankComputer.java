@@ -1,219 +1,56 @@
-//package com.lordmau5.ffs.tile.tanktiles;
-//
-//import com.lordmau5.ffs.tile.abstracts.AbstractTankEntity;
-//import com.lordmau5.ffs.tile.interfaces.IFacingEntity;
-//import com.lordmau5.ffs.tile.valves.BlckEntityFluidValve;
-//import net.minecraft.nbt.NBTTagCompound;
-//import net.minecraft.util.EnumFacing;
-//import net.minecraftforge.fml.common.Optional;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.stream.Collectors;
-//
-//@Optional.Interface(iface = "dan200.computercraft.api.peripheral.IPeripheral", modid = "ComputerCraft")
-//public class BlockEntityTankComputer extends AbstractTankEntity implements IFacingEntity { //}, IPeripheral {
-//
-//    public List<TileEntityFluidValve> getValves() {
-//        return getMainValve().getAllValves(true).stream().filter(p -> p instanceof TileEntityFluidValve).map(p -> (TileEntityFluidValve) p).collect(Collectors.toList());
-//    }
-//
-//    // Used by CC and OC
-//    public List<TileEntityFluidValve> getValvesByName(String name) {
-//        List<TileEntityFluidValve> valves = new ArrayList<>();
-//        if ( getValves().isEmpty() ) {
-//            return valves;
-//        }
-//
-//        for (TileEntityFluidValve valve : getValves()) {
-//            if ( valve.getTileName().toLowerCase().equals(name.toLowerCase()) ) {
-//                valves.add(valve);
-//            }
-//        }
-//        return valves;
-//    }
-//
-//    @Override
-//    public EnumFacing getTileFacing() {
-//        if ( getMainValve() == null || !getMainValve().isValid() ) {
-//            return null;
-//        }
-//
-//        return this.tile_facing;
-//    }
-//
-//    @Override
-//    public void setTileFacing(EnumFacing facing) {
-//        this.tile_facing = facing;
-//    }
-//
-//    @Override
-//    public void readFromNBT(NBTTagCompound tag) {
-//        super.readFromNBT(tag);
-//        readTileFacingFromNBT(tag);
-//    }
-//
-//    @Override
-//    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-//        super.writeToNBT(tag);
-//        saveTileFacingToNBT(tag);
-//        return tag;
-//    }
-//
-//    // ComputerCraft
-//    public String[] methodNames() {
-//        return new String[]{"getFluidName", "getFluidAmount", "getFluidCapacity", "setAutoOutput", "doesAutoOutput", "isFluidLocked", "getLockedFluid", "toggleFluidLock"};
-//    }
-//
-//    /*
-//    @Optional.Method(modid = "ComputerCraft")
-//    @Override
-//    public String getType() {
-//        return "ffs_valve";
-//    }
-//
-//    @Optional.Method(modid = "ComputerCraft")
-//    @Override
-//    public String[] getMethodNames() {
-//        return methodNames();
-//    }
-//
-//    @Optional.Method(modid = "ComputerCraft")
-//    @Override
-//    public Object[] callMethod(IComputerAccess computer, ILuaContext context, int method, Object[] arguments) throws LuaException, InterruptedException {
-//        switch(method) {
-//            case 0: { // getFluidName
-//                if(getMainValve().getFluid() == null)
-//                    return null;
-//                return new Object[]{getMainValve().getFluid().getLocalizedName()};
-//            }
-//            case 1: { // getFluidAmount
-//                return new Object[]{getMainValve().getFluidAmount()};
-//            }
-//            case 2: { // getFluidCapacity
-//                return new Object[]{getMainValve().getCapacity()};
-//            }
-//            case 3: { // setAutoOutput
-//                if(arguments.length == 1) {
-//                    if(!(arguments[0] instanceof Boolean)) {
-//                        throw new LuaException("expected argument 1 to be of type \"boolean\", found \"" + arguments[0].getClass().getSimpleName() + "\"");
-//                    }
-//
-//                    for(TileEntityFluidValve valve : getValves())
-//                        valve.setAutoOutput((boolean) arguments[0]);
-//
-//                    return new Object[]{(boolean) arguments[0]};
-//                }
-//                else if(arguments.length == 2) {
-//                    if(!(arguments[0] instanceof String)) {
-//                        throw new LuaException("expected argument 1 to be of type \"String\", found \"" + arguments[0].getClass().getSimpleName() + "\"");
-//                    }
-//
-//                    if(!(arguments[1] instanceof Boolean)) {
-//                        throw new LuaException("expected argument 2 to be of type \"boolean\", found \"" + arguments[1].getClass().getSimpleName() + "\"");
-//                    }
-//
-//                    List<TileEntityFluidValve> valves = getValvesByName((String) arguments[0]);
-//                    if(valves.isEmpty()) {
-//                        throw new LuaException("no valves found");
-//                    }
-//
-//                    List<String> valveNames = new ArrayList<>();
-//                    for(TileEntityFluidValve valve : valves) {
-//                        valve.setAutoOutput((boolean) arguments[1]);
-//                        valveNames.add(valve.getTileName());
-//                    }
-//                    return new Object[]{valveNames};
-//                }
-//                else {
-//                    throw new LuaException("insufficient number of arguments found - expected 1 or 2, got " + arguments.length);
-//                }
-//            }
-//            case 4: { // doesAutoOutput
-//                if(arguments.length == 0) {
-//                    Map<String, Boolean> valveOutputs = new HashMap<>();
-//                    for(TileEntityFluidValve valve : getValves()) {
-//                        valveOutputs.put(valve.getTileName(), valve.getAutoOutput());
-//                    }
-//
-//                    return new Object[]{valveOutputs};
-//                }
-//                else if(arguments.length == 1) {
-//                    if(!(arguments[0] instanceof String)) {
-//                        throw new LuaException("expected argument 1 to be of type \"String\", found \"" + arguments[0].getClass().getSimpleName() + "\"");
-//                    }
-//
-//                    List<TileEntityFluidValve> valves = getValvesByName((String) arguments[0]);
-//                    if(valves.isEmpty()) {
-//                        throw new LuaException("no valves found");
-//                    }
-//
-//                    Map<String, Boolean> valveOutputs = new HashMap<>();
-//                    for(TileEntityFluidValve valve : valves) {
-//                        valveOutputs.put(valve.getTileName(), valve.getAutoOutput());
-//                    }
-//
-//                    return new Object[]{valveOutputs};
-//                }
-//                else {
-//                    throw new LuaException("insufficient number of arguments found - expected 1, got " + arguments.length);
-//                }
-//            }
-//            case 5: { // isFluidLocked
-//                return new Object[]{getMainValve().getTankConfig().isFluidLocked()};
-//            }
-//            case 6: { // getLockedFluid
-//                return new Object[]{getMainValve().getTankConfig().isFluidLocked() ? getMainValve().getTankConfig().getLockedFluid().getLocalizedName() : null};
-//            }
-//            case 7: { // toggleFluidLock
-//                if(arguments.length == 0) {
-//                    if(getMainValve().getFluid() == null) {
-//                        throw new LuaException("can't lock tank to fluid, no fluid in tank");
-//                    }
-//
-//                    getMainValve().toggleFluidLock(!getMainValve().getTankConfig().isFluidLocked());
-//
-//                    return new Object[]{getMainValve().getTankConfig().isFluidLocked()};
-//                }
-//                else if(arguments.length == 1) {
-//                    if(!(arguments[0] instanceof Boolean)) {
-//                        throw new LuaException("expected argument 1 to be of type \"Boolean\", found \"" + arguments[0].getClass().getSimpleName() + "\"");
-//                    }
-//
-//                    boolean state = (boolean) arguments[0];
-//                    if(state && getMainValve().getFluid() == null) {
-//                        throw new LuaException("can't lock tank to fluid, no fluid in tank");
-//                    }
-//
-//                    getMainValve().toggleFluidLock(state);
-//
-//                    return new Object[]{getMainValve().getTankConfig().isFluidLocked()};
-//                }
-//                else {
-//                    throw new LuaException("insufficient number of arguments found - expected 1, got " + arguments.length);
-//                }
-//            }
-//            default:
-//        }
-//        return null;
-//    }
-//
-//    @Optional.Method(modid = "ComputerCraft")
-//    @Override
-//    public void attach(IComputerAccess computer) {
-//
-//    }
-//
-//    @Optional.Method(modid = "ComputerCraft")
-//    @Override
-//    public void detach(IComputerAccess computer) {
-//
-//    }
-//
-//    @Optional.Method(modid = "ComputerCraft")
-//    @Override
-//    public boolean equals(IPeripheral other) {
-//        return false;
-//    }
-//    */
-//}
+package com.lordmau5.ffs.blockentity.tanktiles;
+
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
+import com.lordmau5.ffs.compat.computercraft.TankComputerPeripheral;
+import com.lordmau5.ffs.holder.FFSBlockEntities;
+import com.lordmau5.ffs.holder.FFSCapabilities;
+import com.lordmau5.ffs.util.FFSStateProps;
+import dan200.computercraft.api.peripheral.IPeripheral;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+public class BlockEntityTankComputer extends AbstractTankEntity {
+
+    private final TankComputerPeripheral peripheral = new TankComputerPeripheral(this);
+    private LazyOptional<IPeripheral> peripheralCap;
+
+    public BlockEntityTankComputer(BlockPos pos, BlockState state) {
+        super(FFSBlockEntities.tankComputer.get(), pos, state);
+    }
+
+    @Override
+    public void doUpdate() {
+        super.doUpdate();
+
+        if (getLevel() != null) {
+            getLevel().setBlockAndUpdate(getBlockPos(), getBlockState()
+                    .setValue(FFSStateProps.TILE_VALID, isValid())
+            );
+        }
+    }
+
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        if (cap == FFSCapabilities.CAPABILITY_PERIPHERAL) {
+            if (peripheralCap == null) {
+                peripheralCap = LazyOptional.of(() -> peripheral);
+            }
+
+            return peripheralCap.cast();
+        }
+
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+
+        if (peripheralCap != null) peripheralCap.invalidate();
+    }
+}

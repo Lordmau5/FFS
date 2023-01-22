@@ -4,7 +4,7 @@ import com.lordmau5.ffs.block.abstracts.AbstractBlock;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.blockentity.util.TankConfig;
 import com.lordmau5.ffs.blockentity.valves.BlockEntityFluidValve;
-import com.lordmau5.ffs.holder.BlockEntities;
+import com.lordmau5.ffs.holder.FFSBlockEntities;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
 import net.minecraft.ChatFormatting;
@@ -51,14 +51,14 @@ public class BlockFluidValve extends AbstractBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return BlockEntities.tileEntityFluidValve.get().create(pos, state);
+        return FFSBlockEntities.tileEntityFluidValve.get().create(pos, state);
     }
 
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                   BlockEntityType<T> type) {
-        return type == BlockEntities.tileEntityFluidValve.get() ? BlockEntityFluidValve::tick : null;
+        return type == FFSBlockEntities.tileEntityFluidValve.get() ? BlockEntityFluidValve::tick : null;
     }
 
     private void addTankConfigToStack(ItemStack stack, AbstractTankValve valve) {
