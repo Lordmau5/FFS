@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "ffs:items/item_tit"
+    "layer0": "ffs:item/item_tit"
   }
 }

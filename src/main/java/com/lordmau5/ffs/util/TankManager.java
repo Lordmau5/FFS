@@ -1,6 +1,6 @@
 package com.lordmau5.ffs.util;
 
-import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
+import com.lordmau5.ffs.block.abstracts.AbstractBlock;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.holder.Items;
 import com.lordmau5.ffs.network.FFSPacket;
@@ -325,7 +325,7 @@ public class TankManager {
             return;
         }
 
-        if (world.getBlockState(pos).getBlock() instanceof AbstractBlockValve) {
+        if (world.getBlockState(pos).getBlock() instanceof AbstractBlock) {
             return;
         }
 

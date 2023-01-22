@@ -2,7 +2,7 @@
   "multipart": [
     {
       "apply": {
-        "model": "ffs:block/fluid_valve_base"
+        "model": "ffs:block/fluid_valve/base"
       }
     },
     {
@@ -10,7 +10,7 @@
         "tile_valid": "false"
       },
       "apply": {
-        "model": "ffs:block/fluid_valve_invalid"
+        "model": "ffs:block/fluid_valve/invalid"
       }
     },
     {
@@ -18,7 +18,7 @@
         "tile_valid": "true"
       },
       "apply": {
-        "model": "ffs:block/fluid_valve_valid"
+        "model": "ffs:block/fluid_valve/valid"
       }
     },
     {
@@ -26,7 +26,7 @@
         "tile_main": "true"
       },
       "apply": {
-        "model": "ffs:block/fluid_valve_main"
+        "model": "ffs:block/fluid_valve/main"
       }
     }
   ]

@@ -1,5 +1,6 @@
 {
   "values": [
-    "ffs:fluid_valve"
+    "ffs:fluid_valve",
+    "ffs:tank_computer"
   ]
 }

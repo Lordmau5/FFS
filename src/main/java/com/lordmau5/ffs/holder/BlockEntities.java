@@ -11,7 +11,6 @@ import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 
-//@ObjectHolder(FancyFluidStorage.MODID)
 public class BlockEntities {
 
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FancyFluidStorage.MOD_ID);

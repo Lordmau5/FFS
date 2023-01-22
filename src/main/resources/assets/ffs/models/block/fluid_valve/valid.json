@@ -2,6 +2,6 @@
   "parent": "minecraft:block/cube_all",
   "render_type": "cutout",
   "textures": {
-    "all": "ffs:blocks/fluid/fluid_valve_overlay_invalid"
+    "all": "ffs:block/fluid_valve/overlay_valid"
   }
 }
