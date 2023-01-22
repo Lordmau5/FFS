@@ -535,6 +535,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         }
 
         setValid(true);
+        setValvePos(getBlockPos());
 
         TankManager.INSTANCE.add(getLevel(), getBlockPos(), getAirBlocks(), getFrameBlocks());
 

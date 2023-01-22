@@ -9,7 +9,6 @@ import dan200.computercraft.api.peripheral.IPeripheral;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +36,13 @@ public record TankComputerPeripheral(BlockEntityTankComputer computer) implement
         }
     }
 
+    private double roundToDecimals(double value, int decimals) {
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(decimals, RoundingMode.HALF_UP);
+
+        return bd.doubleValue();
+    }
+
     @LuaFunction(mainThread = true)
     public Map<?, ?> getTankInfo() throws LuaException {
         ensureValidity();
@@ -45,48 +51,18 @@ public record TankComputerPeripheral(BlockEntityTankComputer computer) implement
 
         TankConfig config = computer.getMainValve().getTankConfig();
 
-        table.put("fluid", getFluidName());
+        table.put("fluid", config.isEmpty() ? null : config.getFluidStack().getDisplayName().getString());
         if (!config.isEmpty()) {
-            table.put("amount", getFluidAmount());
-            table.put("capacity", getFluidCapacity());
+            int amount = config.getFluidAmount();
+            int capacity = config.getFluidCapacity();
 
-            BigDecimal bd = new BigDecimal(Float.toString((float) getFluidAmount() / getFluidCapacity()));
-            bd = bd.setScale(2, RoundingMode.HALF_UP);
+            table.put("amount", amount);
+            table.put("capacity", capacity);
 
-            table.put("fillPercentage", bd.floatValue());
+            table.put("fillPercentage", roundToDecimals((double) amount / capacity, 2));
         }
 
         return table;
-    }
-
-    @LuaFunction(mainThread = true)
-    public String getFluidName() throws LuaException {
-        ensureValidity();
-
-        TankConfig config = computer.getMainValve().getTankConfig();
-        if (config.isEmpty()) return null;
-
-        return config.getFluidStack().getDisplayName().getString();
-    }
-
-    @LuaFunction(mainThread = true)
-    public int getFluidAmount() throws LuaException {
-        ensureValidity();
-
-        TankConfig config = computer.getMainValve().getTankConfig();
-        if (config.isEmpty()) return 0;
-
-        return config.getFluidAmount();
-    }
-
-    @LuaFunction(mainThread = true)
-    public int getFluidCapacity() throws LuaException {
-        ensureValidity();
-
-        TankConfig config = computer.getMainValve().getTankConfig();
-        if (config.isEmpty()) return 0;
-
-        return config.getFluidCapacity();
     }
 
     @LuaFunction(mainThread = true)

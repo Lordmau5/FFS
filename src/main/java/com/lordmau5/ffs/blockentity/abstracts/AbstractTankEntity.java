@@ -73,8 +73,8 @@ public abstract class AbstractTankEntity extends BlockEntity {
     public void saveAdditional(CompoundTag nbt) {
         super.saveAdditional(nbt);
 
-        if (getMainValve() != null) {
-            nbt.putLong("valvePos", getMainValve().getBlockPos().asLong());
+        if (this.mainValvePos != null) {
+            nbt.putLong("valvePos", this.mainValvePos.asLong());
         }
     }
 

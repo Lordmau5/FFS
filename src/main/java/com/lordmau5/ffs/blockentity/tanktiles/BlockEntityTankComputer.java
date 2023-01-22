@@ -1,9 +1,9 @@
 package com.lordmau5.ffs.blockentity.tanktiles;
 
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
-import com.lordmau5.ffs.compat.computercraft.TankComputerPeripheral;
+import com.lordmau5.ffs.compat.Compatibility;
+import com.lordmau5.ffs.compat.computercraft.CompatibilityComputerCraft;
 import com.lordmau5.ffs.holder.FFSBlockEntities;
-import com.lordmau5.ffs.holder.FFSCapabilities;
 import com.lordmau5.ffs.util.FFSStateProps;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.BlockPos;
@@ -16,8 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class BlockEntityTankComputer extends AbstractTankEntity {
 
-    private final TankComputerPeripheral peripheral = new TankComputerPeripheral(this);
-    private LazyOptional<IPeripheral> peripheralCap;
+    private LazyOptional<?> peripheralCap;
 
     public BlockEntityTankComputer(BlockPos pos, BlockState state) {
         super(FFSBlockEntities.tankComputer.get(), pos, state);
@@ -27,18 +26,18 @@ public class BlockEntityTankComputer extends AbstractTankEntity {
     public void doUpdate() {
         super.doUpdate();
 
-        if (getLevel() != null) {
-            getLevel().setBlockAndUpdate(getBlockPos(), getBlockState()
-                    .setValue(FFSStateProps.TILE_VALID, isValid())
-            );
-        }
+        if (getLevel() == null) return;
+
+        getLevel().setBlockAndUpdate(getBlockPos(), getBlockState()
+                .setValue(FFSStateProps.TILE_VALID, isValid())
+        );
     }
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == FFSCapabilities.CAPABILITY_PERIPHERAL) {
+        if (cap == CompatibilityComputerCraft.CAPABILITY_PERIPHERAL) {
             if (peripheralCap == null) {
-                peripheralCap = LazyOptional.of(() -> peripheral);
+                peripheralCap = LazyOptional.of(() -> CompatibilityComputerCraft.getPeripheral(this));
             }
 
             return peripheralCap.cast();
