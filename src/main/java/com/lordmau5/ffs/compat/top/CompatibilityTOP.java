@@ -2,8 +2,8 @@ package com.lordmau5.ffs.compat.top;
 
 import net.minecraftforge.fml.InterModComms;
 
-public class TOPCompatibility {
+public class CompatibilityTOP {
     public static void register() {
-        InterModComms.sendTo("theoneprobe", "getTheOneProbe", TOPDataProvider::new);
+        InterModComms.sendTo("theoneprobe", "getTheOneProbe", DataProviderTOP::new);
     }
 }

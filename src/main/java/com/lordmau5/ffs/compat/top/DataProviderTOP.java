@@ -5,7 +5,7 @@ import mcjty.theoneprobe.api.ITheOneProbe;
 
 import javax.annotation.Nullable;
 
-public class TOPDataProvider implements Function<ITheOneProbe, Void> {
+public class DataProviderTOP implements Function<ITheOneProbe, Void> {
     @Nullable
     @Override
     public Void apply(ITheOneProbe iTheOneProbe) {
