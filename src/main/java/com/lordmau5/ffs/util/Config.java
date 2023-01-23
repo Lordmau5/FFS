@@ -70,17 +70,17 @@ public class Config {
 
         private void onConfigEvent(final ModConfigEvent event) {
             final ModConfig config = event.getConfig();
-            if ( built && config.getSpec() == spec )
+            if (built && config.getSpec() == spec)
                 update();
         }
 
         public ConfigWalker update() {
-            if ( !built )
+            if (!built)
                 build();
 
 //            WirelessUtils.LOG.info("Updating config.");
 
-            if ( bindings == null || bindings.isEmpty() )
+            if (bindings == null || bindings.isEmpty())
                 return this;
 
             for (final ConfigBinding binding : bindings)
@@ -90,14 +90,14 @@ public class Config {
         }
 
         public ForgeConfigSpec getSpec() {
-            if ( !built )
+            if (!built)
                 build();
 
             return spec;
         }
 
         public void build() {
-            if ( built )
+            if (built)
                 return;
 
             built = true;
@@ -113,28 +113,28 @@ public class Config {
 
         private void discoverClasses(final Class<?> cls, final int depth) {
             for (final Class<?> c : cls.getClasses()) {
-                if ( c == null || this.cls.equals(c) || classes.contains(c) )
+                if (c == null || this.cls.equals(c) || classes.contains(c))
                     continue;
 
                 classes.add(c);
-                if ( depth < 50 )
+                if (depth < 50)
                     discoverClasses(c, depth + 1);
             }
         }
 
         private void scan(@Nullable final Object obj, final ForgeConfigSpec.Builder builder, final int depth) {
             final Class<?> cls;
-            if ( obj == null )
+            if (obj == null)
                 cls = this.cls;
             else
                 cls = obj.getClass();
 
             for (final Field field : cls.getFields()) {
-                if ( field.isAnnotationPresent(Ignore.class) )
+                if (field.isAnnotationPresent(Ignore.class))
                     continue;
 
                 final int mods = field.getModifiers();
-                if ( Modifier.isStatic(mods) && obj != null ) {
+                if (Modifier.isStatic(mods) && obj != null) {
 //                    WirelessUtils.LOG.warn("Skipping static field in non-root config: " + field.getName());
                     continue;
                 }
@@ -142,37 +142,36 @@ public class Config {
                 final Class<?> type = field.getType();
                 final ITypeAdapter adapter = type.isEnum() ? ADAPTERS.get(Enum.class) : ADAPTERS.get(type);
                 boolean is_class = false;
-                if ( adapter == null && !ADAPTERS.containsKey(type) && classes.contains(type) )
+                if (adapter == null && !ADAPTERS.containsKey(type) && classes.contains(type))
                     is_class = true;
-                else if ( adapter == null ) {
+                else if (adapter == null) {
 //                    WirelessUtils.LOG.warn("Skipping field with un-handleable type: " + field.getName() + " (Type: " + field.getType() + ")");
                     continue;
-                } else if ( !adapter.canHandle(obj, field) )
+                } else if (!adapter.canHandle(obj, field))
                     continue;
 
                 String name = field.getName();
                 final Name annoName = field.getAnnotation(Name.class);
-                if ( annoName != null )
+                if (annoName != null)
                     name = annoName.value();
 
                 final Translation annoTL = field.getAnnotation(Translation.class);
-                if ( annoTL != null )
+                if (annoTL != null)
                     builder.translation(annoTL.value());
 
                 final Comment annoComment = field.getAnnotation(Comment.class);
-                if ( annoComment != null )
+                if (annoComment != null)
                     builder.comment(annoComment.value());
 
-                if ( field.isAnnotationPresent(RequiresWorldRestart.class) )
+                if (field.isAnnotationPresent(RequiresWorldRestart.class))
                     builder.worldRestart();
 
-                if ( is_class ) {
+                if (is_class) {
                     builder.push(name);
 
-                    if ( depth >= 50 ) {
+                    if (depth >= 50) {
 //                        WirelessUtils.LOG.warn("Config is nested too deeply. Skipping field: " + name);
-                    }
-                    else {
+                    } else {
                         Object value = null;
                         boolean valid = true;
 
@@ -183,7 +182,7 @@ public class Config {
                             valid = false;
                         }
 
-                        if ( valid )
+                        if (valid)
                             scan(value, builder, depth + 1);
                     }
 
@@ -238,7 +237,7 @@ public class Config {
         registerAdapter(Enum.class, new ITypeAdapter() {
             @Override
             public boolean canHandle(@Nullable final Object obj, final Field field) {
-                if ( !field.getType().isEnum() )
+                if (!field.getType().isEnum())
                     return false;
 
                 try {
@@ -254,7 +253,7 @@ public class Config {
             @Override
             public ForgeConfigSpec.ConfigValue define(final String name, @Nullable final Object obj, final Field field, final ForgeConfigSpec.Builder builder, final ConfigWalker walker) {
                 final Class<?> cls = field.getType();
-                if ( !Enum.class.isAssignableFrom(cls) )
+                if (!Enum.class.isAssignableFrom(cls))
                     return null;
 
                 return buildEnum(name, obj, field, builder, walker, (Class<? extends Enum>) cls);
@@ -269,7 +268,7 @@ public class Config {
                 }
 
                 final EnumMethod anno = field.getAnnotation(EnumMethod.class);
-                if ( anno != null )
+                if (anno != null)
                     return builder.defineEnum(name, value, anno.value());
 
                 return builder.defineEnum(name, value);
@@ -298,7 +297,7 @@ public class Config {
             }
 
             final RangeInt anno = field.getAnnotation(RangeInt.class);
-            if ( anno == null )
+            if (anno == null)
                 return builder.define(name, value);
 
             return builder.defineInRange(name, value, anno.min(), anno.max());
@@ -315,7 +314,7 @@ public class Config {
             }
 
             final RangeLong anno = field.getAnnotation(RangeLong.class);
-            if ( anno == null )
+            if (anno == null)
                 return builder.define(name, value);
 
             return builder.defineInRange(name, value, anno.min(), anno.max());
@@ -332,7 +331,7 @@ public class Config {
             }
 
             final RangeDouble anno = field.getAnnotation(RangeDouble.class);
-            if ( anno == null )
+            if (anno == null)
                 return builder.define(name, value);
 
             return builder.defineInRange(name, value, anno.min(), anno.max());

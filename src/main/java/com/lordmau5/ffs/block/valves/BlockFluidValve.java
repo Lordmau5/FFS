@@ -1,10 +1,10 @@
 package com.lordmau5.ffs.block.valves;
 
-import com.lordmau5.ffs.block.abstracts.AbstractBlockValve;
-import com.lordmau5.ffs.holder.BlockEntities;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import com.lordmau5.ffs.tile.util.TankConfig;
-import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
+import com.lordmau5.ffs.block.abstracts.AbstractBlock;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.blockentity.util.TankConfig;
+import com.lordmau5.ffs.blockentity.valves.BlockEntityFluidValve;
+import com.lordmau5.ffs.holder.FFSBlockEntities;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
 import net.minecraft.ChatFormatting;
@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockFluidValve extends AbstractBlockValve {
+public class BlockFluidValve extends AbstractBlock {
 
     public BlockFluidValve() {
         super(Block.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f));
@@ -52,14 +52,14 @@ public class BlockFluidValve extends AbstractBlockValve {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return BlockEntities.tileEntityFluidValve.get().create(pos, state);
+        return FFSBlockEntities.tileEntityFluidValve.get().create(pos, state);
     }
 
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                   BlockEntityType<T> type) {
-        return type == BlockEntities.tileEntityFluidValve.get() ? TileEntityFluidValve::tick : null;
+        return type == FFSBlockEntities.tileEntityFluidValve.get() ? BlockEntityFluidValve::tick : null;
     }
 
     private void addTankConfigToStack(ItemStack stack, AbstractTankValve valve) {
@@ -73,7 +73,7 @@ public class BlockFluidValve extends AbstractBlockValve {
     @Override
     public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         BlockEntity tile = level.getBlockEntity(pos);
-        if (tile instanceof TileEntityFluidValve valve) {
+        if (tile instanceof BlockEntityFluidValve valve) {
             if (!level.isClientSide() && player.isCreative() && !valve.getTankConfig().isEmpty()) {
                 ItemStack stack = new ItemStack(this);
 
@@ -93,7 +93,7 @@ public class BlockFluidValve extends AbstractBlockValve {
         List<ItemStack> drops = new ArrayList<>();
 
         BlockEntity tile = pBuilder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-        if (tile instanceof TileEntityFluidValve valve) {
+        if (tile instanceof BlockEntityFluidValve valve) {
             ItemStack stack = new ItemStack(this);
 
             addTankConfigToStack(stack, valve);
@@ -110,7 +110,7 @@ public class BlockFluidValve extends AbstractBlockValve {
 
         if (player.isShiftKeyDown()) {
             BlockEntity tile = level.getBlockEntity(pos);
-            if (tile instanceof TileEntityFluidValve valve) {
+            if (tile instanceof BlockEntityFluidValve valve) {
                 addTankConfigToStack(stack, valve);
             }
         }
@@ -141,8 +141,8 @@ public class BlockFluidValve extends AbstractBlockValve {
         FluidStack fluidStack = loadFluidStackFromTankConfig(stack);
 
         BlockEntity tile = worldIn.getBlockEntity(pos);
-        if (tile instanceof TileEntityFluidValve) {
-            ((TileEntityFluidValve) tile).getTankConfig().setFluidStack(fluidStack);
+        if (tile instanceof BlockEntityFluidValve valve) {
+            valve.getTankConfig().setFluidStack(fluidStack);
         }
     }
 

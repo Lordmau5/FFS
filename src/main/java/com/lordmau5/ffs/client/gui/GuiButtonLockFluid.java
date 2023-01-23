@@ -35,8 +35,8 @@ public class GuiButtonLockFluid extends ImageButton {
 
         int texStart = getState() ? 0 : 8;
 
-        blit(matrixStack, this.x, this.y, (float)texStart, (float)128, this.width, this.height, 256, 256);
-        
+        blit(matrixStack, this.x, this.y, (float) texStart, (float) 128, this.width, this.height, 256, 256);
+
         RenderSystem.enableDepthTest();
     }
 }

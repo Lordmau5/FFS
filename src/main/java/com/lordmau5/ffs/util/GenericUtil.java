@@ -1,6 +1,6 @@
 package com.lordmau5.ffs.util;
 
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;

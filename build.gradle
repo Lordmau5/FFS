@@ -101,6 +101,12 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.dev"
     }
+    maven {
+        url 'https://squiddev.cc/maven/'
+        content {
+            includeGroup 'org.squiddev'
+        }
+    }
 }
 
 dependencies {
@@ -111,10 +117,12 @@ dependencies {
     // at runtime, use the full JEI jar
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
 
-//    implementation "mcjty.theoneprobe:theoneprobe:${top_version}"
     implementation fg.deobf(project.dependencies.create("mcjty.theoneprobe:theoneprobe:${top_version}") {
         transitive = false
     })
+
+    compileOnly fg.deobf("org.squiddev:cc-tweaked-${minecraft_version}:${cct_version}:api")
+    runtimeOnly fg.deobf("org.squiddev:cc-tweaked-${minecraft_version}:${cct_version}")
 }
 
 processResources {

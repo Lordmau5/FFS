@@ -1,7 +1,7 @@
 package com.lordmau5.ffs.client;
 
+import com.lordmau5.ffs.blockentity.valves.BlockEntityFluidValve;
 import com.lordmau5.ffs.config.ServerConfig;
-import com.lordmau5.ffs.tile.valves.TileEntityFluidValve;
 import com.lordmau5.ffs.util.ClientRenderHelper;
 import com.lordmau5.ffs.util.GenericUtil;
 import com.lordmau5.ffs.util.LayerBlockPos;
@@ -10,7 +10,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -28,7 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
 
-public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> {
+public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve> {
 
     BlockEntityRendererProvider.Context context;
 
@@ -59,13 +58,13 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
     }
 
     private static class ValveCache {
-        final TileEntityFluidValve valve;
+        final BlockEntityFluidValve valve;
         final HashSet<RenderBlock> validRenderBlocks;
 
         int cachedAmount = 0;
         int updateDelta = 0;
 
-        private ValveCache(TileEntityFluidValve valve) {
+        private ValveCache(BlockEntityFluidValve valve) {
             this.valve = valve;
             this.validRenderBlocks = new HashSet<>();
 
@@ -92,7 +91,7 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         }
     }
 
-    private HashMap<TileEntityFluidValve, ValveCache> cache;
+    private HashMap<BlockEntityFluidValve, ValveCache> cache;
 
     public ValveRenderer(BlockEntityRendererProvider.Context context) {
         this.context = context;
@@ -106,12 +105,12 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
     }
 
     @Override
-    public boolean shouldRenderOffScreen(TileEntityFluidValve te) {
+    public boolean shouldRenderOffScreen(BlockEntityFluidValve te) {
         return true;
     }
 
     @Override
-    public void render(@Nonnull TileEntityFluidValve valve, float partialTicks, PoseStack ms, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
+    public void render(@Nonnull BlockEntityFluidValve valve, float partialTicks, PoseStack ms, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
         if (!valve.isValid()) {
             cache.remove(valve);
             return;
@@ -160,7 +159,7 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         }
     }
 
-    private ValveCache getCache(TileEntityFluidValve valve) {
+    private ValveCache getCache(BlockEntityFluidValve valve) {
         if (this.cache.containsKey(valve)) return this.cache.get(valve);
 
         ValveCache cache = new ValveCache(valve);
@@ -178,7 +177,7 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         return !state.isSolidRender(level, pos) && !GenericUtil.isAirOrWaterLoggable(level, pos, state);
     }
 
-    private ValveCache ensureRenderBlocksGas(TileEntityFluidValve valve, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks) {
+    private ValveCache ensureRenderBlocksGas(BlockEntityFluidValve valve, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks) {
         ValveCache cache = getCache(valve);
         Level level = valve.getLevel();
 
@@ -204,7 +203,7 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
         return cache;
     }
 
-    private ValveCache ensureRenderBlocksFluid(TileEntityFluidValve valve, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks) {
+    private ValveCache ensureRenderBlocksFluid(BlockEntityFluidValve valve, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks) {
         ValveCache cache = getCache(valve);
         Level level = valve.getLevel();
 
@@ -305,17 +304,17 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
                 case DOWN -> {
                     if (difference.y() > 0) continue;
                 }
-                case SOUTH -> {
-                    if (difference.z() < 1) continue;
-                }
                 case NORTH -> {
                     if (difference.z() > 0) continue;
                 }
-                case EAST -> {
-                    if (difference.x() < 1) continue;
+                case SOUTH -> {
+                    if (difference.z() < 1) continue;
                 }
                 case WEST -> {
                     if (difference.x() > 0) continue;
+                }
+                case EAST -> {
+                    if (difference.x() < 1) continue;
                 }
             }
 
@@ -355,17 +354,17 @@ public class ValveRenderer implements BlockEntityRenderer<TileEntityFluidValve> 
 
                     if (difference.y() > 0) continue;
                 }
-                case SOUTH -> {
-                    if (difference.z() < 1) continue;
-                }
                 case NORTH -> {
                     if (difference.z() > 0) continue;
                 }
-                case EAST -> {
-                    if (difference.x() < 1) continue;
+                case SOUTH -> {
+                    if (difference.z() < 1) continue;
                 }
                 case WEST -> {
                     if (difference.x() > 0) continue;
+                }
+                case EAST -> {
+                    if (difference.x() < 1) continue;
                 }
             }
 

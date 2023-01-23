@@ -1,9 +1,9 @@
 package com.lordmau5.ffs.network;
 
 import com.google.common.collect.Sets;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankTile;
-import com.lordmau5.ffs.tile.abstracts.AbstractTankValve;
-import com.lordmau5.ffs.tile.interfaces.INameableTile;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
+import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
+import com.lordmau5.ffs.blockentity.interfaces.INameableEntity;
 import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.core.BlockPos;
@@ -26,7 +26,7 @@ public abstract class FFSPacket {
             public OpenGUI() {
             }
 
-            public OpenGUI(AbstractTankTile tile, boolean isValve) {
+            public OpenGUI(AbstractTankEntity tile, boolean isValve) {
                 this.pos = tile.getBlockPos();
                 this.isValve = isValve;
             }
@@ -90,6 +90,7 @@ public abstract class FFSPacket {
                 buffer.writeInt(this.frameBlocks.size());
                 for (int layer : this.frameBlocks.keySet()) {
                     buffer.writeInt(layer);
+
                     var layerFrameBlocks = this.frameBlocks.get(layer);
                     buffer.writeCollection(layerFrameBlocks, FriendlyByteBuf::writeBlockPos);
                 }
@@ -209,7 +210,7 @@ public abstract class FFSPacket {
             public UpdateTileName() {
             }
 
-            public UpdateTileName(AbstractTankTile tankTile, String name) {
+            public UpdateTileName(AbstractTankEntity tankTile, String name) {
                 this.pos = tankTile.getBlockPos();
                 this.name = name;
             }
@@ -245,9 +246,9 @@ public abstract class FFSPacket {
 
                     if (world != null) {
                         BlockEntity tile = world.getBlockEntity(msg.getPos());
-                        if (tile instanceof AbstractTankTile && tile instanceof INameableTile) {
-                            AbstractTankTile abstractTankTile = (AbstractTankTile) tile;
-                            ((INameableTile) abstractTankTile).setTileName(msg.getName());
+                        if (tile instanceof AbstractTankEntity && tile instanceof INameableEntity) {
+                            AbstractTankEntity abstractTankTile = (AbstractTankEntity) tile;
+                            ((INameableEntity) abstractTankTile).setTileName(msg.getName());
                             abstractTankTile.markForUpdateNow();
                         }
                     }
