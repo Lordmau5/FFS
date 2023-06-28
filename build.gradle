@@ -102,7 +102,8 @@ repositories {
     maven {
         url 'https://squiddev.cc/maven/'
         content {
-            includeGroup 'org.squiddev'
+            includeGroup("cc.tweaked")
+            includeModule("org.squiddev", "Cobalt")
         }
     }
 }
@@ -120,8 +121,9 @@ dependencies {
         transitive = false
     })
 
-    compileOnly fg.deobf("org.squiddev:cc-tweaked-${minecraft_version}:${cct_version}:api")
-    runtimeOnly fg.deobf("org.squiddev:cc-tweaked-${minecraft_version}:${cct_version}")
+    compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-core-api:$cct_version")
+    compileOnly(fg.deobf("cc.tweaked:cc-tweaked-$minecraft_version-forge-api:$cct_version"))
+    runtimeOnly(fg.deobf("cc.tweaked:cc-tweaked-$minecraft_version-forge:$cct_version"))
 }
 
 processResources {
