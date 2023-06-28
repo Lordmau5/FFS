@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class FFSBlocks {
 
-    private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, FancyFluidStorage.MOD_ID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, FancyFluidStorage.MOD_ID);
 
     public static final RegistryObject<Block> fluidValve = register("fluid_valve", BlockFluidValve::new);
 
@@ -39,7 +39,7 @@ public class FFSBlocks {
 
         BLOCKS.getEntries().forEach((blockRegistryObject) -> {
             Block block = blockRegistryObject.get();
-            Item.Properties properties = new Item.Properties().tab(ModCreativeTab.instance);
+            Item.Properties properties = new Item.Properties();
             Supplier<Item> blockItemFactory = () -> new BlockItem(block, properties);
             event.register(ForgeRegistries.Keys.ITEMS, blockRegistryObject.getId(), blockItemFactory);
         });

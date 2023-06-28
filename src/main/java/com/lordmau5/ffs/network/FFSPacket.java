@@ -242,7 +242,7 @@ public abstract class FFSPacket {
 
                 ctx.enqueueWork(() -> {
                     ServerPlayer playerEntity = ctx.getSender();
-                    Level world = playerEntity != null ? playerEntity.level : null;
+                    Level world = playerEntity != null ? playerEntity.level() : null;
 
                     if (world != null) {
                         BlockEntity tile = world.getBlockEntity(msg.getPos());
@@ -297,7 +297,7 @@ public abstract class FFSPacket {
 
                 ctx.enqueueWork(() -> {
                     ServerPlayer playerEntity = ctx.getSender();
-                    Level world = playerEntity != null ? playerEntity.level : null;
+                    Level world = playerEntity != null ? playerEntity.level() : null;
 
                     if (world != null) {
                         BlockEntity tile = world.getBlockEntity(msg.getPos());
@@ -343,7 +343,7 @@ public abstract class FFSPacket {
 
                 ctx.enqueueWork(() -> {
                     ServerPlayer playerEntity = ctx.getSender();
-                    Level world = playerEntity != null ? playerEntity.level : null;
+                    Level world = playerEntity != null ? playerEntity.level() : null;
 
                     if (world != null) {
                         BlockEntity tile = world.getBlockEntity(msg.getPos());

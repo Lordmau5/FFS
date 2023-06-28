@@ -14,7 +14,7 @@ public class FFSSounds {
 
     private static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FancyFluidStorage.MOD_ID);
 
-    public static final RegistryObject<SoundEvent> birdSounds = register("bird", () -> new SoundEvent(new ResourceLocation(FancyFluidStorage.MOD_ID, "bird")));
+    public static final RegistryObject<SoundEvent> birdSounds = register("bird", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(FancyFluidStorage.MOD_ID, "bird")));
 
     private static <T extends SoundEvent> RegistryObject<T> register(final String name, final Supplier<T> sound) {
         return SOUND_EVENTS.register(name, sound);

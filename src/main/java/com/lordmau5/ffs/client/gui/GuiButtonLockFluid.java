@@ -3,6 +3,7 @@ package com.lordmau5.ffs.client.gui;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.resources.ResourceLocation;
 
@@ -27,15 +28,15 @@ public class GuiButtonLockFluid extends ImageButton {
         this.state = !this.state;
     }
 
-    @Override
-    public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.setShaderTexture(0, toggleTexture);
 
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks)
+    {
         RenderSystem.disableDepthTest();
 
         int texStart = getState() ? 0 : 8;
 
-        blit(matrixStack, this.x, this.y, (float) texStart, (float) 128, this.width, this.height, 256, 256);
+        guiGraphics.blit(toggleTexture, this.getX(), this.getY(), texStart, 128, this.width, this.height, 256, 256);
 
         RenderSystem.enableDepthTest();
     }

@@ -9,7 +9,7 @@ import net.minecraftforge.common.data.LanguageProvider;
 public class FFSLanguageProvider extends LanguageProvider {
 
     public FFSLanguageProvider(DataGenerator generator, String locale) {
-        super(generator, FancyFluidStorage.MOD_ID, locale);
+        super(generator.getPackOutput(), FancyFluidStorage.MOD_ID, locale);
     }
 
     @Override

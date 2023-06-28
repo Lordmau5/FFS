@@ -13,7 +13,7 @@ public class DataGenerators {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         generator.addProvider(event.includeServer(), new FFSRecipes(generator));
-        generator.addProvider(event.includeServer(), new FFSBlockTags(generator, event.getExistingFileHelper()));
+        generator.addProvider(event.includeServer(), new FFSBlockTags(generator.getPackOutput(), event.getLookupProvider(), FancyFluidStorage.MOD_ID, event.getExistingFileHelper()));
         generator.addProvider(event.includeClient(), new FFSBlockStates(generator, event.getExistingFileHelper()));
         generator.addProvider(event.includeClient(), new FFSItemModels(generator, event.getExistingFileHelper()));
         generator.addProvider(event.includeClient(), new FFSLanguageProvider(generator, "en_us"));

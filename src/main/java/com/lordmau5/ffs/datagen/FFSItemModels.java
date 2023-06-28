@@ -6,6 +6,7 @@ import com.lordmau5.ffs.holder.FFSItems;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraftforge.client.model.generators.ItemModelBuilder;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -13,7 +14,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 public class FFSItemModels extends ItemModelProvider {
 
     public FFSItemModels(DataGenerator packOutput, ExistingFileHelper existingFileHelper) {
-        super(packOutput, FancyFluidStorage.MOD_ID, existingFileHelper);
+        super(packOutput.getPackOutput(), FancyFluidStorage.MOD_ID, existingFileHelper);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class FFSItemModels extends ItemModelProvider {
     }
 
     private void fixTransforms(ItemModelBuilder builder) {
-        builder.transforms().transform(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
+        builder.transforms().transform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
                 .rotation(0, 135, 0)
                 .translation(0, 0, 0)
                 .scale(0.4f, 0.4f, 0.4f)

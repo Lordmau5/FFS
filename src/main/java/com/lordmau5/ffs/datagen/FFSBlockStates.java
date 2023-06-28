@@ -13,7 +13,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 public class FFSBlockStates extends BlockStateProvider {
 
     public FFSBlockStates(DataGenerator gen, ExistingFileHelper helper) {
-        super(gen, FancyFluidStorage.MOD_ID, helper);
+        super(gen.getPackOutput(), FancyFluidStorage.MOD_ID, helper);
     }
 
     @Override

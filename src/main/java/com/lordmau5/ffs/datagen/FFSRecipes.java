@@ -21,17 +21,12 @@ import java.util.function.Consumer;
 public class FFSRecipes extends RecipeProvider {
 
     public FFSRecipes(DataGenerator generatorIn) {
-        super(generatorIn);
+        super(generatorIn.getPackOutput());
     }
 
     @Override
-    public String getName() {
-        return "Fancy Fluid Storage - Recipes";
-    }
-
-    @Override
-    protected void buildCraftingRecipes(@NotNull Consumer<FinishedRecipe> consumer) {
-        ShapedRecipeBuilder.shaped(FFSBlocks.fluidValve.get())
+    protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FFSBlocks.fluidValve.get())
                 .pattern("igi")
                 .pattern("gbg")
                 .pattern("igi")
@@ -43,14 +38,14 @@ public class FFSRecipes extends RecipeProvider {
                 .save(consumer);
 
         var cc_computer = ForgeRegistries.ITEMS.getHolder(new ResourceLocation("computercraft", "computer_normal"));
-        cc_computer.ifPresent(itemHolder -> whenModLoaded(ShapelessRecipeBuilder.shapeless(FFSBlocks.tankComputer.get())
+        cc_computer.ifPresent(itemHolder -> whenModLoaded(ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, FFSBlocks.tankComputer.get())
                         .requires(FFSBlocks.fluidValve.get())
                         .requires(itemHolder.value())
                         .group(FancyFluidStorage.MOD_ID)
                         .unlockedBy("has_item", InventoryChangeTrigger.TriggerInstance.hasItems(FFSBlocks.fluidValve.get(), itemHolder.value()))
                 , "computercraft").build(consumer, "ffs", "tank_computer"));
 
-        ShapelessRecipeBuilder.shapeless(FFSItems.titEgg.get())
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, FFSItems.titEgg.get())
                 .requires(FFSBlocks.fluidValve.get())
                 .requires(Items.EGG)
                 .group(FancyFluidStorage.MOD_ID)
@@ -58,7 +53,7 @@ public class FFSRecipes extends RecipeProvider {
                 .save(consumer);
 
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(FFSItems.titEgg.get()),
-                        FFSItems.tit.get(), 1.0f, 100)
+                        RecipeCategory.MISC, FFSItems.tit.get(), 1.0f, 100)
                 .unlockedBy("has_item", InventoryChangeTrigger.TriggerInstance.hasItems(FFSItems.titEgg.get()))
                 .save(consumer);
     }

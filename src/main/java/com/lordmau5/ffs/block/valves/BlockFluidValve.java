@@ -24,8 +24,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fluids.FluidStack;
@@ -38,7 +38,7 @@ import java.util.List;
 public class BlockFluidValve extends AbstractBlock {
 
     public BlockFluidValve() {
-        super(Block.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f));
+        super(Properties.of().requiresCorrectToolForDrops().strength(5.0f, 6.0f));
 
         registerDefaultState(getStateDefinition().any().setValue(FFSStateProps.TILE_VALID, false).setValue(FFSStateProps.TILE_MAIN, false));
     }
@@ -88,10 +88,11 @@ public class BlockFluidValve extends AbstractBlock {
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState pState, LootContext.Builder pBuilder) {
+    public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams)
+    {
         List<ItemStack> drops = new ArrayList<>();
 
-        BlockEntity tile = pBuilder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        BlockEntity tile = pParams.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (tile instanceof BlockEntityFluidValve valve) {
             ItemStack stack = new ItemStack(this);
 

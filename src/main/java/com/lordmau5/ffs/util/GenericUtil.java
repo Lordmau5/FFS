@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ChunkMap;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.block.GlassBlock;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
@@ -34,16 +35,19 @@ public class GenericUtil {
     }
 
     public static boolean isBlockGlass(BlockState blockState) {
-        if (blockState == null || blockState.getMaterial() == Material.AIR) {
-            return false;
-        }
+        //This makes more sense to me but might have been done the other way for a reason?
+        return blockState.is(Tags.Blocks.GLASS) || blockState.is(Tags.Blocks.GLASS_PANES);
 
-        if (blockState.getBlock() instanceof GlassBlock) {
-            return true;
-        }
-
-        ItemStack is = new ItemStack(blockState.getBlock(), 1);
-        return blockState.getMaterial() == Material.GLASS && !is.getDescriptionId().contains("pane");
+//        if (blockState == null || blockState.getMaterial() == Material.AIR) {
+//            return false;
+//        }
+//
+//        if (blockState.getBlock() instanceof GlassBlock) {
+//            return true;
+//        }
+//
+//        ItemStack is = new ItemStack(blockState.getBlock(), 1);
+//        return blockState.getMaterial() == Material.GLASS && !is.getDescriptionId().contains("pane");
     }
 
     public static Direction getInsideForTankFrame(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockPos frame) {

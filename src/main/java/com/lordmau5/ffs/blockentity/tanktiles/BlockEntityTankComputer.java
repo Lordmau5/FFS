@@ -5,7 +5,6 @@ import com.lordmau5.ffs.compat.Compatibility;
 import com.lordmau5.ffs.compat.computercraft.CompatibilityComputerCraft;
 import com.lordmau5.ffs.holder.FFSBlockEntities;
 import com.lordmau5.ffs.util.FFSStateProps;
-import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
