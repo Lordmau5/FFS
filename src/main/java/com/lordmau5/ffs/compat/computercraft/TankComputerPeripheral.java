@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public record TankComputerPeripheral(BlockEntityTankComputer computer) implements IPeripheral {
 
@@ -74,18 +75,12 @@ public record TankComputerPeripheral(BlockEntityTankComputer computer) implement
     }
 
     @LuaFunction(mainThread = true)
-    public void toggleFluidLock() throws LuaException {
+    public void toggleFluidLock(Optional<Boolean> shouldLockOpt) throws LuaException {
         ensureValidity();
 
         TankConfig config = computer.getMainValve().getTankConfig();
-        toggleFluidLock(!config.isFluidLocked());
-    }
 
-    @LuaFunction(mainThread = true)
-    public void toggleFluidLock(boolean shouldLock) throws LuaException {
-        ensureValidity();
-
-        TankConfig config = computer.getMainValve().getTankConfig();
+        boolean shouldLock = shouldLockOpt.orElse(!config.isFluidLocked());
 
         if (shouldLock) {
             if (config.isEmpty()) {
@@ -96,6 +91,8 @@ public record TankComputerPeripheral(BlockEntityTankComputer computer) implement
         } else {
             config.unlockFluid();
         }
+
+        computer.markForUpdateNow();
     }
 
     @LuaFunction(mainThread = true)
