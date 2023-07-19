@@ -94,8 +94,6 @@ public class ClientRenderHelper {
 
         ps.translate(offset.getX(), offset.getY(), offset.getZ());
 
-        RenderSystem.depthMask(false);
-
         float[] cols = new float[]{r, g, b, a};
 
         switch (direction) {

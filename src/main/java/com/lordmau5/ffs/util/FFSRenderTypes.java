@@ -3,6 +3,7 @@ package com.lordmau5.ffs.util;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 
 public class FFSRenderTypes extends RenderType {
@@ -19,6 +20,7 @@ public class FFSRenderTypes extends RenderType {
                     .setShaderState(POSITION_COLOR_TEX_LIGHTMAP_SHADER)
                     .setTextureState(BLOCK_SHEET_MIPPED)
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setWriteMaskState(RenderStateShard.COLOR_WRITE)
                     .createCompositeState(false)
     );
 }
