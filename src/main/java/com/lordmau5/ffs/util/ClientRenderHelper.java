@@ -117,8 +117,6 @@ public class ClientRenderHelper {
 
         ps.translate(offset.getX(), offset.getY(), offset.getZ());
 
-        RenderSystem.depthMask(false);
-
         Matrix4f matrix = ps.last().pose();
 
         switch (direction) {

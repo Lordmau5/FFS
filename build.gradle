@@ -125,16 +125,16 @@ dependencies {
     runtimeOnly fg.deobf("org.squiddev:cc-tweaked-${minecraft_version}:${cct_version}")
 }
 
-processResources {
-//    inputs.property 'mod_version', project.mod_version
-//
-//    from(sourceSets.main.resources.srcDirs) {
-//        include 'META-INF/mods.toml'
-//
-//        expand 'mod_version':project.mod_version
-//    }
-//
-//    from(sourceSets.main.resources.srcDirs) {
-//        exclude 'META-INF/mods.toml'
-//    }
+jar {
+    manifest {
+        attributes([
+                "Specification-Title": archivesBaseName,
+                "Specification-Vendor": "Lordmau5",
+                "Specification-Version": "${project.mod_version}",
+                "Implementation-Title": archivesBaseName,
+                "Implementation-Version": "${project.mod_version}",
+                "Implementation-Vendor" :"Lordmau5",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+        ],)
+    }
 }
