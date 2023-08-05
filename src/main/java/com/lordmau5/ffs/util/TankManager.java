@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
@@ -329,21 +330,16 @@ public class TankManager {
             return;
         }
 
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        BlockState state = world.getBlockState(pos);
 
-        if (blockEntity != null) {
-            ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack heldOffHand = player.getOffhandItem();
+        boolean holdsTIT = !heldOffHand.isEmpty() && heldOffHand.getItem() == FFSItems.tit.get();
 
-            if (heldItem.isEmpty() && heldItem.getItem() != FFSItems.tit.get()) {
-                heldItem = player.getItemInHand(InteractionHand.OFF_HAND);
+        // TODO: Add a custom keybind for a modifier key (e.g. CTRL) to also allow as an override
+        if (player.isShiftKeyDown() || holdsTIT) {
+            // Potentially interact with the block at this position
+            state.use(world, player, InteractionHand.MAIN_HAND, event.getHitVec());
 
-                if (heldItem.isEmpty() && heldItem.getItem() != FFSItems.tit.get()) {
-                    return;
-                }
-            }
-        }
-
-        if (player.isShiftKeyDown()) {
             return;
         }
 
