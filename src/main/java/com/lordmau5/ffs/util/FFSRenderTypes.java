@@ -20,7 +20,7 @@ public class FFSRenderTypes extends RenderType {
                     .setShaderState(POSITION_COLOR_TEX_LIGHTMAP_SHADER)
                     .setTextureState(BLOCK_SHEET_MIPPED)
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                    .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+                    .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
                     .createCompositeState(false)
     );
 }
