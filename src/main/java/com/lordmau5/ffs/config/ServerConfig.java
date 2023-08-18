@@ -23,11 +23,5 @@ public class ServerConfig {
         })
         @Config.RangeInt(min = 3, max = 65536)
         public int maxAirBlocks = 8192;
-
-        @Config.Name("Block Blacklist Invert")
-        @Config.Comment({
-                "When enabled, this will turn the blacklist into a whitelist."
-        })
-        public boolean blockBlacklistInvert = false;
     }
 }

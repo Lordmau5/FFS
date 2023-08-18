@@ -13,13 +13,9 @@ import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -425,13 +421,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
     private boolean isBlockBlacklisted(BlockPos pos, BlockState state) {
         if (!hasLevel() || getLevel().getBlockEntity(pos) instanceof AbstractTankEntity) return false;
 
-        TagKey<Block> blacklist = BlockTags.create(new ResourceLocation(FancyFluidStorage.MOD_ID, "blacklist"));
-
-        if (state.is(blacklist)) {
-            return !ServerConfig.general.blockBlacklistInvert;
-        }
-
-        return ServerConfig.general.blockBlacklistInvert;
+        return state.is(FancyFluidStorage.TANK_BLACKLIST);
     }
 
     private boolean setupTank() {

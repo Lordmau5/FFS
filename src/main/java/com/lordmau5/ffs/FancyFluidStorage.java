@@ -13,8 +13,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -27,6 +29,8 @@ import net.minecraftforge.registries.RegisterEvent;
 @Mod(FancyFluidStorage.MOD_ID)
 public class FancyFluidStorage {
     public static final String MOD_ID = "ffs";
+
+    public static final TagKey<Block> TANK_BLACKLIST = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "invalid_for_tank"));
 
     public FancyFluidStorage() {
         final IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
