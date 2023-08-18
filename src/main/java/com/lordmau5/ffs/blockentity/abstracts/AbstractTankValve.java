@@ -9,7 +9,6 @@ import com.lordmau5.ffs.network.FFSPacket;
 import com.lordmau5.ffs.network.NetworkHandler;
 import com.lordmau5.ffs.util.FFSStateProps;
 import com.lordmau5.ffs.util.GenericUtil;
-import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,7 +32,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractTankValve extends AbstractTankEntity implements IFacingEntity, INameableEntity {
 
-    public final HashMap<Integer, TreeMap<Integer, HashSet<LayerBlockPos>>> maps;
+    public final HashMap<Integer, TreeMap<Integer, HashSet<BlockPos>>> maps;
     private final HashSet<AbstractTankEntity> tankTiles;
     private int initialWaitTick = 20;
     private TankConfig tankConfig;
@@ -98,11 +97,11 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         }
     }
 
-    public TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocks() {
+    public TreeMap<Integer, HashSet<BlockPos>> getFrameBlocks() {
         return maps.get(0);
     }
 
-    public TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocks() {
+    public TreeMap<Integer, HashSet<BlockPos>> getAirBlocks() {
         return maps.get(1);
     }
 
@@ -217,7 +216,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
         updateBlockAndNeighbors();
     }
 
-    private void setTankTileFacing(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockEntity tankTile) {
+    private void setTankTileFacing(TreeMap<Integer, HashSet<BlockPos>> airBlocks, BlockEntity tankTile) {
         HashSet<BlockPos> possibleAirBlocks = new HashSet<>();
         for (Direction dr : Direction.values()) {
             if (GenericUtil.isAirOrWaterLoggable(getLevel(), tankTile.getBlockPos().relative(dr))) {
@@ -278,14 +277,13 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
 
         Deque<BlockPos> to_check = new ArrayDeque<>();
         HashSet<BlockPos> checked_blocks = new HashSet<>();
-        TreeMap<Integer, HashSet<LayerBlockPos>> air_blocks = new TreeMap<>();
-        TreeMap<Integer, HashSet<LayerBlockPos>> frame_blocks = new TreeMap<>();
+        TreeMap<Integer, HashSet<BlockPos>> air_blocks = new TreeMap<>();
+        TreeMap<Integer, HashSet<BlockPos>> frame_blocks = new TreeMap<>();
 
         if (!checkBlock(insidePos)) return false;
 
-        LayerBlockPos pos = new LayerBlockPos(insidePos, 0);
-        HashSet<LayerBlockPos> zeroLayer = new HashSet<>();
-        zeroLayer.add(pos);
+        HashSet<BlockPos> zeroLayer = new HashSet<>();
+        zeroLayer.add(insidePos);
         air_blocks.put(0, zeroLayer);
 
         to_check.add(insidePos);
@@ -313,22 +311,21 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
                 }
                 checked_blocks.add(offsetPos);
 
-                LayerBlockPos _pos = new LayerBlockPos(offsetPos, offsetPos.getY() - insidePos.getY());
-                if (GenericUtil.isAirOrWaterLoggable(getLevel(), _pos)) {
-                    if (!air_blocks.get(layer).contains(_pos)) {
-                        air_blocks.get(layer).add(_pos);
+                if (GenericUtil.isAirOrWaterLoggable(getLevel(), offsetPos)) {
+                    if (!air_blocks.get(layer).contains(offsetPos)) {
+                        air_blocks.get(layer).add(offsetPos);
                         to_check.add(offsetPos);
                         currentAirBlocks++;
                     }
                 } else {
-                    BlockState state = getLevel().getBlockState(_pos);
+                    BlockState state = getLevel().getBlockState(offsetPos);
 
-                    if (isBlockBlacklisted(_pos, state)) {
-                        blacklistedBlocks.add(_pos);
+                    if (isBlockBlacklisted(offsetPos, state)) {
+                        blacklistedBlocks.add(offsetPos);
                     } else if (GenericUtil.isBlockFallingBlock(state)) {
-                        fallingBlocks.add(_pos);
+                        fallingBlocks.add(offsetPos);
                     } else {
-                        frame_blocks.get(layer).add(_pos);
+                        frame_blocks.get(layer).add(offsetPos);
                     }
                 }
             }
@@ -338,17 +335,14 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
             }
         }
 
+        maps.put(0, frame_blocks);
+        maps.put(1, air_blocks);
+
         if (checkInvalid(blacklistedBlocks, fallingBlocks, getInvalidFrameBlocks(), currentAirBlocks, maxAirBlocks)) {
             return false;
         }
 
-        if (currentAirBlocks == 0) {
-            return false;
-        }
-
-        maps.put(0, frame_blocks);
-        maps.put(1, air_blocks);
-        return true;
+        return currentAirBlocks > 0;
     }
 
     private boolean checkInvalid(HashSet<BlockPos> blacklistedBlocks, HashSet<BlockPos> fallingBlocks, HashSet<BlockPos> invalidBlocks, int currentAirBlocks, int maxAirBlocks) {
@@ -356,6 +350,7 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
 
         if (currentAirBlocks > maxAirBlocks) {
             GenericUtil.sendMessageToClient(buildPlayer, "chat.ffs.valve_too_much_air", false, maxAirBlocks);
+            return invalid;
         }
 
         if (blacklistedBlocks.size() > 0) {

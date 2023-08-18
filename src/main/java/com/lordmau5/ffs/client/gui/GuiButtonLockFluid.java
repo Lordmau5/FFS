@@ -2,7 +2,6 @@ package com.lordmau5.ffs.client.gui;
 
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.resources.ResourceLocation;

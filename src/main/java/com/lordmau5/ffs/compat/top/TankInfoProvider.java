@@ -46,6 +46,7 @@ public class TankInfoProvider implements IProbeInfoProvider {
         if (!fluidStack.isEmpty()) {
             probeInfo.text(Component.translatable("top.ffs.fluid", fluidStack.getDisplayName()));
         }
+
         if (config.getTankMode() == 1) {
             probeInfo.progress(contents, maxContents, probeInfo.defaultProgressStyle().suffix("mB").filledColor(Config.tankbarFilledColor).alternateFilledColor(Config.tankbarAlternateFilledColor)
                     .borderColor(Config.tankbarBorderColor).numberFormat(Config.tankFormat.get()));

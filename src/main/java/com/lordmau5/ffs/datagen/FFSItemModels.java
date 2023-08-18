@@ -3,7 +3,6 @@ package com.lordmau5.ffs.datagen;
 import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.holder.FFSBlocks;
 import com.lordmau5.ffs.holder.FFSItems;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.world.item.ItemDisplayContext;

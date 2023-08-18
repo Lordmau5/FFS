@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.blockentity.interfaces.INameableEntity;
-import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -64,8 +63,8 @@ public abstract class FFSPacket {
 
         public static class OnTankBuild {
             private BlockPos valvePos;
-            private TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks;
-            private TreeMap<Integer, HashSet<LayerBlockPos>> frameBlocks;
+            private TreeMap<Integer, HashSet<BlockPos>> airBlocks;
+            private TreeMap<Integer, HashSet<BlockPos>> frameBlocks;
 
             public OnTankBuild() {
             }
@@ -106,7 +105,7 @@ public abstract class FFSPacket {
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
 
-                    HashSet<LayerBlockPos> layerBlocks = buffer.readCollection(Sets::newHashSetWithExpectedSize, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
+                    HashSet<BlockPos> layerBlocks = buffer.readCollection(Sets::newHashSetWithExpectedSize, reader -> BlockPos.of(reader.readLong()));
 
                     packet.airBlocks.put(layer, layerBlocks);
                 }
@@ -116,7 +115,7 @@ public abstract class FFSPacket {
                 for (int i = 0; i < layerSize; i++) {
                     int layer = buffer.readInt();
 
-                    HashSet<LayerBlockPos> layerBlocks = buffer.readCollection(Sets::newHashSetWithExpectedSize, reader -> new LayerBlockPos(BlockPos.of(reader.readLong()), layer));
+                    HashSet<BlockPos> layerBlocks = buffer.readCollection(Sets::newHashSetWithExpectedSize, reader -> BlockPos.of(reader.readLong()));
 
                     packet.frameBlocks.put(layer, layerBlocks);
                 }
@@ -128,11 +127,11 @@ public abstract class FFSPacket {
                 return valvePos;
             }
 
-            public TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocks() {
+            public TreeMap<Integer, HashSet<BlockPos>> getAirBlocks() {
                 return airBlocks;
             }
 
-            public TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocks() {
+            public TreeMap<Integer, HashSet<BlockPos>> getFrameBlocks() {
                 return frameBlocks;
             }
 

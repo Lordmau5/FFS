@@ -15,7 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
@@ -42,14 +41,14 @@ public class TankManager {
     public static TankManager INSTANCE = new TankManager();
 
     private static class HashMapCache {
-        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>>> valveToFrameBlocks = new HashMap<>();
-        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>>> valveToAirBlocks = new HashMap<>();
+        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, TreeMap<Integer, HashSet<BlockPos>>>> valveToFrameBlocks = new HashMap<>();
+        private final HashMap<ResourceKey<Level>, HashMap<BlockPos, TreeMap<Integer, HashSet<BlockPos>>>> valveToAirBlocks = new HashMap<>();
         private final HashMap<ResourceKey<Level>, HashMap<BlockPos, BlockPos>> frameBlockToValve = new HashMap<>();
         private final HashMap<ResourceKey<Level>, HashMap<BlockPos, BlockPos>> airBlockToValve = new HashMap<>();
 
         private final HashMap<ResourceKey<Level>, HashSet<BlockPos>> blocksToCheck = new HashMap<>();
 
-        private HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>> getValveToFrameBlocks(Level world) {
+        private HashMap<BlockPos, TreeMap<Integer, HashSet<BlockPos>>> getValveToFrameBlocks(Level world) {
             ResourceKey<Level> dimension = world.dimension();
 
             valveToFrameBlocks.putIfAbsent(dimension, new HashMap<>());
@@ -57,7 +56,7 @@ public class TankManager {
             return valveToFrameBlocks.get(dimension);
         }
 
-        private HashMap<BlockPos, TreeMap<Integer, HashSet<LayerBlockPos>>> getValveToAirBlocks(Level world) {
+        private HashMap<BlockPos, TreeMap<Integer, HashSet<BlockPos>>> getValveToAirBlocks(Level world) {
             ResourceKey<Level> dimension = world.dimension();
 
             valveToAirBlocks.putIfAbsent(dimension, new HashMap<>());
@@ -114,7 +113,7 @@ public class TankManager {
         CLIENT.clear();
     }
 
-    public void add(Level world, BlockPos valvePos, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TreeMap<Integer, HashSet<LayerBlockPos>> frameBlocks) {
+    public void add(Level world, BlockPos valvePos, TreeMap<Integer, HashSet<BlockPos>> airBlocks, TreeMap<Integer, HashSet<BlockPos>> frameBlocks) {
         if (airBlocks.isEmpty() || frameBlocks.isEmpty()) {
             return;
         }
@@ -131,17 +130,17 @@ public class TankManager {
         addIgnore(world, valvePos, airBlocks, frameBlocks);
     }
 
-    public void addIgnore(Level world, BlockPos valvePos, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, TreeMap<Integer, HashSet<LayerBlockPos>> frameBlocks) {
+    public void addIgnore(Level world, BlockPos valvePos, TreeMap<Integer, HashSet<BlockPos>> airBlocks, TreeMap<Integer, HashSet<BlockPos>> frameBlocks) {
         get(world).getValveToAirBlocks(world).put(valvePos, airBlocks);
         for (int layer : airBlocks.keySet()) {
-            for (LayerBlockPos pos : airBlocks.get(layer)) {
+            for (BlockPos pos : airBlocks.get(layer)) {
                 get(world).getAirBlockToValve(world).put(pos, valvePos);
             }
         }
 
         get(world).getValveToFrameBlocks(world).put(valvePos, frameBlocks);
         for (int layer : frameBlocks.keySet()) {
-            for (LayerBlockPos pos : frameBlocks.get(layer)) {
+            for (BlockPos pos : frameBlocks.get(layer)) {
                 get(world).getFrameBlockToValve(world).put(pos, valvePos);
             }
         }
@@ -179,7 +178,7 @@ public class TankManager {
     }
 
     public @Nullable
-    TreeMap<Integer, HashSet<LayerBlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
+    TreeMap<Integer, HashSet<BlockPos>> getAirBlocksForValve(AbstractTankValve valve) {
         Level world = valve.getLevel();
 
         if (world == null) {
@@ -196,7 +195,7 @@ public class TankManager {
     }
 
     public @Nonnull
-    TreeMap<Integer, HashSet<LayerBlockPos>> getFrameBlocksForValve(AbstractTankValve valve) {
+    TreeMap<Integer, HashSet<BlockPos>> getFrameBlocksForValve(AbstractTankValve valve) {
         Level world = valve.getLevel();
 
         if (world == null) {
@@ -229,8 +228,10 @@ public class TankManager {
     }
 
     public boolean isPartOfTank(Level world, BlockPos pos) {
-        return get(world).getFrameBlockToValve(world).containsKey(pos)
-                || get(world).getAirBlockToValve(world).containsKey(pos);
+        boolean isFrameBlock = get(world).getFrameBlockToValve(world).containsKey(pos);
+        boolean isAirBlock = get(world).getAirBlockToValve(world).containsKey(pos);
+
+        return isFrameBlock || isAirBlock;
     }
 
     private void addBlockForCheck(LevelAccessor accessor, BlockPos pos) {
@@ -294,12 +295,12 @@ public class TankManager {
     }
 
     @SubscribeEvent
-    public void onBlockBreak(final BlockEvent.BreakEvent event) {
+    public void onBlockPlace(final BlockEvent.EntityPlaceEvent event) {
         addBlockForCheck(event.getLevel(), event.getPos());
     }
 
     @SubscribeEvent
-    public void onBlockPlace(final BlockEvent.EntityPlaceEvent event) {
+    public void onNeighborNotify(final BlockEvent.NeighborNotifyEvent event) {
         addBlockForCheck(event.getLevel(), event.getPos());
     }
 
@@ -309,11 +310,7 @@ public class TankManager {
         Level world = event.getLevel();
         Player player = event.getEntity();
 
-        if (world.isClientSide()) {
-            return;
-        }
-
-        if (player == null) {
+        if (pos == null || world == null || player == null) {
             return;
         }
 
@@ -330,22 +327,21 @@ public class TankManager {
             return;
         }
 
-        BlockState state = world.getBlockState(pos);
-
         ItemStack heldOffHand = player.getOffhandItem();
         boolean holdsTIT = !heldOffHand.isEmpty() && heldOffHand.getItem() == FFSItems.tit.get();
 
-        // TODO: Add a custom keybind for a modifier key (e.g. CTRL) to also allow as an override
+        // TODO: Add a custom keybind for a modifier key (e.g. CTRL) to also allow as an override?
         if (player.isShiftKeyDown() || holdsTIT) {
-            // Potentially interact with the block at this position
-            state.use(world, player, InteractionHand.MAIN_HAND, event.getHitVec());
-
             return;
         }
 
+        event.setCanceled(true);
+
         player.swing(InteractionHand.MAIN_HAND, true);
 
-        event.setCanceled(true);
+        if (world.isClientSide()) {
+            return;
+        }
 
         AbstractTankValve tile = getValveForBlock(world, pos);
         if (tile != null && tile.getMainValve() != null) {

@@ -5,17 +5,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ChunkMap;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FallingBlock;
-import net.minecraft.world.level.block.GlassBlock;
 import net.minecraft.world.level.block.LiquidBlockContainer;
+import net.minecraft.world.level.block.SupportType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
@@ -35,22 +36,10 @@ public class GenericUtil {
     }
 
     public static boolean isBlockGlass(BlockState blockState) {
-        //This makes more sense to me but might have been done the other way for a reason?
         return blockState.is(Tags.Blocks.GLASS) || blockState.is(Tags.Blocks.GLASS_PANES);
-
-//        if (blockState == null || blockState.getMaterial() == Material.AIR) {
-//            return false;
-//        }
-//
-//        if (blockState.getBlock() instanceof GlassBlock) {
-//            return true;
-//        }
-//
-//        ItemStack is = new ItemStack(blockState.getBlock(), 1);
-//        return blockState.getMaterial() == Material.GLASS && !is.getDescriptionId().contains("pane");
     }
 
-    public static Direction getInsideForTankFrame(TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, BlockPos frame) {
+    public static Direction getInsideForTankFrame(TreeMap<Integer, HashSet<BlockPos>> airBlocks, BlockPos frame) {
         for (Direction direction : Direction.values()) {
             for (int layer : airBlocks.keySet()) {
                 if (airBlocks.get(layer).contains(frame.relative(direction))) {
@@ -78,13 +67,7 @@ public class GenericUtil {
             return false;
         }
 
-//        if ( Compatibility.INSTANCE.isCNBLoaded ) {
-//            if ( CNBAPIAccess.apiInstance.isBlockChiseled(world, pos) ) {
-//                return direction != null && CNBCompatibility.INSTANCE.isValid(world, pos, direction);
-//            }
-//        }
-
-        return isBlockGlass(state) || direction == null || state.isFaceSturdy(world, pos, direction);
+        return isBlockGlass(state) || direction == null || state.isFaceSturdy(world, pos, direction, SupportType.CENTER);
     }
 
     public static boolean isFluidContainer(ItemStack playerItem) {
@@ -164,7 +147,10 @@ public class GenericUtil {
             return container.canPlaceLiquid(level, pos, state, Fluids.WATER);
         }
 
+        if (state.canBeReplaced()) {
+            return true;
+        }
+
         return false;
     }
-
 }

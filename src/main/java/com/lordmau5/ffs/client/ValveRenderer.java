@@ -4,7 +4,6 @@ import com.lordmau5.ffs.blockentity.valves.BlockEntityFluidValve;
 import com.lordmau5.ffs.config.ServerConfig;
 import com.lordmau5.ffs.util.ClientRenderHelper;
 import com.lordmau5.ffs.util.GenericUtil;
-import com.lordmau5.ffs.util.LayerBlockPos;
 import com.lordmau5.ffs.util.TankManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -133,7 +132,7 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
 
             FluidStack fluid = valve.getTankConfig().getFluidStack();
 
-            TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks = TankManager.INSTANCE.getAirBlocksForValve(valve);
+            TreeMap<Integer, HashSet<BlockPos>> airBlocks = TankManager.INSTANCE.getAirBlocksForValve(valve);
             if (airBlocks == null || airBlocks.isEmpty()) {
                 return;
             }
@@ -177,7 +176,7 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
         return !state.isSolidRender(level, pos) && !GenericUtil.isAirOrWaterLoggable(level, pos, state);
     }
 
-    private ValveCache ensureRenderBlocksGas(BlockEntityFluidValve valve, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks) {
+    private ValveCache ensureRenderBlocksGas(BlockEntityFluidValve valve, TreeMap<Integer, HashSet<BlockPos>> airBlocks) {
         ValveCache cache = getCache(valve);
         Level level = valve.getLevel();
 
@@ -203,7 +202,7 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
         return cache;
     }
 
-    private ValveCache ensureRenderBlocksFluid(BlockEntityFluidValve valve, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks) {
+    private ValveCache ensureRenderBlocksFluid(BlockEntityFluidValve valve, TreeMap<Integer, HashSet<BlockPos>> airBlocks) {
         ValveCache cache = getCache(valve);
         Level level = valve.getLevel();
 
@@ -245,7 +244,7 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
         return cache;
     }
 
-    private void renderGasTank(TextureAtlasSprite still, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, Level level, ValveCache cache, BlockPos valvePos, PoseStack ps, MultiBufferSource vb, FluidStack fluid, float fillPercentage) {
+    private void renderGasTank(TextureAtlasSprite still, TreeMap<Integer, HashSet<BlockPos>> airBlocks, Level level, ValveCache cache, BlockPos valvePos, PoseStack ps, MultiBufferSource vb, FluidStack fluid, float fillPercentage) {
         IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(fluid.getFluid());
 
         int color = ClientRenderHelper.changeAlpha(extensions.getTintColor(fluid), (int) (fillPercentage * 255));
@@ -266,7 +265,7 @@ public class ValveRenderer implements BlockEntityRenderer<BlockEntityFluidValve>
         return level.getBlockState(pos);
     }
 
-    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, HashSet<LayerBlockPos>> airBlocks, Level level, ValveCache cache, BlockPos valvePos, PoseStack ps, MultiBufferSource vb, FluidStack fluid) {
+    private void renderFluidTank(TextureAtlasSprite still, TextureAtlasSprite flowing, TreeMap<Integer, HashSet<BlockPos>> airBlocks, Level level, ValveCache cache, BlockPos valvePos, PoseStack ps, MultiBufferSource vb, FluidStack fluid) {
         IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(fluid.getFluid());
 
         int color = extensions.getTintColor(fluid);
