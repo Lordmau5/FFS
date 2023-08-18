@@ -51,18 +51,20 @@ public class JadePlugin implements IWailaPlugin {
 
             float progress = config.getFilledPercentage();
 
+            boolean isFluidEmpty = config.getFluidStack().isEmpty();
+
             FluidView view = new FluidView(helper.fluid(JadeFluidObject.of(config.getFluidStack().getFluid())));
-            view.fluidName = config.getFluidStack().getDisplayName();
-            view.current = FluidTextHelper.getUnicodeMillibuckets(config.getFluidAmount(), true);
+            view.fluidName = isFluidEmpty ? Component.literal("Empty") : config.getFluidStack().getDisplayName();
+            view.current = FluidTextHelper.getUnicodeMillibuckets(isFluidEmpty ? config.getFluidCapacity() : config.getFluidAmount(), true);
 
             IProgressStyle progressStyle = helper.progressStyle().overlay(view.overlay);
 
-            Component textComponent;
-            if (view.fluidName == null) {
-                textComponent = Component.literal(view.current);
-            } else {
-                textComponent = Component.translatable("jade.fluid", IDisplayHelper.get().stripColor(view.fluidName), view.current);
+            Component fluidAmount = Component.literal(view.current);
+            if (isFluidEmpty) {
+                fluidAmount = fluidAmount.copy().withStyle(ChatFormatting.GRAY);
             }
+
+            Component textComponent = Component.translatable("jade.fluid", IDisplayHelper.get().stripColor(view.fluidName), fluidAmount);
 
             iTooltip.add(1, helper.progress(progress, textComponent, progressStyle, BoxStyle.DEFAULT, true));
 

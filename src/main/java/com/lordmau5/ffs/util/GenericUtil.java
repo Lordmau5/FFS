@@ -147,10 +147,6 @@ public class GenericUtil {
             return container.canPlaceLiquid(level, pos, state, Fluids.WATER);
         }
 
-        if (state.canBeReplaced()) {
-            return true;
-        }
-
-        return false;
+        return state.canBeReplaced();
     }
 }
