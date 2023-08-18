@@ -67,6 +67,10 @@ public class TankConfig {
         return this.fluidTank.getFluidAmount();
     }
 
+    public float getFilledPercentage() {
+        return (float) this.getFluidAmount() / (float) this.getFluidCapacity();
+    }
+
     public boolean isEmpty() {
         return this.fluidTank.isEmpty();
     }

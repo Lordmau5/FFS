@@ -110,6 +110,12 @@ repositories {
             includeModule("org.squiddev", "Cobalt")
         }
     }
+    maven {
+        url "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -124,6 +130,8 @@ dependencies {
     implementation fg.deobf(project.dependencies.create("mcjty.theoneprobe:theoneprobe:${top_version}") {
         transitive = false
     })
+
+    implementation fg.deobf("curse.maven:jade-324717:${jade_cf_file_id}")
 
     compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-core-api:$cct_version")
     compileOnly(fg.deobf("cc.tweaked:cc-tweaked-$minecraft_version-forge-api:$cct_version"))
