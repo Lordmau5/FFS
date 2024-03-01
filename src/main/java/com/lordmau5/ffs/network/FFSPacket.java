@@ -68,7 +68,7 @@ public abstract class FFSPacket {
             @Override
             public ResourceLocation id()
             {
-                return null;
+                return ID;
             }
         }
 
