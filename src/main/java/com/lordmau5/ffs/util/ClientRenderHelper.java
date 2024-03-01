@@ -43,6 +43,7 @@ public class ClientRenderHelper {
         QuadBakingVertexConsumer.Buffered quadBaker = new QuadBakingVertexConsumer.Buffered();
         Vec3 normal = Vec3.atLowerCornerOf(face.getNormal());
 
+
         putVertex(quadBaker, normal, vectors.get(0).x, vectors.get(0).y, vectors.get(0).z, u1, v1, sprite, cols, face);
         putVertex(quadBaker, normal, vectors.get(1).x, vectors.get(1).y, vectors.get(1).z, u1, v2, sprite, cols, face);
         putVertex(quadBaker, normal, vectors.get(2).x, vectors.get(2).y, vectors.get(2).z, u2, v2, sprite, cols, face);
@@ -51,8 +52,7 @@ public class ClientRenderHelper {
         return quadBaker.getQuad();
     }
 
-    private static void putVertex(QuadBakingVertexConsumer quadBaker, Vec3 normal,
-                                  double x, double y, double z, float u, float v, TextureAtlasSprite sprite, float[] cols, Direction face) {
+    private static void putVertex(QuadBakingVertexConsumer quadBaker, Vec3 normal, double x, double y, double z, float u, float v, TextureAtlasSprite sprite, float[] cols, Direction face) {
         quadBaker.vertex(x, y, z);
         quadBaker.normal((float) normal.x, (float) normal.y, (float) normal.z);
         quadBaker.color(cols[0], cols[1], cols[2], cols[3]);
@@ -76,7 +76,7 @@ public class ClientRenderHelper {
             return;
         }
 
-        float size = flowing ? 8.0f : 16.0f;
+        float size = flowing ? 1.0f : 0.8f;
 
         float minU = sprite.getU0();
         float minV = flowing ? (size * (1.0f - height)) : sprite.getV0();
