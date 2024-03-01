@@ -1,5 +1,7 @@
 package com.lordmau5.ffs.compat;
 
+import com.lordmau5.ffs.compat.computercraft.CompatibilityComputerCraft;
+import com.lordmau5.ffs.compat.top.CompatibilityTOP;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.fml.ModList;
@@ -14,15 +16,14 @@ public class Compatibility {
         isCCLoaded = ModList.get().isLoaded("computercraft");
 
         if (isCCLoaded) {
-//            CompatibilityComputerCraft.initialize();
+            CompatibilityComputerCraft.initialize();
         }
     }
 
     @OnlyIn(Dist.CLIENT)
     public static void initClient() {
         if (isTOPLoaded) {
-//            CompatibilityTOP.register();
+            CompatibilityTOP.register();
         }
     }
-
 }

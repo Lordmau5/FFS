@@ -115,6 +115,11 @@ dependencies {
         transitive = false
     })
 
+    compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-core-api:$cct_version")
+    compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-forge-api:$cct_version")
+    //Requires older Neo so lets not run it yet
+//    runtimeOnly("cc.tweaked:cc-tweaked-$minecraft_version-forge:$cct_version")
+
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
