@@ -17,14 +17,13 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 @Mod(FancyFluidStorage.MOD_ID)
 public class FancyFluidStorage {
@@ -32,8 +31,7 @@ public class FancyFluidStorage {
 
     public static final TagKey<Block> TANK_BLACKLIST = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "invalid_for_tank"));
 
-    public FancyFluidStorage() {
-        final IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+    public FancyFluidStorage(IEventBus bus) {
         bus.addListener(this::setup);
         bus.addListener(this::setupClient);
         bus.addListener(this::registerCreativeTab);
@@ -42,6 +40,7 @@ public class FancyFluidStorage {
         FFSItems.register();
         FFSBlockEntities.register();
         FFSSounds.register();
+        NetworkHandler.init(bus);
 
         GenericUtil.init();
 
@@ -50,7 +49,6 @@ public class FancyFluidStorage {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        NetworkHandler.registerChannels();
 
         Compatibility.init();
     }

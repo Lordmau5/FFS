@@ -27,3 +27,4 @@ libs
 
 # Generated assets
 src/generated
+runs/

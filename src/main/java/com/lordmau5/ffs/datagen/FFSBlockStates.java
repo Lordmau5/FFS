@@ -5,12 +5,13 @@ import com.lordmau5.ffs.holder.FFSBlocks;
 import com.lordmau5.ffs.util.FFSStateProps;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
-import net.minecraftforge.client.model.generators.BlockModelBuilder;
-import net.minecraftforge.client.model.generators.BlockStateProvider;
-import net.minecraftforge.client.model.generators.MultiPartBlockStateBuilder;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
+import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
+import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
-public class FFSBlockStates extends BlockStateProvider {
+public class FFSBlockStates extends BlockStateProvider
+{
 
     public FFSBlockStates(DataGenerator gen, ExistingFileHelper helper) {
         super(gen.getPackOutput(), FancyFluidStorage.MOD_ID, helper);

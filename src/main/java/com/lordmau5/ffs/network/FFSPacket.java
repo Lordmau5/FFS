@@ -1,26 +1,34 @@
 package com.lordmau5.ffs.network;
 
 import com.google.common.collect.Sets;
+import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankEntity;
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
 import com.lordmau5.ffs.blockentity.interfaces.INameableEntity;
 import com.lordmau5.ffs.util.TankManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
 public abstract class FFSPacket {
     public static abstract class Client {
-        public static class OpenGUI {
+        public static class OpenGUI implements CustomPacketPayload {
             public BlockPos pos;
             public boolean isValve;
+
+            public static final ResourceLocation ID = new ResourceLocation(FancyFluidStorage.MOD_ID, "open_gui");
+
 
             public OpenGUI() {
             }
@@ -30,7 +38,7 @@ public abstract class FFSPacket {
                 this.isValve = isValve;
             }
 
-            public void encode(FriendlyByteBuf buffer) {
+            public void write(FriendlyByteBuf buffer) {
                 buffer.writeBlockPos(this.pos);
                 buffer.writeBoolean(this.isValve);
             }
@@ -52,19 +60,23 @@ public abstract class FFSPacket {
                 return isValve;
             }
 
-            public static void onReceived(OpenGUI msg, Supplier<NetworkEvent.Context> ctxSupplier) {
-                NetworkEvent.Context ctx = ctxSupplier.get();
+            public static void onReceived(OpenGUI msg, PlayPayloadContext ctx) {
+                ctx.workHandler().submitAsync(() -> FFSPacketClientHandler.handleOnOpenGUI(msg));
+            }
 
-                ctx.enqueueWork(() -> FFSPacketClientHandler.handleOnOpenGUI(msg));
 
-                ctx.setPacketHandled(true);
+            @Override
+            public ResourceLocation id()
+            {
+                return null;
             }
         }
 
-        public static class OnTankBuild {
+        public static class OnTankBuild implements CustomPacketPayload {
             private BlockPos valvePos;
             private TreeMap<Integer, HashSet<BlockPos>> airBlocks;
             private TreeMap<Integer, HashSet<BlockPos>> frameBlocks;
+            public static final ResourceLocation ID = new ResourceLocation(FancyFluidStorage.MOD_ID, "on_tank_build");
 
             public OnTankBuild() {
             }
@@ -75,7 +87,8 @@ public abstract class FFSPacket {
                 this.frameBlocks = valve.getFrameBlocks();
             }
 
-            public void encode(FriendlyByteBuf buffer) {
+            @Override
+            public void write(FriendlyByteBuf buffer) {
                 buffer.writeLong(this.valvePos.asLong());
 
                 buffer.writeInt(this.airBlocks.size());
@@ -135,17 +148,21 @@ public abstract class FFSPacket {
                 return frameBlocks;
             }
 
-            public static void onReceived(OnTankBuild msg, Supplier<NetworkEvent.Context> ctxSupplier) {
-                NetworkEvent.Context ctx = ctxSupplier.get();
+            public static void onReceived(OnTankBuild msg, PlayPayloadContext  ctx) {
+                ctx.workHandler().submitAsync(() -> FFSPacketClientHandler.handleOnTankBuild(msg));
+            }
 
-                ctx.enqueueWork(() -> FFSPacketClientHandler.handleOnTankBuild(msg));
 
-                ctx.setPacketHandled(true);
+            @Override
+            public ResourceLocation id()
+            {
+                return ID;
             }
         }
 
-        public static class OnTankBreak {
+        public static class OnTankBreak implements CustomPacketPayload {
             private BlockPos valvePos;
+            public static final ResourceLocation ID = new ResourceLocation(FancyFluidStorage.MOD_ID, "on_tank_break");
 
             public OnTankBreak() {
             }
@@ -154,7 +171,8 @@ public abstract class FFSPacket {
                 this.valvePos = valve.getBlockPos();
             }
 
-            public void encode(FriendlyByteBuf buffer) {
+            @Override
+            public void write(FriendlyByteBuf buffer) {
                 buffer.writeBlockPos(this.valvePos);
             }
 
@@ -170,41 +188,51 @@ public abstract class FFSPacket {
                 return valvePos;
             }
 
-            public static void onReceived(OnTankBreak msg, Supplier<NetworkEvent.Context> ctxSupplier) {
-                NetworkEvent.Context ctx = ctxSupplier.get();
+            public static void onReceived(OnTankBreak msg, PlayPayloadContext ctx) {
+                ctx.workHandler().submitAsync(() -> FFSPacketClientHandler.handleOnTankBreak(msg));
+            }
 
-                ctx.enqueueWork(() -> FFSPacketClientHandler.handleOnTankBreak(msg));
 
-                ctx.setPacketHandled(true);
+            @Override
+            public ResourceLocation id()
+            {
+                return ID;
             }
         }
 
-        public static class ClearTanks {
+        public static class ClearTanks implements CustomPacketPayload {
+            public static final ResourceLocation ID = new ResourceLocation(FancyFluidStorage.MOD_ID, "clear_tanks");
 
             public ClearTanks() {
             }
 
-            public void encode(FriendlyByteBuf buffer) {
+            @Override
+            public void write(FriendlyByteBuf buffer) {
             }
 
             public static ClearTanks decode(FriendlyByteBuf buffer) {
                 return new ClearTanks();
             }
 
-            public static void onReceived(ClearTanks msg, Supplier<NetworkEvent.Context> ctxSupplier) {
-                NetworkEvent.Context ctx = ctxSupplier.get();
+            public static void onReceived(ClearTanks msg, PlayPayloadContext ctx) {
+                ctx.workHandler().submitAsync(() -> TankManager.INSTANCE.clear());
+            }
 
-                ctx.enqueueWork(() -> TankManager.INSTANCE.clear());
 
-                ctx.setPacketHandled(true);
+            @Override
+            public ResourceLocation id()
+            {
+                return ID;
             }
         }
     }
 
     public static class Server {
-        public static class UpdateTileName {
+        public static class UpdateTileName implements CustomPacketPayload {
             private BlockPos pos;
             private String name;
+
+            public static final ResourceLocation ID = new ResourceLocation(FancyFluidStorage.MOD_ID, "update_tile_name");
 
             public UpdateTileName() {
             }
@@ -214,7 +242,7 @@ public abstract class FFSPacket {
                 this.name = name;
             }
 
-            public void encode(FriendlyByteBuf buffer) {
+            public void write(FriendlyByteBuf buffer) {
                 buffer.writeBlockPos(this.pos);
                 buffer.writeUtf(this.name);
             }
@@ -236,12 +264,11 @@ public abstract class FFSPacket {
                 return name;
             }
 
-            public static void onReceived(UpdateTileName msg, Supplier<NetworkEvent.Context> ctxSupplier) {
-                NetworkEvent.Context ctx = ctxSupplier.get();
+            public static void onReceived(UpdateTileName msg, PlayPayloadContext ctx) {
 
-                ctx.enqueueWork(() -> {
-                    ServerPlayer playerEntity = ctx.getSender();
-                    Level world = playerEntity != null ? playerEntity.level() : null;
+                ctx.workHandler().submitAsync(() -> {
+                    Optional<Player> playerEntity = ctx.player();
+                    Level world = playerEntity != null ? playerEntity.get().level() : null;
 
                     if (world != null) {
                         BlockEntity tile = world.getBlockEntity(msg.getPos());
@@ -252,14 +279,21 @@ public abstract class FFSPacket {
                         }
                     }
                 });
+            }
 
-                ctx.setPacketHandled(true);
+            @Override
+            public ResourceLocation id()
+            {
+                return ID;
             }
         }
 
-        public static class UpdateFluidLock {
+        public static class UpdateFluidLock implements CustomPacketPayload
+        {
             private BlockPos pos;
             private boolean fluidLock;
+
+            public static final ResourceLocation ID = new ResourceLocation(FancyFluidStorage.MOD_ID, "update_fluid_lock");
 
             public UpdateFluidLock() {
             }
@@ -269,10 +303,13 @@ public abstract class FFSPacket {
                 this.fluidLock = valve.getTankConfig().isFluidLocked();
             }
 
-            public void encode(FriendlyByteBuf buffer) {
+            @Override
+            public void write(FriendlyByteBuf buffer)
+            {
                 buffer.writeBlockPos(this.pos);
                 buffer.writeBoolean(this.fluidLock);
             }
+
 
             public static UpdateFluidLock decode(FriendlyByteBuf buffer) {
                 UpdateFluidLock packet = new UpdateFluidLock();
@@ -291,12 +328,10 @@ public abstract class FFSPacket {
                 return fluidLock;
             }
 
-            public static void onReceived(UpdateFluidLock msg, Supplier<NetworkEvent.Context> ctxSupplier) {
-                NetworkEvent.Context ctx = ctxSupplier.get();
-
-                ctx.enqueueWork(() -> {
-                    ServerPlayer playerEntity = ctx.getSender();
-                    Level world = playerEntity != null ? playerEntity.level() : null;
+            public static void onReceived(UpdateFluidLock msg, PlayPayloadContext ctx) {
+                ctx.workHandler().submitAsync(() -> {
+                    Optional<Player> playerEntity = ctx.player();
+                    Level world = playerEntity != null ? playerEntity.get().level() : null;
 
                     if (world != null) {
                         BlockEntity tile = world.getBlockEntity(msg.getPos());
@@ -306,13 +341,18 @@ public abstract class FFSPacket {
                         }
                     }
                 });
+            }
 
-                ctx.setPacketHandled(true);
+            @Override
+            public ResourceLocation id()
+            {
+                return ID;
             }
         }
 
-        public static class OnTankRequest {
+        public static class OnTankRequest implements CustomPacketPayload {
             private BlockPos pos;
+            public static final ResourceLocation ID = new ResourceLocation(FancyFluidStorage.MOD_ID, "on_tank_request");
 
             public OnTankRequest() {
             }
@@ -321,7 +361,7 @@ public abstract class FFSPacket {
                 this.pos = valve.getBlockPos();
             }
 
-            public void encode(FriendlyByteBuf buffer) {
+            public void write(FriendlyByteBuf buffer) {
                 buffer.writeBlockPos(this.pos);
             }
 
@@ -337,22 +377,24 @@ public abstract class FFSPacket {
                 return pos;
             }
 
-            public static void onReceived(OnTankRequest msg, Supplier<NetworkEvent.Context> ctxSupplier) {
-                NetworkEvent.Context ctx = ctxSupplier.get();
-
-                ctx.enqueueWork(() -> {
-                    ServerPlayer playerEntity = ctx.getSender();
-                    Level world = playerEntity != null ? playerEntity.level() : null;
+            public static void onReceived(OnTankRequest msg, PlayPayloadContext ctx) {
+                ctx.workHandler().submitAsync(() -> {
+                    Optional<Player> playerEntity = ctx.player();
+                    Level world = playerEntity != null ? playerEntity.get().level() : null;
 
                     if (world != null) {
                         BlockEntity tile = world.getBlockEntity(msg.getPos());
                         if (tile instanceof AbstractTankValve) {
-                            NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OnTankBuild((AbstractTankValve) tile), playerEntity);
+                            NetworkHandler.sendPacketToPlayer(new FFSPacket.Client.OnTankBuild((AbstractTankValve) tile), (ServerPlayer) playerEntity.get());
                         }
                     }
                 });
+            }
 
-                ctx.setPacketHandled(true);
+            @Override
+            public ResourceLocation id()
+            {
+                return ID;
             }
         }
     }

@@ -1,9 +1,10 @@
 package com.lordmau5.ffs.blockentity.util;
 
 import com.lordmau5.ffs.blockentity.abstracts.AbstractTankValve;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
-class InternalFluidTank extends FluidTank {
+class InternalFluidTank extends FluidTank
+{
     private final AbstractTankValve valve;
 
     public InternalFluidTank(AbstractTankValve valve) {

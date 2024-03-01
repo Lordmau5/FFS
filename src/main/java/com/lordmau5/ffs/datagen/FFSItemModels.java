@@ -6,11 +6,12 @@ import com.lordmau5.ffs.holder.FFSItems;
 import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraftforge.client.model.generators.ItemModelBuilder;
-import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
-public class FFSItemModels extends ItemModelProvider {
+public class FFSItemModels extends ItemModelProvider
+{
 
     public FFSItemModels(DataGenerator packOutput, ExistingFileHelper existingFileHelper) {
         super(packOutput.getPackOutput(), FancyFluidStorage.MOD_ID, existingFileHelper);

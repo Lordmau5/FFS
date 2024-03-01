@@ -4,9 +4,10 @@ import com.lordmau5.ffs.FancyFluidStorage;
 import com.lordmau5.ffs.holder.FFSBlocks;
 import com.lordmau5.ffs.holder.FFSItems;
 import net.minecraft.data.DataGenerator;
-import net.minecraftforge.common.data.LanguageProvider;
+import net.neoforged.neoforge.common.data.LanguageProvider;
 
-public class FFSLanguageProvider extends LanguageProvider {
+public class FFSLanguageProvider extends LanguageProvider
+{
 
     public FFSLanguageProvider(DataGenerator generator, String locale) {
         super(generator.getPackOutput(), FancyFluidStorage.MOD_ID, locale);

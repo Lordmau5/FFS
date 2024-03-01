@@ -11,7 +11,9 @@ public class GuiButtonLockFluid extends ImageButton {
     private boolean state;
 
     GuiButtonLockFluid(int x, int y, boolean state, OnPress onPress) {
-        super(x, y, 8, 8, 0, 128, 0, toggleTexture, onPress);
+//        super(x, y, 8, 8, 0, 128, 0, null, onPress);
+        //TODO
+        super(x, y, 8, 8, null, onPress);
         this.state = state;
     }
 
@@ -29,7 +31,7 @@ public class GuiButtonLockFluid extends ImageButton {
 
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick)
     {
         RenderSystem.disableDepthTest();
 

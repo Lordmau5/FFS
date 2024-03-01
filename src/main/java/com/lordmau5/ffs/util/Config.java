@@ -3,10 +3,10 @@ package com.lordmau5.ffs.util;
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
@@ -26,12 +26,12 @@ public class Config {
     static class ConfigBinding {
         final ITypeAdapter adapter;
         final Field field;
-        final ForgeConfigSpec.ConfigValue value;
+        final ModConfigSpec.ConfigValue value;
 
         @Nullable
         final Object obj;
 
-        ConfigBinding(final ITypeAdapter adapter, final Field field, @Nullable final Object obj, final ForgeConfigSpec.ConfigValue value) {
+        ConfigBinding(final ITypeAdapter adapter, final Field field, @Nullable final Object obj, final ModConfigSpec.ConfigValue value) {
             this.adapter = adapter;
             this.field = field;
             this.obj = obj;
@@ -39,7 +39,7 @@ public class Config {
         }
     }
 
-    public static ForgeConfigSpec walkClass(final Class<?> cls, final IEventBus bus) {
+    public static ModConfigSpec walkClass(final Class<?> cls, final IEventBus bus) {
         return new ConfigWalker(cls, bus).getSpec();
     }
 
@@ -52,7 +52,7 @@ public class Config {
         @Nullable
         private Set<ConfigBinding> bindings = null;
         @Nullable
-        private ForgeConfigSpec spec = null;
+        private ModConfigSpec spec = null;
 
         public ConfigWalker(final Class<?> cls) {
             this.cls = cls;
@@ -89,7 +89,7 @@ public class Config {
             return this;
         }
 
-        public ForgeConfigSpec getSpec() {
+        public ModConfigSpec getSpec() {
             if (!built)
                 build();
 
@@ -106,7 +106,7 @@ public class Config {
 
             discoverClasses(cls, 0);
 
-            final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+            final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
             scan(null, builder, 0);
             spec = builder.build();
         }
@@ -122,7 +122,7 @@ public class Config {
             }
         }
 
-        private void scan(@Nullable final Object obj, final ForgeConfigSpec.Builder builder, final int depth) {
+        private void scan(@Nullable final Object obj, final ModConfigSpec.Builder builder, final int depth) {
             final Class<?> cls;
             if (obj == null)
                 cls = this.cls;
@@ -189,7 +189,7 @@ public class Config {
                     builder.pop();
 
                 } else {
-                    final ForgeConfigSpec.ConfigValue value = adapter.define(name, obj, field, builder, this);
+                    final ModConfigSpec.ConfigValue value = adapter.define(name, obj, field, builder, this);
                     Objects.requireNonNull(value);
 
                     bindings.add(new ConfigBinding(adapter, field, obj, value));
@@ -221,7 +221,7 @@ public class Config {
             return true;
         }
 
-        ForgeConfigSpec.ConfigValue define(String name, @Nullable Object obj, Field field, ForgeConfigSpec.Builder builder, ConfigWalker walker);
+        ModConfigSpec.ConfigValue define(String name, @Nullable Object obj, Field field, ModConfigSpec.Builder builder, ConfigWalker walker);
     }
 
     public static void registerAdapter(final Class<?> cls, final ITypeAdapter adapter) {
@@ -251,7 +251,7 @@ public class Config {
             @SuppressWarnings("unchecked")
             @Nullable
             @Override
-            public ForgeConfigSpec.ConfigValue define(final String name, @Nullable final Object obj, final Field field, final ForgeConfigSpec.Builder builder, final ConfigWalker walker) {
+            public ModConfigSpec.ConfigValue define(final String name, @Nullable final Object obj, final Field field, final ModConfigSpec.Builder builder, final ConfigWalker walker) {
                 final Class<?> cls = field.getType();
                 if (!Enum.class.isAssignableFrom(cls))
                     return null;
@@ -260,7 +260,7 @@ public class Config {
             }
 
             @SuppressWarnings("unchecked")
-            private <V extends Enum<V>> ForgeConfigSpec.EnumValue<V> buildEnum(final String name, @Nullable final Object obj, final Field field, final ForgeConfigSpec.Builder builder, final ConfigWalker walker, final Class<V> clazz) {
+            private <V extends Enum<V>> ModConfigSpec.EnumValue<V> buildEnum(final String name, @Nullable final Object obj, final Field field, final ModConfigSpec.Builder builder, final ConfigWalker walker, final Class<V> clazz) {
                 V value = null;
                 try {
                     value = (V) field.get(obj);

@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -27,7 +28,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -69,7 +70,7 @@ public class BlockFluidValve extends AbstractBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         BlockEntity tile = level.getBlockEntity(pos);
         if (tile instanceof BlockEntityFluidValve valve) {
             if (!level.isClientSide() && player.isCreative() && !valve.getTankConfig().isEmpty()) {
@@ -83,7 +84,7 @@ public class BlockFluidValve extends AbstractBlock {
             }
         }
 
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -104,7 +105,7 @@ public class BlockFluidValve extends AbstractBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
         ItemStack stack = super.getCloneItemStack(state, target, level, pos, player);
 
         if (player.isShiftKeyDown()) {
@@ -117,8 +118,7 @@ public class BlockFluidValve extends AbstractBlock {
         return stack;
     }
 
-    private @Nonnull
-    FluidStack loadFluidStackFromTankConfig(ItemStack stack) {
+    private @Nonnull FluidStack loadFluidStackFromTankConfig(ItemStack stack) {
         if (!stack.hasTag()) {
             return FluidStack.EMPTY;
         }

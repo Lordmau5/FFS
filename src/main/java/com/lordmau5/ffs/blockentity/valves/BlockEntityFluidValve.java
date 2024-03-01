@@ -11,18 +11,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class BlockEntityFluidValve extends AbstractTankValve {
 
-    private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> getTankConfig().getFluidTank());
+    //TODO
+//    private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> getTankConfig().getFluidTank());
 
     public BlockEntityFluidValve(BlockPos pos, BlockState state) {
         super(FFSBlockEntities.tileEntityFluidValve.get(), pos, state);
@@ -63,11 +62,12 @@ public class BlockEntityFluidValve extends AbstractTankValve {
         }
     }
 
-    @Override
-    @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.FLUID_HANDLER)
-            return holder.cast();
-        return super.getCapability(cap, side);
-    }
+    //TODO
+//    @Override
+//    @Nonnull
+//    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+//        if (cap == ForgeCapabilities.FLUID_HANDLER)
+//            return holder.cast();
+//        return super.getCapability(cap, side);
+//    }
 }

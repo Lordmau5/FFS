@@ -15,11 +15,9 @@ import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.SupportType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidUtil;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -144,7 +142,7 @@ public class GenericUtil {
         Block block = state.getBlock();
 
         if (block instanceof LiquidBlockContainer container) {
-            return container.canPlaceLiquid(level, pos, state, Fluids.WATER);
+            return container.canPlaceLiquid(null, level, pos, state, Fluids.WATER);
         }
 
         return state.canBeReplaced();

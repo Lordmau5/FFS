@@ -21,12 +21,16 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.client.extensions.IBlockEntityRendererExtension;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AbstractTankValve extends AbstractTankEntity implements IFacingEntity, INameableEntity {
+import static net.neoforged.neoforge.client.extensions.IBlockEntityRendererExtension.INFINITE_EXTENT_AABB;
+
+public abstract class AbstractTankValve extends AbstractTankEntity implements IFacingEntity, INameableEntity, IBlockEntityRendererExtension<AbstractTankValve>
+{
 
     public final HashMap<Integer, TreeMap<Integer, HashSet<BlockPos>>> maps;
     private final HashSet<AbstractTankEntity> tankTiles;
@@ -712,9 +716,11 @@ public abstract class AbstractTankValve extends AbstractTankEntity implements IF
     }
 
     @Override
-    public AABB getRenderBoundingBox() {
+    public AABB getRenderBoundingBox(AbstractTankValve blockEntity)
+    {
         return INFINITE_EXTENT_AABB;
     }
+
 
     public int getComparatorOutput() {
         if (!isValid()) {
